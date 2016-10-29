@@ -1,0 +1,12 @@
+{
+	"points_to_win": 50,
+	"grid_dimensions": [5,5],
+	"grid":
+	[
+		"oooo",
+		"oooo",
+		"oooo",
+		"oooo"
+	],
+	"top_spawn_points":[0]
+}
