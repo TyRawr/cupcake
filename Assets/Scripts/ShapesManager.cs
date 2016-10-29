@@ -91,7 +91,7 @@ public class ShapesManager : MonoBehaviour
                 {
                     GameObject go = GameObject.Instantiate(  prefabs[Random.Range(0, prefabs.Count)], new Vector3(0f,0f,0f), Quaternion.identity) as GameObject;
                     go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);                  
-                    shapes[row, col] = go.GetComponent<Shape>();
+                    shapes[row, col] = go.GetComponentInChildren<Shape>();
                     shapes[row, col].AssignEvent();
                 }
                 //Debug.Log("X2:" + x + " Y2:" + y + " " + LevelManager.LevelAsText[y][x]);
@@ -100,8 +100,8 @@ public class ShapesManager : MonoBehaviour
                 background.transform.SetParent(GameObject.Find("BackgroundPieces").gameObject.transform, false);
                 backgroundPieces[row, col] = background;
                 shapes[row, col].transform.position = backgroundPieces[row, col].transform.position;
-                shapes[row, col].GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Constants.SIZE_WIDTH);
-                shapes[row, col].GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Constants.SIZE_WIDTH);
+                shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Constants.SIZE_WIDTH);
+                shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Constants.SIZE_WIDTH);
             }
         }
         //CreateSpawnPointFromLevelManager();
@@ -118,8 +118,6 @@ public class ShapesManager : MonoBehaviour
         spawn.transform.SetParent(shapeObject.transform);
         Debug.Log("local scale: " + rectTransform.rect.height);
     }
-
-    
 
     public Vector2 GetRowColFromGameObject(GameObject shape)
     {
@@ -151,7 +149,45 @@ public class ShapesManager : MonoBehaviour
         shape.transform.position = background.transform.position;
     }
 
-    public bool SwapPieces(int aRow, int aCol, int bRow, int bCol)
+    Shape GetSwapShape(int row, int col, Constants.SwipeDirection swipeDirection = Constants.SwipeDirection.RIGHT) {
+        int swapRow = row, swapCol = col;
+        if (swipeDirection == Constants.SwipeDirection.UP)
+        {
+            swapRow = row - 1;
+        } else if (swipeDirection == Constants.SwipeDirection.RIGHT)
+        {
+            swapCol = col + 1;
+        }
+        else if (swipeDirection == Constants.SwipeDirection.DOWN)
+        {
+            swapRow = row + 1;
+        }
+        else // LEFT
+        {
+            swapCol = col - 1;
+        }
+        return shapes[swapRow, swapCol];
+    }
+
+    public bool CanSwap(int row, int col, Constants.SwipeDirection swipeDirection = Constants.SwipeDirection.RIGHT) {
+        if (shapes[row, col] == null) return false;
+        Shape swapShape = GetSwapShape(row, col, swipeDirection);
+        bool canSwap = swapShape != null && swapShape.shape_type == Shape.ShapeType.NORMAL;
+        if(canSwap)
+        {
+            if(swipeDirection == Constants.SwipeDirection.UP)
+                swapShape.AnimateSwap(Constants.SwipeDirection.DOWN);
+            else if (swipeDirection == Constants.SwipeDirection.RIGHT)
+                swapShape.AnimateSwap(Constants.SwipeDirection.LEFT);
+            else if (swipeDirection == Constants.SwipeDirection.DOWN)
+                swapShape.AnimateSwap(Constants.SwipeDirection.UP);
+            else
+                swapShape.AnimateSwap(Constants.SwipeDirection.RIGHT);
+        }
+        return canSwap;
+    }
+
+    public bool SwapPieces(int aRow, int aCol, int bRow, int bCol , Constants.SwipeDirection swipeDirection = Constants.SwipeDirection.RIGHT)
     {
         if (bRow < 0) return false;
         if (bCol < 0) return false;
@@ -166,7 +202,7 @@ public class ShapesManager : MonoBehaviour
         Vector3 position = shapes[aRow, aCol].gameObject.transform.position;
         GameObject clone = GameObject.Instantiate(shapes[aRow, aCol].gameObject);
         GameObject.Destroy(shapes[aRow, aCol].gameObject);
-        clone.GetComponent<Shape>().AssignEvent();
+        clone.GetComponentInChildren<Shape>().AssignEvent();
         clone.transform.position = position;
         clone.name = name ;
         clone.transform.SetParent(parent);

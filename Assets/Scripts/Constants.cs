@@ -2,6 +2,15 @@
 using System.Collections;
 
 public static class Constants {
+
+    public enum SwipeDirection
+    {
+        UP,
+        RIGHT,
+        DOWN,
+        LEFT
+    };
+
     //Point values
     public static readonly int NORMAL_SHAPE_VALUE = 10;
 
@@ -24,5 +33,10 @@ public static class Constants {
     public static readonly string LEVEL_START_EVENT = "level_start_event";
     public static readonly string LEVEL_END_EVENT = "level_end_event";
 
-
+    //Piece Animations
+    public static readonly string ANIMATE = "piece_animate";
+    public static readonly string ANIMATE_UP = "piece_animate_up";
+    public static readonly string ANIMATE_RIGHT = "piece_animate_right";
+    public static readonly string ANIMATE_DOWN = "piece_animate_down";
+    public static readonly string ANIMATE_LEFT = "piece_animate_left";
 }
