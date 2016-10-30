@@ -62,6 +62,14 @@ public class Shape : MonoBehaviour {
                 OnSwapAnimationEnd();
             }
         }
+        if (Input.GetKeyDown(KeyCode.R) && id == "red") {
+            Animation anim = this.GetComponentInChildren<Animation>();
+            foreach(AnimationState state in anim)
+            {
+                Debug.Log(state.name);
+            }
+            anim.Play("ShapeUp");
+        }
 	}
 
     public void AssignEvent()
@@ -168,22 +176,23 @@ public class Shape : MonoBehaviour {
     }
     public void AnimateSwap(Constants.SwipeDirection swipeDirection)
     {
-        string animationName = "Right";
+        string animationName = "ShapeRight";
         if(swipeDirection == Constants.SwipeDirection.UP)
         {
-            animationName = "Up";
+            animationName = "ShapeUp";
         } else if (swipeDirection == Constants.SwipeDirection.RIGHT)
         {
-            animationName = "Right";
+            animationName = "ShapeRight";
         } else if(swipeDirection == Constants.SwipeDirection.DOWN)
         {
-            animationName = "Down";
+            animationName = "ShapeDown";
         } else
         {
-            animationName = "Left";
+            animationName = "ShapeLeft";
         }
         Animation anim = this.gameObject.GetComponentInChildren<Animation>();
         currentAnimation = anim;
+        //anim.
         anim.Play(animationName);
     }
 
