@@ -39,9 +39,9 @@ public class Shape : MonoBehaviour {
 
     public string id;
     ShapesManager shapesManager;
-
-    private Animation currentAnimation;
+    
     private Vector2 swappingWith;
+    bool checkSwap = false;
 
     void Awake()
     {
@@ -55,13 +55,15 @@ public class Shape : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	    if(currentAnimation)
+        /*
+	    if(animate && currentAnimation)
         {
             if (currentAnimation.isPlaying) { }
             else {
                 OnSwapAnimationEnd();
             }
         }
+        */
         if (Input.GetKeyDown(KeyCode.R) && id == "red") {
             Animation anim = this.GetComponentInChildren<Animation>();
             foreach(AnimationState state in anim)
@@ -97,7 +99,7 @@ public class Shape : MonoBehaviour {
                         // Start animate right
                         EventManager.StartListening(Constants.ANIMATE, OnSwapAnimationEnd);
                         swappingWith = new Vector2(row, col + 1);
-                        AnimateSwap(Constants.SwipeDirection.RIGHT);
+                        AnimateSwap(Constants.SwipeDirection.RIGHT, true);
                         // on end of animate right check if can actually swap with that piece
                         //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
                     }
@@ -117,7 +119,7 @@ public class Shape : MonoBehaviour {
                         // Start animate right
                         EventManager.StartListening(Constants.ANIMATE, OnSwapAnimationEnd);
                         swappingWith = new Vector2(row, col - 1);
-                        AnimateSwap(Constants.SwipeDirection.LEFT);
+                        AnimateSwap(Constants.SwipeDirection.LEFT, true);
                         // on end of animate right check if can actually swap with that piece
                         //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
                     }
@@ -141,7 +143,7 @@ public class Shape : MonoBehaviour {
                         // Start animate right
                         EventManager.StartListening(Constants.ANIMATE, OnSwapAnimationEnd);
                         swappingWith = new Vector2(row - 1, col);
-                        AnimateSwap(Constants.SwipeDirection.UP);
+                        AnimateSwap(Constants.SwipeDirection.UP, true);
 
                         // on end of animate right check if can actually swap with that piece
                         //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
@@ -163,7 +165,7 @@ public class Shape : MonoBehaviour {
                         // Start animate right
                         EventManager.StartListening(Constants.ANIMATE_DOWN, OnSwapAnimationEnd);
                         swappingWith = new Vector2(row + 1, col);
-                        AnimateSwap(Constants.SwipeDirection.DOWN);
+                        AnimateSwap(Constants.SwipeDirection.DOWN,true);
                         // on end of animate right check if can actually swap with that piece
                         //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
                     }
@@ -174,7 +176,7 @@ public class Shape : MonoBehaviour {
         });
         eventTrigger.triggers.Add(entry);
     }
-    public void AnimateSwap(Constants.SwipeDirection swipeDirection)
+    public void AnimateSwap(Constants.SwipeDirection swipeDirection , bool checkSwap = false)
     {
         string animationName = "ShapeRight";
         if(swipeDirection == Constants.SwipeDirection.UP)
@@ -191,23 +193,40 @@ public class Shape : MonoBehaviour {
             animationName = "ShapeLeft";
         }
         Animation anim = this.gameObject.GetComponentInChildren<Animation>();
-        currentAnimation = anim;
-        //anim.
+        AnimationClip animClip = anim.GetClip(animationName);
+        
         anim.Play(animationName);
+        if (animClip)
+            StartCoroutine(WaitForAnim(animClip.length, checkSwap));
+    }
+
+    
+
+    IEnumerator WaitForAnim(float time, bool _checkSwap = false)
+    {
+        this.checkSwap = _checkSwap;
+        yield return new WaitForSeconds(time);
+        //this.checkSwap = check;
+        OnSwapAnimationEnd();
     }
 
     void OnSwapAnimationEnd()
     {
-        currentAnimation = null;
         Vector2 vec = shapesManager.GetRowColFromGameObject(this.gameObject);
         int row = (int)vec.x;
         int col = (int)vec.y;
         Debug.Log("OnSwapAnimationEnd:: " + this.gameObject.name + " " + row + ", " + col);
         //reset child
+        Animation childAnimation = this.gameObject.GetComponentInChildren<Animation>();
+        childAnimation.Stop();
         RectTransform rectTrans = this.gameObject.GetComponentInChildren<RectTransform>();
         rectTrans.localPosition = Vector3.zero;
-        bool successfulSwap = shapesManager.SwapPieces(row, col, (int)swappingWith.x, (int)swappingWith.y);
-        bool isMatch = shapesManager.CheckMatch(row, col);
-        Debug.Log("successfulSwap: " + successfulSwap + "    isMatch: " + isMatch);
+        if(this.checkSwap)
+        {
+            checkSwap = false;
+            bool successfulSwap = shapesManager.SwapPieces(row, col, (int)swappingWith.x, (int)swappingWith.y);
+            bool isMatch = shapesManager.CheckMatch(row, col);
+            Debug.Log("successfulSwap: " + successfulSwap + "    isMatch: " + isMatch);
+        }
     }
 }

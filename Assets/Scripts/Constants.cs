@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public static class Constants {
 
@@ -39,4 +40,13 @@ public static class Constants {
     public static readonly string ANIMATE_RIGHT = "piece_animate_right";
     public static readonly string ANIMATE_DOWN = "piece_animate_down";
     public static readonly string ANIMATE_LEFT = "piece_animate_left";
+
+    //Piece ID Mapping
+    public static Dictionary<string, string> pieceIDMapping = new Dictionary<string, string>() {
+        { "b", "blue" },
+        { "g", "green" },
+        { "o", "orange" },
+        { "r", "red" },
+        { "y", "yellow" }
+    };
 }

@@ -11,8 +11,6 @@ public class ShapesManager : MonoBehaviour
     public bool DebugLog = true;
     public List<GameObject> prefabs;
     public GameObject emptyPrefab;
-
-    public PiecePrefab[] piecePrefabs;
     public GameObject backgroundPiece;
     public int gridHeight = 262;
     public GameObject[,] backgroundPieces;
@@ -22,6 +20,14 @@ public class ShapesManager : MonoBehaviour
         NORMAL,
         COUNT,
     };
+
+    [System.Serializable]
+    public struct PieceMapping
+    {
+        public string id; // should map to the constants id file
+        public GameObject prefab;
+    };
+    public List<PieceMapping> piecePrefabs;
 
     [System.Serializable]
     public struct PiecePrefab
@@ -42,11 +48,16 @@ public class ShapesManager : MonoBehaviour
 
     private Text pointsText;
     private int points;
+    private Dictionary<string, GameObject> piecePrefabDict = new Dictionary<string, GameObject>();
 
     public void Start()
     {
         if(DebugLog)
             Debug.Log("Shapes Manager Start");
+        foreach(PieceMapping pMapping in piecePrefabs)
+        {
+            piecePrefabDict.Add(pMapping.id, pMapping.prefab);
+        }
         EventManager.StartListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
         LevelManager.ImportLevel("level_test");
         pointsText = GameObject.Find("Points").GetComponent<Text>();
@@ -87,6 +98,16 @@ public class ShapesManager : MonoBehaviour
             //Debug.Log(LevelManager.LevelAsText[y]);
             for(int col = 0; col < LevelManager.LevelAsText[row].Length; col++)
             {
+                string pieceID = LevelManager.LevelAsText[row][col].ToString();
+                if (Constants.pieceIDMapping.ContainsKey(pieceID)) {
+                    string prefabID = Constants.pieceIDMapping[pieceID];
+                    GameObject piecePrefab = piecePrefabDict[prefabID];
+                    GameObject go = GameObject.Instantiate(piecePrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+                    go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+                    shapes[row, col] = go.GetComponentInChildren<Shape>();
+                    shapes[row, col].AssignEvent();
+                }
+                /*
                 if (LevelManager.LevelAsText[row][col] != 'x')
                 {
                     GameObject go = GameObject.Instantiate(  prefabs[Random.Range(0, prefabs.Count)], new Vector3(0f,0f,0f), Quaternion.identity) as GameObject;
@@ -94,6 +115,7 @@ public class ShapesManager : MonoBehaviour
                     shapes[row, col] = go.GetComponentInChildren<Shape>();
                     shapes[row, col].AssignEvent();
                 }
+                */
                 //Debug.Log("X2:" + x + " Y2:" + y + " " + LevelManager.LevelAsText[y][x]);
                 GameObject background = (GameObject)GameObject.Instantiate(backgroundPiece, new Vector3(col * Constants.SIZE_WIDTH + 30, gridHeight - (row * Constants.SIZE_WIDTH + 30), 0), Quaternion.identity);
                 background.name += col + " " + row + " " + LevelManager.LevelAsText[row][col];
