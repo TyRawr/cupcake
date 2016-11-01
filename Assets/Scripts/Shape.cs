@@ -176,6 +176,7 @@ public class Shape : MonoBehaviour {
         });
         eventTrigger.triggers.Add(entry);
     }
+
     public void AnimateSwap(Constants.SwipeDirection swipeDirection , bool checkSwap = false)
     {
         string animationName = "ShapeRight";
@@ -207,8 +208,11 @@ public class Shape : MonoBehaviour {
         this.checkSwap = _checkSwap;
         yield return new WaitForSeconds(time);
         //this.checkSwap = check;
+        EventManager.StopListening(Constants.ANIMATE_DOWN, OnSwapAnimationEnd);
         OnSwapAnimationEnd();
     }
+
+
 
     void OnSwapAnimationEnd()
     {
@@ -228,5 +232,14 @@ public class Shape : MonoBehaviour {
             bool isMatch = shapesManager.CheckMatch(row, col);
             Debug.Log("successfulSwap: " + successfulSwap + "    isMatch: " + isMatch);
         }
+    }
+
+    public void AnimateSpawn()
+    {
+        string animationName = "ShapeSpawn";
+        Animation anim = this.gameObject.GetComponentInChildren<Animation>();
+        AnimationClip animClip = anim.GetClip(animationName);
+
+        anim.Play(animationName);
     }
 }

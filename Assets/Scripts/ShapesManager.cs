@@ -49,6 +49,7 @@ public class ShapesManager : MonoBehaviour
     private Text pointsText;
     private int points;
     private Dictionary<string, GameObject> piecePrefabDict = new Dictionary<string, GameObject>();
+    private GameObject grid;
 
     public void Start()
     {
@@ -89,7 +90,7 @@ public class ShapesManager : MonoBehaviour
 
     void CreateShapesLevelFromLevelManager()
     {
-        GameObject grid = GameObject.Find("Grid");
+        grid = GameObject.Find("Grid");
         GridLayoutGroup gridLayout = grid.GetComponent<GridLayoutGroup>();
         shapes = new Shape[LevelManager.LevelAsText.Length, LevelManager.LevelAsText[0].Length];
         backgroundPieces = new GameObject[LevelManager.LevelAsText.Length, LevelManager.LevelAsText[0].Length];
@@ -121,13 +122,21 @@ public class ShapesManager : MonoBehaviour
                 background.name += col + " " + row + " " + LevelManager.LevelAsText[row][col];
                 background.transform.SetParent(GameObject.Find("BackgroundPieces").gameObject.transform, false);
                 backgroundPieces[row, col] = background;
-                shapes[row, col].transform.position = backgroundPieces[row, col].transform.position;
-                shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Constants.SIZE_WIDTH);
-                shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Constants.SIZE_WIDTH);
+                SetPositionFromBackgroundPiece_SetSize(row, col);
+                //shapes[row, col].transform.position = backgroundPieces[row, col].transform.position;
+                //shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Constants.SIZE_WIDTH);
+                //shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Constants.SIZE_WIDTH);
             }
         }
         //CreateSpawnPointFromLevelManager();
         EventManager.TriggerEvent("CreateShapesLevelFromLevelManager");
+    }
+
+    void SetPositionFromBackgroundPiece_SetSize(int row, int col)
+    {
+        shapes[row, col].transform.position = backgroundPieces[row, col].transform.position;
+        shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Constants.SIZE_WIDTH);
+        shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Constants.SIZE_WIDTH);
     }
 
     void CreateSpawnPointFromLevelManager()
@@ -265,7 +274,7 @@ public class ShapesManager : MonoBehaviour
                     for (int i = 0; i < row;i++)
                     {
                         shapes[row - i, col] = shapes[row - i - 1, col];
-                        MovePiecePosition(row - i - 1, col, row - i, col);
+                        MovePiecePosition(row - i - 1, col, row - i, col); // this needs to actually play an animation here
                     }
                     shapes[0, col] = null;
                 }
@@ -290,7 +299,7 @@ public class ShapesManager : MonoBehaviour
         List<Vector2> found_left_list = new List<Vector2>();
         List<Vector2> found_right_list = new List<Vector2>();
         int col_itr = col + 1;
-        while(col_itr < shapes.GetLength(0) && shapes[row, col_itr] && shapes[row,col_itr].ID == id)
+        while(col_itr < shapes.GetLength(1) && shapes[row, col_itr] && shapes[row,col_itr].ID == id)
         {
             found_right_list.Add(new Vector2(row, col_itr));
             col_itr++;
@@ -347,6 +356,8 @@ public class ShapesManager : MonoBehaviour
         return found_match;
     }
 
+    bool spawn = true;
+
     void HandleMatch(List<Vector2> found_matches)
     {
         for(int i = 0; i < found_matches.Count; i++)
@@ -357,6 +368,31 @@ public class ShapesManager : MonoBehaviour
             }
         }
         MoveShapesDown();
+        SpawnShapes();
+    }
+
+    public void SpawnShapes()
+    {
+        int row = 0;
+        for(int col = 0; col < shapes.GetLength(1); col++)
+        {
+            
+            if(shapes[row,col] == null)
+            {
+                Debug.Log("Col: " + col);
+                SpawnShape(row, col);
+            }
+        }
+    }
+
+    public void SpawnShape(int row, int col)
+    {
+        GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, piecePrefabs.Count)], new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+        go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+        shapes[row, col] = go.GetComponentInChildren<Shape>();
+        shapes[row, col].AssignEvent();
+        shapes[row, col].AnimateSpawn();
+        SetPositionFromBackgroundPiece_SetSize(row, col);
     }
 
     public void PrintArray()

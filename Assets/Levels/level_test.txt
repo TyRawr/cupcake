@@ -3,7 +3,8 @@
 	"grid_dimensions": [5,5],
 	"grid":
 	[
-		"oyg",
+		"obb",
+		"oyy",
 		"yyr",
 		"yby"
 	],
