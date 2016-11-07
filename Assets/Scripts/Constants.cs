@@ -11,6 +11,18 @@ public static class Constants {
         DOWN,
         LEFT
     };
+    public static SwipeDirection GetOppositeDirection(SwipeDirection a)
+    {
+        if(a == SwipeDirection.UP)
+            return SwipeDirection.DOWN;
+        if (a == SwipeDirection.RIGHT)
+            return SwipeDirection.LEFT;
+        if (a == SwipeDirection.DOWN)
+            return SwipeDirection.UP;
+        if (a == SwipeDirection.LEFT)
+            return SwipeDirection.RIGHT;
+        return SwipeDirection.DOWN;
+    }
 
     //Point values
     public static readonly int NORMAL_SHAPE_VALUE = 10;
@@ -40,6 +52,7 @@ public static class Constants {
     public static readonly string ANIMATE_RIGHT = "piece_animate_right";
     public static readonly string ANIMATE_DOWN = "piece_animate_down";
     public static readonly string ANIMATE_LEFT = "piece_animate_left";
+    public static readonly string ANIMATE_END = "piece_animate_end";
 
     //Piece ID Mapping
     public static Dictionary<string, string> pieceIDMapping = new Dictionary<string, string>() {

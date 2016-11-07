@@ -4,7 +4,7 @@
 	"grid":
 	[
 		"obb",
-		"oyy",
+		"orb",
 		"yyr",
 		"yby"
 	],

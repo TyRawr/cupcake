@@ -42,6 +42,7 @@ public class Shape : MonoBehaviour {
     
     private Vector2 swappingWith;
     bool checkSwap = false;
+    private Constants.SwipeDirection currentSwipeDirection = Constants.SwipeDirection.DOWN;
 
     void Awake()
     {
@@ -85,121 +86,28 @@ public class Shape : MonoBehaviour {
             {
                 if (ped.delta.x > 0)
                 {
-                    Debug.Log("right");
                     EventManager.TriggerEvent(Constants.SWIPE_RIGHT_EVENT, ped);
-                    GameObject shapeObject = ped.pointerPress;
-                    Vector2 vec = shapesManager.GetRowColFromGameObject(shapeObject.transform.parent.gameObject);
-                    int row = (int)vec.x;
-                    int col = (int)vec.y;
-                    // ask shape manager if can attemp to swap
-                    // this is dependent on if there is an edge or untouchable terrain
-                    bool canSwipe = shapesManager.CanSwap(row, col, Constants.SwipeDirection.RIGHT);
-                    if(canSwipe)
-                    {
-                        // Start animate right
-                        EventManager.StartListening(Constants.ANIMATE, OnSwapAnimationEnd);
-                        swappingWith = new Vector2(row, col + 1);
-                        AnimateSwap(Constants.SwipeDirection.RIGHT, true);
-                        // on end of animate right check if can actually swap with that piece
-                        //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
-                    }
-                    Debug.Log("canSwipe " + canSwipe);
                 }
                 else
                 {
-                    Debug.Log("left");
-                    EventManager.TriggerEvent(Constants.SWIPE_LEFT_EVENT, ped);
-                    GameObject shapeObject = ped.pointerPress;
-                    Vector2 vec = shapesManager.GetRowColFromGameObject(shapeObject.transform.parent.gameObject);
-                    int row = (int)vec.x;
-                    int col = (int)vec.y;
-                    bool canSwipe = shapesManager.CanSwap(row, col, Constants.SwipeDirection.LEFT);
-                    if (canSwipe)
-                    {
-                        // Start animate right
-                        EventManager.StartListening(Constants.ANIMATE, OnSwapAnimationEnd);
-                        swappingWith = new Vector2(row, col - 1);
-                        AnimateSwap(Constants.SwipeDirection.LEFT, true);
-                        // on end of animate right check if can actually swap with that piece
-                        //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
-                    }
-                    //shapesManager.SwapPieces(row, col, row, col - 1);
-                    Debug.Log("canSwipe " + canSwipe);
+                    EventManager.TriggerEvent(Constants.SWIPE_RIGHT_EVENT, ped);
                 }
             }
             else
             {
                 if (ped.delta.y > 0)
                 {
-                    Debug.Log("up");
                     EventManager.TriggerEvent(Constants.SWIPE_UP_EVENT, ped);
-                    GameObject shapeObject = ped.pointerPress;
-                    Vector2 vec = shapesManager.GetRowColFromGameObject(shapeObject.transform.parent.gameObject);
-                    int row = (int)vec.x;
-                    int col = (int)vec.y;
-                    bool canSwipe = shapesManager.CanSwap(row, col, Constants.SwipeDirection.UP);
-                    if (canSwipe)
-                    {
-                        // Start animate right
-                        EventManager.StartListening(Constants.ANIMATE, OnSwapAnimationEnd);
-                        swappingWith = new Vector2(row - 1, col);
-                        AnimateSwap(Constants.SwipeDirection.UP, true);
-
-                        // on end of animate right check if can actually swap with that piece
-                        //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
-                    }
-                    //shapesManager.SwapPieces(row, col, row - 1, col);
-                    Debug.Log("canSwipe " + canSwipe);
                 }
                 else
                 {
-                    Debug.Log("down");
-                    EventManager.TriggerEvent(Constants.ANIMATE, ped);
-                    GameObject shapeObject = ped.pointerPress;
-                    Vector2 vec = shapesManager.GetRowColFromGameObject(shapeObject.transform.parent.gameObject);
-                    int row = (int)vec.x;
-                    int col = (int)vec.y;
-                    bool canSwipe = shapesManager.CanSwap(row, col, Constants.SwipeDirection.DOWN);
-                    if (canSwipe)
-                    {
-                        // Start animate right
-                        EventManager.StartListening(Constants.ANIMATE_DOWN, OnSwapAnimationEnd);
-                        swappingWith = new Vector2(row + 1, col);
-                        AnimateSwap(Constants.SwipeDirection.DOWN,true);
-                        // on end of animate right check if can actually swap with that piece
-                        //bool b = shapesManager.SwapPieces(row, col, row, col + 1, Constants.SwipeDirection.RIGHT);
-                    }
-                    //shapesManager.SwapPieces(row, col, row + 1, col);
-                    Debug.Log("canSwipe " + canSwipe);
+                    EventManager.TriggerEvent(Constants.SWIPE_DOWN_EVENT, ped);
                 }
             }
         });
         eventTrigger.triggers.Add(entry);
     }
 
-    public void AnimateSwap(Constants.SwipeDirection swipeDirection , bool checkSwap = false)
-    {
-        string animationName = "ShapeRight";
-        if(swipeDirection == Constants.SwipeDirection.UP)
-        {
-            animationName = "ShapeUp";
-        } else if (swipeDirection == Constants.SwipeDirection.RIGHT)
-        {
-            animationName = "ShapeRight";
-        } else if(swipeDirection == Constants.SwipeDirection.DOWN)
-        {
-            animationName = "ShapeDown";
-        } else
-        {
-            animationName = "ShapeLeft";
-        }
-        Animation anim = this.gameObject.GetComponentInChildren<Animation>();
-        AnimationClip animClip = anim.GetClip(animationName);
-        
-        anim.Play(animationName);
-        if (animClip)
-            StartCoroutine(WaitForAnim(animClip.length, checkSwap));
-    }
 
     
 
@@ -230,8 +138,27 @@ public class Shape : MonoBehaviour {
             checkSwap = false;
             bool successfulSwap = shapesManager.SwapPieces(row, col, (int)swappingWith.x, (int)swappingWith.y);
             bool isMatch = shapesManager.CheckMatch(row, col);
+
             Debug.Log("successfulSwap: " + successfulSwap + "    isMatch: " + isMatch);
+            if (successfulSwap && !isMatch)
+            {
+                Debug.Log("MoveDirection Back: ");
+                Constants.SwipeDirection oppositeDirection = Constants.GetOppositeDirection(currentSwipeDirection);
+                this.checkSwap = true;
+                shapesManager.CanSwap((int)swappingWith.x, (int)swappingWith.y, oppositeDirection);
+                
+                //this.AnimateSwap(oppositeDirection);
+                //shapesManager.SwapPieces((int)swappingWith.x, (int)swappingWith.y, row, col);
+                //AnimateSwap(Constants.GetOppositeDirection(currentSwipeDirection));
+            } else if (successfulSwap && isMatch)
+            {
+                Debug.Log("successfulSwap && isMatch: ");
+            }
+            
+            
         }
+        this.checkSwap = false;
+        this.currentSwipeDirection = Constants.SwipeDirection.DOWN;
     }
 
     public void AnimateSpawn()

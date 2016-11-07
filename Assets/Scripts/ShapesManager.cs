@@ -50,6 +50,7 @@ public class ShapesManager : MonoBehaviour
     private int points;
     private Dictionary<string, GameObject> piecePrefabDict = new Dictionary<string, GameObject>();
     private GameObject grid;
+    private GamePlayManager gamePlayManager;
 
     public void Start()
     {
@@ -62,6 +63,7 @@ public class ShapesManager : MonoBehaviour
         EventManager.StartListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
         LevelManager.ImportLevel("level_test");
         pointsText = GameObject.Find("Points").GetComponent<Text>();
+        gamePlayManager = this.GetComponent<GamePlayManager>();
     }
 
     public void Update()
@@ -129,7 +131,8 @@ public class ShapesManager : MonoBehaviour
             }
         }
         //CreateSpawnPointFromLevelManager();
-        EventManager.TriggerEvent("CreateShapesLevelFromLevelManager");
+        //EventManager.TriggerEvent("CreateShapesLevelFromLevelManager");
+        EventManager.TriggerEvent(Constants.SHAPES_CREATED);
     }
 
     void SetPositionFromBackgroundPiece_SetSize(int row, int col)
@@ -152,7 +155,7 @@ public class ShapesManager : MonoBehaviour
 
     public Vector2 GetRowColFromGameObject(GameObject shape)
     {
-        Debug.Log("GetRowColFromGameObject: " + shape.name);
+        //Debug.Log("GetRowColFromGameObject: " + shape.name);
         Vector2 retVect = new Vector2();
         for(int row = 0; row < shapes.GetLength(0); row++)
         {
@@ -204,16 +207,17 @@ public class ShapesManager : MonoBehaviour
         if (shapes[row, col] == null) return false;
         Shape swapShape = GetSwapShape(row, col, swipeDirection);
         bool canSwap = swapShape != null && swapShape.shape_type == Shape.ShapeType.NORMAL;
-        if(canSwap)
+        //THIS SHOULDNT BE HERE, HANDLE THIS IN THE GAMEPLAY MANAGER
+        if (canSwap)
         {
-            if(swipeDirection == Constants.SwipeDirection.UP)
-                swapShape.AnimateSwap(Constants.SwipeDirection.DOWN);
+            if (swipeDirection == Constants.SwipeDirection.UP)
+                gamePlayManager.AnimateSwap(swapShape.gameObject, Constants.SwipeDirection.DOWN);
             else if (swipeDirection == Constants.SwipeDirection.RIGHT)
-                swapShape.AnimateSwap(Constants.SwipeDirection.LEFT);
+                gamePlayManager.AnimateSwap(swapShape.gameObject, Constants.SwipeDirection.LEFT);
             else if (swipeDirection == Constants.SwipeDirection.DOWN)
-                swapShape.AnimateSwap(Constants.SwipeDirection.UP);
+                gamePlayManager.AnimateSwap(swapShape.gameObject, Constants.SwipeDirection.UP);
             else
-                swapShape.AnimateSwap(Constants.SwipeDirection.RIGHT);
+                gamePlayManager.AnimateSwap(swapShape.gameObject, Constants.SwipeDirection.RIGHT);
         }
         return canSwap;
     }
