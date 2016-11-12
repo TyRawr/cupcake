@@ -3,9 +3,9 @@
 	"grid_dimensions": [5,5],
 	"grid":
 	[
-		"obb",
-		"orb",
-		"yyr",
+		"ogg",
+		"ryg",
+		"ybr",
 		"yby"
 	],
 	"top_spawn_points":[0]

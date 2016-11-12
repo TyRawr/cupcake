@@ -8,9 +8,11 @@ public class EventManager : MonoBehaviour
     /*HERE
      */
     public class ObjectEvent : UnityEvent<object> { }
+    public class ObjectArrayEvent : UnityEvent<object[]> { }
 
     private Dictionary<string, UnityEvent> eventDictionary;
     private Dictionary<string, ObjectEvent> objectEventDictionary;
+    private Dictionary<string, ObjectArrayEvent> objectArrayEventDictionary;
 
     private static EventManager eventManager;
 
@@ -84,6 +86,23 @@ public class EventManager : MonoBehaviour
     }
 
     /*
+    public static void StartListening(string eventName, UnityAction<object[]> listener)
+    {
+        ObjectArrayEvent thisEvent = null;
+        if (instance.objectArrayEventDictionary.TryGetValue(eventName, out thisEvent))
+        {
+            thisEvent.AddListener(listener);
+        }
+        else
+        {
+            thisEvent = new ObjectArrayEvent();
+            thisEvent.AddListener(listener);
+            instance.objectArrayEventDictionary.Add(eventName, thisEvent);
+        }
+    }
+    */
+
+    /*
      * Stop Listening Events
      */
     public static void StopListening(string eventName, UnityAction listener)
@@ -109,6 +128,18 @@ public class EventManager : MonoBehaviour
     }
 
     /*
+    public static void StopListening(string eventName, UnityAction<object[]> listener)
+    {
+        if (eventManager == null) return;
+        ObjectArrayEvent thisEvent = null;
+        if (instance.objectArrayEventDictionary.TryGetValue(eventName, out thisEvent))
+        {
+            thisEvent.RemoveListener(listener);
+        }
+    }
+    */
+
+    /*
      * TRIGGER EVENTS 
      */
     public static void TriggerEvent(string eventName)
@@ -129,4 +160,15 @@ public class EventManager : MonoBehaviour
             thisEvent.Invoke(obj);
         }
     }
+
+    /*
+    public static void TriggerEvent(string eventName, object[] obj)
+    {
+        ObjectArrayEvent thisEvent = null;
+        if (instance.objectArrayEventDictionary.TryGetValue(eventName, out thisEvent))
+        {
+            thisEvent.Invoke(obj);
+        }
+    }
+    */
 }

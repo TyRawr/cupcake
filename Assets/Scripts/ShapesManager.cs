@@ -45,7 +45,7 @@ public class ShapesManager : MonoBehaviour
             return shapes;
         }
     }
-
+    
     private Text pointsText;
     private int points;
     private Dictionary<string, GameObject> piecePrefabDict = new Dictionary<string, GameObject>();
@@ -54,9 +54,12 @@ public class ShapesManager : MonoBehaviour
 
     public void Start()
     {
-        if(DebugLog)
-            Debug.Log("Shapes Manager Start");
-        foreach(PieceMapping pMapping in piecePrefabs)
+        Init();
+    }
+
+    public void Init()
+    {
+        foreach (PieceMapping pMapping in piecePrefabs)
         {
             piecePrefabDict.Add(pMapping.id, pMapping.prefab);
         }
@@ -70,8 +73,8 @@ public class ShapesManager : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.A))
         {
-            Debug.Log("Here");
-            RemoveShape(3, 0);
+            Animation anim = shapes[0, 0].GetComponentInChildren<Animation>();
+            anim.Play("ShapeDisappear");
         }
         if(Input.GetKeyDown(KeyCode.S))
         {
@@ -79,8 +82,8 @@ public class ShapesManager : MonoBehaviour
         }
     }
 
-    public void SetShape(int row, int col) {
-
+    public Shape GetShape(int row, int col) {
+        return shapes[row, col];
     }
 
     void LevelLoadingEnded()
@@ -153,6 +156,7 @@ public class ShapesManager : MonoBehaviour
         Debug.Log("local scale: " + rectTransform.rect.height);
     }
 
+
     public Vector2 GetRowColFromGameObject(GameObject shape)
     {
         //Debug.Log("GetRowColFromGameObject: " + shape.name);
@@ -208,6 +212,7 @@ public class ShapesManager : MonoBehaviour
         Shape swapShape = GetSwapShape(row, col, swipeDirection);
         bool canSwap = swapShape != null && swapShape.shape_type == Shape.ShapeType.NORMAL;
         //THIS SHOULDNT BE HERE, HANDLE THIS IN THE GAMEPLAY MANAGER
+        /*
         if (canSwap)
         {
             if (swipeDirection == Constants.SwipeDirection.UP)
@@ -219,6 +224,7 @@ public class ShapesManager : MonoBehaviour
             else
                 gamePlayManager.AnimateSwap(swapShape.gameObject, Constants.SwipeDirection.RIGHT);
         }
+        */
         return canSwap;
     }
 
@@ -230,8 +236,12 @@ public class ShapesManager : MonoBehaviour
         if (bCol >= shapes.GetLength(1)) return false;
         if (aRow >= shapes.GetLength(0)) return false;
         if (aCol >= shapes.GetLength(1)) return false;
+        //Shape tempShape = shapes[bRow, bCol];
+        //shapes[bRow, bCol] = shapes[aRow, aCol];
+        //shapes[aRow, aCol] = tempShape;
         MovePiecePosition(aRow, aCol, bRow, bCol);
         MovePiecePosition(bRow, bCol, aRow, aCol);
+
         string name = shapes[aRow, aCol].gameObject.name;
         Transform parent = shapes[aRow, aCol].gameObject.transform.parent.transform;
         Vector3 position = shapes[aRow, aCol].gameObject.transform.position;
@@ -243,8 +253,8 @@ public class ShapesManager : MonoBehaviour
         clone.transform.SetParent(parent);
         shapes[aRow, aCol] = shapes[bRow, bCol];
         shapes[bRow, bCol] = clone.GetComponent<Shape>();
-        CheckMatch(aRow,aCol);
-        CheckMatch(bRow, bCol);
+        //CheckMatch(aRow,aCol);
+        //CheckMatch(bRow, bCol);
         return true;
     }
 
@@ -256,7 +266,7 @@ public class ShapesManager : MonoBehaviour
     void RemoveShape(int row, int col, bool move_shapes_down = false)
     {
         Debug.Log("Remove Shape: " + row + " " + col);
-        if (shapes[row, col] == null) return;
+        //if (shapes[row, col] == null) return;
         Shape s = shapes[row, col];
         RemoveShape(s);
         //GameObject.Destroy(s.gameObject);
@@ -286,22 +296,40 @@ public class ShapesManager : MonoBehaviour
         }
     }
 
-    Shape GetShape(int row, int col)
+    // This probablu should be gamePlayManager specific
+    public class CheckResult
     {
-        if (row >= shapes.GetLength(0)) return null;
-        if (col >= shapes.GetLength(1)) return null;
-        return shapes[row, col];
+        public List<Vector2> verticalList;
+        public List<Vector2> horizontalList;
+        public CheckResult (List<Vector2> vertList , List<Vector2> horizList)
+        {
+            this.verticalList = vertList;
+            this.horizontalList = horizList;
+        }
+        public bool IsMatch()
+        {
+            return IsVerticalMatch() || IsHorizontalMatch();
+        }
+        public bool IsVerticalMatch()
+        {
+            return verticalList.Count >= 2;
+        }
+        public bool IsHorizontalMatch()
+        {
+            return horizontalList.Count >= 2;
+        }
     }
 
-    public bool CheckMatch(int row, int col)
+    public CheckResult CheckMatch(int row, int col)
     {
         Shape shape = shapes[row, col];
-        if (!shape) return false;
-        string id = shape.ID;
         List<Vector2> found_up_list = new List<Vector2>();
         List<Vector2> found_down_list = new List<Vector2>();
         List<Vector2> found_left_list = new List<Vector2>();
         List<Vector2> found_right_list = new List<Vector2>();
+        if (!shape) return new CheckResult(found_down_list,found_up_list);
+        string id = shape.ID;
+        
         int col_itr = col + 1;
         while(col_itr < shapes.GetLength(1) && shapes[row, col_itr] && shapes[row,col_itr].ID == id)
         {
@@ -338,7 +366,7 @@ public class ShapesManager : MonoBehaviour
             movePoints += (found_up_list.Count + 1) * Constants.NORMAL_SHAPE_VALUE;
             found_up_list.Add(new Vector2(row, col));
             Debug.Log("Up points: " + movePoints + " " + found_up_list.Count);
-            HandleMatch(found_up_list); 
+            //HandleMatch(found_up_list); 
         }
         if(found_left_list.Count >= 2)
         {
@@ -348,21 +376,17 @@ public class ShapesManager : MonoBehaviour
                 found_left_list.Add(new Vector2(row, col));
             else
                 movePoints += Constants.NORMAL_SHAPE_VALUE * 2;
-            HandleMatch(found_left_list);
+            //HandleMatch(found_left_list);
             found_match = true;
         }
-        if(found_match)
-        {
-            this.points += movePoints;
-            pointsText.text = this.points.ToString();
-            Debug.Log("match found: " + pointsText.text);
-        }
-        return found_match;
+
+        CheckResult checkResult = new CheckResult(found_up_list , found_left_list);
+        return checkResult;
     }
 
     bool spawn = true;
 
-    void HandleMatch(List<Vector2> found_matches)
+    public void RemovePieces(List<Vector2> found_matches)
     {
         for(int i = 0; i < found_matches.Count; i++)
         {
@@ -371,8 +395,6 @@ public class ShapesManager : MonoBehaviour
                 RemoveShape((int)found_matches[i].x , (int)found_matches[i].y);
             }
         }
-        MoveShapesDown();
-        SpawnShapes();
     }
 
     public void SpawnShapes()
@@ -395,7 +417,6 @@ public class ShapesManager : MonoBehaviour
         go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
         shapes[row, col] = go.GetComponentInChildren<Shape>();
         shapes[row, col].AssignEvent();
-        shapes[row, col].AnimateSpawn();
         SetPositionFromBackgroundPiece_SetSize(row, col);
     }
 

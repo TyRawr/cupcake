@@ -90,7 +90,7 @@ public class Shape : MonoBehaviour {
                 }
                 else
                 {
-                    EventManager.TriggerEvent(Constants.SWIPE_RIGHT_EVENT, ped);
+                    EventManager.TriggerEvent(Constants.SWIPE_LEFT_EVENT, ped);
                 }
             }
             else
@@ -108,65 +108,5 @@ public class Shape : MonoBehaviour {
         eventTrigger.triggers.Add(entry);
     }
 
-
-    
-
-    IEnumerator WaitForAnim(float time, bool _checkSwap = false)
-    {
-        this.checkSwap = _checkSwap;
-        yield return new WaitForSeconds(time);
-        //this.checkSwap = check;
-        EventManager.StopListening(Constants.ANIMATE_DOWN, OnSwapAnimationEnd);
-        OnSwapAnimationEnd();
-    }
-
-
-
-    void OnSwapAnimationEnd()
-    {
-        Vector2 vec = shapesManager.GetRowColFromGameObject(this.gameObject);
-        int row = (int)vec.x;
-        int col = (int)vec.y;
-        Debug.Log("OnSwapAnimationEnd:: " + this.gameObject.name + " " + row + ", " + col);
-        //reset child
-        Animation childAnimation = this.gameObject.GetComponentInChildren<Animation>();
-        childAnimation.Stop();
-        RectTransform rectTrans = this.gameObject.GetComponentInChildren<RectTransform>();
-        rectTrans.localPosition = Vector3.zero;
-        if(this.checkSwap)
-        {
-            checkSwap = false;
-            bool successfulSwap = shapesManager.SwapPieces(row, col, (int)swappingWith.x, (int)swappingWith.y);
-            bool isMatch = shapesManager.CheckMatch(row, col);
-
-            Debug.Log("successfulSwap: " + successfulSwap + "    isMatch: " + isMatch);
-            if (successfulSwap && !isMatch)
-            {
-                Debug.Log("MoveDirection Back: ");
-                Constants.SwipeDirection oppositeDirection = Constants.GetOppositeDirection(currentSwipeDirection);
-                this.checkSwap = true;
-                shapesManager.CanSwap((int)swappingWith.x, (int)swappingWith.y, oppositeDirection);
-                
-                //this.AnimateSwap(oppositeDirection);
-                //shapesManager.SwapPieces((int)swappingWith.x, (int)swappingWith.y, row, col);
-                //AnimateSwap(Constants.GetOppositeDirection(currentSwipeDirection));
-            } else if (successfulSwap && isMatch)
-            {
-                Debug.Log("successfulSwap && isMatch: ");
-            }
-            
-            
-        }
-        this.checkSwap = false;
-        this.currentSwipeDirection = Constants.SwipeDirection.DOWN;
-    }
-
-    public void AnimateSpawn()
-    {
-        string animationName = "ShapeSpawn";
-        Animation anim = this.gameObject.GetComponentInChildren<Animation>();
-        AnimationClip animClip = anim.GetClip(animationName);
-
-        anim.Play(animationName);
-    }
+   
 }

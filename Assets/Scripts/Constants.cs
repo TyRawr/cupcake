@@ -11,6 +11,7 @@ public static class Constants {
         DOWN,
         LEFT
     };
+
     public static SwipeDirection GetOppositeDirection(SwipeDirection a)
     {
         if(a == SwipeDirection.UP)
@@ -22,6 +23,53 @@ public static class Constants {
         if (a == SwipeDirection.LEFT)
             return SwipeDirection.RIGHT;
         return SwipeDirection.DOWN;
+    }
+
+    public static Vector2 GetNextRowCol(SwipeDirection swipeDirection , int row , int col)
+    {
+        Vector2 retVect = new Vector2(row, col);
+        if (swipeDirection == SwipeDirection.UP)
+        {
+            retVect.x -= 1;
+        }
+        else if (swipeDirection == SwipeDirection.RIGHT)
+        {
+            retVect.y += 1;
+        }
+        else if (swipeDirection == SwipeDirection.DOWN)
+        {
+            retVect.x += 1;
+        }
+        else {
+            retVect.y -= 1;
+        }
+        return retVect;
+    }
+
+    public class ShapeGridLocation
+    {
+        public int ROW;
+        public int COL;
+
+        public ShapeGridLocation(int _row, int _col)
+        {
+            this.ROW = _row;
+            this.COL = _col;
+        }
+        public void SetRow(int _row)
+        {
+            this.ROW = _row;
+        }
+        public void SetCol(int _col)
+        {
+            this.COL = _col;
+        }
+        public void SetRowCol(int _row, int _col)
+        {
+            this.ROW = _row;
+            this.COL = _col;
+        }
+
     }
 
     //Point values
@@ -45,6 +93,8 @@ public static class Constants {
     public static readonly string LEVEL_ENDED_LOADING_EVENT = "level_ended_loading";
     public static readonly string LEVEL_START_EVENT = "level_start_event";
     public static readonly string LEVEL_END_EVENT = "level_end_event";
+
+    public static readonly string CHECK_MATCH = "check_match";
 
     //Piece Animations
     public static readonly string ANIMATE = "piece_animate";
