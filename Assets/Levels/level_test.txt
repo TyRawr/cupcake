@@ -3,10 +3,10 @@
 	"grid_dimensions": [5,5],
 	"grid":
 	[
-		"ogg",
-		"ryg",
-		"ybr",
-		"yby"
+		"yggyy",
+		"rgyyb",
+		"yrrbb",
+		"ybygg"
 	],
 	"top_spawn_points":[0]
 }

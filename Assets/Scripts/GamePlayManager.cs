@@ -30,6 +30,13 @@ public class GamePlayManager : MonoBehaviour {
 	void Update () {
 	
 	}
+
+    IEnumerator WaitForTime_ThenTriggerEvent(float time , string eventName)
+    {
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(time);
+        EventManager.TriggerEvent(eventName);
+    }
     
     public void GameButtonPressed()
     {
@@ -39,6 +46,7 @@ public class GamePlayManager : MonoBehaviour {
 
     void FireSwipeEvent(GameObject shapeObject , Constants.SwipeDirection swipeDirection)
     {
+        SoundManager.PlaySound("short_whoosh");
         Vector2 vec = shapesManager.GetRowColFromGameObject(shapeObject.transform.parent.gameObject);
         int row = (int)vec.x;
         int col = (int)vec.y;
@@ -63,7 +71,7 @@ public class GamePlayManager : MonoBehaviour {
     public void SwipeRightEvent(object s)
     {
         PointerEventData ped = (PointerEventData)s;
-        Debug.Log("SwipeRightEvent:" + ped.delta);
+        //Debug.Log("SwipeRightEvent:" + ped.delta);
         GameObject shapeObject = ped.pointerPress;
         currentSwipeDirection = Constants.SwipeDirection.RIGHT;
         FireSwipeEvent(shapeObject, currentSwipeDirection);
@@ -71,7 +79,7 @@ public class GamePlayManager : MonoBehaviour {
     public void SwipeLeftEvent(object s)
     {
         PointerEventData ped = (PointerEventData)s;
-        Debug.Log("SwipeLeftEvent:" + ped.delta);
+        //Debug.Log("SwipeLeftEvent:" + ped.delta);
         GameObject shapeObject = ped.pointerPress;
         currentSwipeDirection = Constants.SwipeDirection.LEFT;
         FireSwipeEvent(shapeObject, currentSwipeDirection);
@@ -79,7 +87,7 @@ public class GamePlayManager : MonoBehaviour {
     public void SwipeUpEvent(object s)
     {
         PointerEventData ped = (PointerEventData)s;
-        Debug.Log("SwipeUpEvent:" + ped.delta);
+        //Debug.Log("SwipeUpEvent:" + ped.delta);
         GameObject shapeObject = ped.pointerPress;
         currentSwipeDirection = Constants.SwipeDirection.UP;
         FireSwipeEvent(shapeObject, currentSwipeDirection);
@@ -87,7 +95,7 @@ public class GamePlayManager : MonoBehaviour {
     public void SwipeDownEvent(object s)
     {
         PointerEventData ped = (PointerEventData)s;
-        Debug.Log("SwipeDownEvent:" + ped.delta);
+        //Debug.Log("SwipeDownEvent:" + ped.delta);
         GameObject shapeObject = ped.pointerPress;
         currentSwipeDirection = Constants.SwipeDirection.DOWN;
         FireSwipeEvent(shapeObject, currentSwipeDirection);
@@ -125,11 +133,37 @@ public class GamePlayManager : MonoBehaviour {
         }
             
         AnimationClip animClip = anim.GetClip(animationName);
-        Debug.Log("Anim Clip length: " + animClip.length);
+        //Debug.Log("Anim Clip length: " + animClip.length);
         anim.Play(animationName);
         if (animClip)
             StartCoroutine(WaitForAnim(_sCoords, animClip.length));
         return animClip.length;
+    }
+
+    public float AnimateDisappear(int row, int col)
+    { 
+        string animationName = "ShapeDisappear";
+        GameObject s = shapesManager.GetShape(row, col).gameObject;
+        Animation anim = s.GetComponentInChildren<Animation>();
+        float time = anim[animationName].length;
+        StartCoroutine(WaitForTime_Action(time, () => {
+            shapesManager.RemoveShape(row, col); // scope does not need _row, row is already in scope, not needed mleh
+        }));
+        anim.Play(animationName);
+        return time;
+    }
+
+    IEnumerator WaitForTime_Action(float time , Action action)
+    {
+        yield return new WaitForSeconds(time);
+        action();
+    }
+
+    IEnumerator WaitForTime_Action(float time, Action<bool> action , bool val)
+    {
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(time);
+        action(val);
     }
 
     IEnumerator WaitForTimeTriggerCheckMatch(Vector2 shapeCords , float time)
@@ -189,37 +223,128 @@ public class GamePlayManager : MonoBehaviour {
         else if (successfulSwap && isMatch)
         {
             Debug.Log("successfulSwap && isMatch");
-            if (leftResult.IsHorizontalMatch())
-                shapesManager.RemovePieces(leftResult.horizontalList);
-            if (leftResult.IsVerticalMatch())
-                shapesManager.RemovePieces(leftResult.verticalList);
-            if (rightResult.IsHorizontalMatch())
-                shapesManager.RemovePieces(rightResult.horizontalList);
-            if (rightResult.IsVerticalMatch())
-                shapesManager.RemovePieces(rightResult.verticalList);
+            List<Vector2> shapePositions = leftResult.GetMatchSet();
+            List<Vector2> shapePositionsRight = rightResult.GetMatchSet();
+            // get one list of Match Positions
+            foreach(Vector2 v in shapePositionsRight)
+            {
+                if(!shapePositions.Contains(v))
+                {
+                    shapePositions.Add(v);
+                }
+            }
+
+            EventManager.StartListening("pieces_disappear_after_match_success", ShapesFall);
+
+            float disappearTime = 0f;
+            foreach(Vector2 v in shapePositions)
+            {
+                float dTime = AnimateDisappear((int)v.x, (int)v.y);
+                disappearTime = Math.Max(dTime, disappearTime);
+            }
+            // max length of disappear is 'disappearTime'
+            StartCoroutine( WaitForTime_ThenTriggerEvent(disappearTime, "pieces_disappear_after_match_success") );
+            SoundManager.PlaySound("match");
         }
-        ShapesFall();
     }
 
-    bool ShapesFall()
+    public float AnimateFall(Shape shape)
     {
+        Animation anim = shape.GetComponentInChildren<Animation>();
+        anim.Stop("ShapeSpawn");
+        anim["ShapeSpawn"].time = 0;
+        float time = anim["ShapeSpawn"].length;
+        anim.Play("ShapeSpawn");
+        return time;
+    }
+
+    public void ShapesFall()
+    {
+        Debug.Log("Shapes Fall");
+        EventManager.StopListening("pieces_disappear_after_match_success", ShapesFall);
+
+        var shapes = shapesManager.shapes;
+
+        float maxTime = 0f;
         bool found = false;
-        int rowCount = shapesManager.shapes.GetLength(0) - 1;
-        int colCount = shapesManager.shapes.GetLength(1) - 1;
-        for (int row = rowCount; row >= 0; row--)
+        int count = 0;
+        for (int row = shapes.GetLength(0) - 2; row >= 0; row--)
         {
-            for (int col = colCount; col >= 0; col--)
+            for (int col = 0; col < shapes.GetLength(1); col++)
             {
-                if(shapesManager.shapes[row,col]==null)
+                if (shapes[row + 1, col] == null)
                 {
+                    count++;
                     found = true;
-                    Debug.Log("FOUND " + row + "  " + col);
+                    shapesManager.MovePiecePosition(row, col, row + 1, col);
+                    
+                    Shape s = shapes[row + 1, col] = shapes[row, col];
+                    
+                    if (s != null)
+                    {
+                        float time = AnimateFall(s);
+                        maxTime = Math.Max(time, maxTime);
+                    }
+                    shapes[row, col] = null;
+                    shapesManager.SpawnShapes();
                 }
             }
         }
-        return found;
+        Debug.Log("Count: " + count);
+        StartCoroutine(WaitForTime_Action(maxTime, (bool _found) =>
+        {
+            Debug.Log("in recurs");
+            shapesManager.SpawnShapes();
+            if (_found)
+            {
+                ShapesFall();
+            }
+            else
+            {
+                Debug.Log("Done do something else");
+                CheckWholeBoard();
+            }
+               
+        },found));
     }
 
+    void CheckWholeBoard()
+    {
+        var shapes = shapesManager.shapes;
+        for (int row = 0; row < shapes.GetLength(0); row++)
+        {
+            for (int col = 0; col < shapes.GetLength(1); col++)
+            {
+                //Debug.Log("Check whole board: " + row + "  col: " + col);
+                ShapesManager.CheckResult result = shapesManager.CheckMatch(row, col);
+                if(result.IsMatch())
+                {
+                    //Debug.Log("successfulSwap && isMatch");
+                    List<Vector2> shapePositions = new List<Vector2>();
+                    if(result.IsHorizontalMatch())
+                    {
+                        shapePositions = result.horizontalList;
+                    }
+                    if(result.IsVerticalMatch())
+                    {
+                        shapePositions = result.verticalList;
+                    }
+                    if(result.IsVerticalMatch() && result.IsHorizontalMatch())
+                    {
+                        shapePositions = result.GetMatchSet();
+                    }
+                    EventManager.StartListening("pieces_disappear_after_match_success", ShapesFall);
 
-
+                    float disappearTime = 0f;
+                    foreach (Vector2 v in shapePositions)
+                    {
+                        float dTime = AnimateDisappear((int)v.x, (int)v.y);
+                        disappearTime = Math.Max(dTime, disappearTime);
+                    }
+                    // max length of disappear is 'disappearTime'
+                    StartCoroutine(WaitForTime_ThenTriggerEvent(disappearTime, "pieces_disappear_after_match_success"));
+                }
+            }
+        }
+    }
 }

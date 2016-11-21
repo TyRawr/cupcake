@@ -65,7 +65,6 @@ public class ShapesManager : MonoBehaviour
         }
         EventManager.StartListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
         LevelManager.ImportLevel("level_test");
-        pointsText = GameObject.Find("Points").GetComponent<Text>();
         gamePlayManager = this.GetComponent<GamePlayManager>();
     }
 
@@ -73,8 +72,7 @@ public class ShapesManager : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.A))
         {
-            Animation anim = shapes[0, 0].GetComponentInChildren<Animation>();
-            anim.Play("ShapeDisappear");
+            gamePlayManager.ShapesFall();
         }
         if(Input.GetKeyDown(KeyCode.S))
         {
@@ -110,18 +108,10 @@ public class ShapesManager : MonoBehaviour
                     GameObject piecePrefab = piecePrefabDict[prefabID];
                     GameObject go = GameObject.Instantiate(piecePrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
                     go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+                    go.transform.localScale = Vector3.one;
                     shapes[row, col] = go.GetComponentInChildren<Shape>();
                     shapes[row, col].AssignEvent();
                 }
-                /*
-                if (LevelManager.LevelAsText[row][col] != 'x')
-                {
-                    GameObject go = GameObject.Instantiate(  prefabs[Random.Range(0, prefabs.Count)], new Vector3(0f,0f,0f), Quaternion.identity) as GameObject;
-                    go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);                  
-                    shapes[row, col] = go.GetComponentInChildren<Shape>();
-                    shapes[row, col].AssignEvent();
-                }
-                */
                 //Debug.Log("X2:" + x + " Y2:" + y + " " + LevelManager.LevelAsText[y][x]);
                 GameObject background = (GameObject)GameObject.Instantiate(backgroundPiece, new Vector3(col * Constants.SIZE_WIDTH + 30, gridHeight - (row * Constants.SIZE_WIDTH + 30), 0), Quaternion.identity);
                 background.name += col + " " + row + " " + LevelManager.LevelAsText[row][col];
@@ -251,6 +241,7 @@ public class ShapesManager : MonoBehaviour
         clone.transform.position = position;
         clone.name = name ;
         clone.transform.SetParent(parent);
+        clone.transform.localScale = Vector3.one;
         shapes[aRow, aCol] = shapes[bRow, bCol];
         shapes[bRow, bCol] = clone.GetComponent<Shape>();
         //CheckMatch(aRow,aCol);
@@ -260,10 +251,11 @@ public class ShapesManager : MonoBehaviour
 
     void RemoveShape(Shape shape)
     {
-        GameObject.Destroy(shape.gameObject);
+        if(shape)
+            GameObject.Destroy(shape.gameObject);
     }
 
-    void RemoveShape(int row, int col, bool move_shapes_down = false)
+    public void RemoveShape(int row, int col, bool move_shapes_down = false)
     {
         Debug.Log("Remove Shape: " + row + " " + col);
         //if (shapes[row, col] == null) return;
@@ -318,6 +310,33 @@ public class ShapesManager : MonoBehaviour
         {
             return horizontalList.Count >= 2;
         }
+        public List<Vector2> GetMatchSet()
+        {
+            List<Vector2> retVec = new List<Vector2>();
+            if(IsVerticalMatch())
+            {
+                foreach (Vector2 v in verticalList)
+                {
+                    if (!retVec.Contains(v))
+                    {
+                        retVec.Add(v);
+                    }
+                }
+            }
+            
+            if (IsHorizontalMatch())
+            {
+                foreach (Vector2 v in horizontalList)
+                {
+                    if (!retVec.Contains(v))
+                    {
+                        retVec.Add(v);
+                    }
+                }
+            }
+
+            return retVec;
+        }
     }
 
     public CheckResult CheckMatch(int row, int col)
@@ -342,7 +361,7 @@ public class ShapesManager : MonoBehaviour
             found_left_list.Add(new Vector2(row, col_itr));
             col_itr--;
         }
-        Debug.Log("CheckMatch:: " + id + " Left: " + found_left_list.Count + " Right: " + found_right_list.Count);
+        //Debug.Log("CheckMatch:: " + id + " Left: " + found_left_list.Count + " Right: " + found_right_list.Count);
         int row_itr = row + 1;
         while (row_itr < shapes.GetLength(0) && shapes[row_itr, col] &&  shapes[row_itr, col].ID == id)
         {
@@ -355,7 +374,7 @@ public class ShapesManager : MonoBehaviour
             found_up_list.Add(new Vector2(row_itr, col));
             row_itr--;
         }
-        Debug.Log("CheckMatch:: " + id + " Up: " + found_up_list.Count + " Down: " + found_down_list.Count);
+        //Debug.Log("CheckMatch:: " + id + " Up: " + found_up_list.Count + " Down: " + found_down_list.Count);
         found_up_list.AddRange(found_down_list);
         found_left_list.AddRange(found_right_list);
         int movePoints = 0;
@@ -365,13 +384,13 @@ public class ShapesManager : MonoBehaviour
             found_match = true;
             movePoints += (found_up_list.Count + 1) * Constants.NORMAL_SHAPE_VALUE;
             found_up_list.Add(new Vector2(row, col));
-            Debug.Log("Up points: " + movePoints + " " + found_up_list.Count);
+            //Debug.Log("Up points: " + movePoints + " " + found_up_list.Count);
             //HandleMatch(found_up_list); 
         }
         if(found_left_list.Count >= 2)
         {
             movePoints += (found_left_list.Count + 1) * Constants.NORMAL_SHAPE_VALUE;
-            Debug.Log("Left points: " + movePoints);
+            //Debug.Log("Left points: " + movePoints);
             if (!found_match)
                 found_left_list.Add(new Vector2(row, col));
             else
@@ -400,24 +419,30 @@ public class ShapesManager : MonoBehaviour
     public void SpawnShapes()
     {
         int row = 0;
+        bool found = false;
         for(int col = 0; col < shapes.GetLength(1); col++)
         {
-            
             if(shapes[row,col] == null)
             {
-                Debug.Log("Col: " + col);
+                found = true;
+                //Debug.Log("Col: " + col);
                 SpawnShape(row, col);
             }
         }
+        if (found)
+            SoundManager.PlaySound("woody_click");
     }
 
     public void SpawnShape(int row, int col)
     {
+        Debug.Log("Spawn Shape: " + row + "  " + col);
         GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, piecePrefabs.Count)], new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
         go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+        go.transform.localScale = Vector3.one;
         shapes[row, col] = go.GetComponentInChildren<Shape>();
         shapes[row, col].AssignEvent();
         SetPositionFromBackgroundPiece_SetSize(row, col);
+        gamePlayManager.AnimateFall(shapes[row, col]);
     }
 
     public void PrintArray()
