@@ -1,12 +1,17 @@
 {
-	"points_to_win": 50,
-	"grid_dimensions": [5,5],
 	"grid":
 	[
-		"yggyy",
-		"rgyyb",
-		"yrrbb",
-		"ybygg"
+		"byggyy",
+		"yggooy",
+		"yoobbr",
+		"robygg",
+		"rbbyog"
 	],
+	"margin": "center",
+	"margin_top": 20,
+	"margin_right": 20,
+	"margin_bottom": 20,
+	"margin_left": 20,
+	"points_to_win": 50,
 	"top_spawn_points":[0]
 }

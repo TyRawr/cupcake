@@ -56,24 +56,37 @@ public class Shape : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        /*
-	    if(animate && currentAnimation)
+    }
+
+    public IEnumerator AnimatePosition(Vector3 toPosition, float duration, UnityAction callback)
+    {
+        float startTime = Time.time;
+        Vector3 startMarker = this.gameObject.transform.position;
+        float journeyLength = Vector3.Distance(startMarker, toPosition);
+        for(float t = 0.0f; t < duration; t+= Time.deltaTime)
         {
-            if (currentAnimation.isPlaying) { }
-            else {
-                OnSwapAnimationEnd();
-            }
+            if (transform == null) break;
+            transform.position = Vector3.Lerp(startMarker, toPosition, t/duration);
+            yield return new WaitForEndOfFrame();
         }
-        */
-        if (Input.GetKeyDown(KeyCode.R) && id == "red") {
-            Animation anim = this.GetComponentInChildren<Animation>();
-            foreach(AnimationState state in anim)
-            {
-                Debug.Log(state.name);
-            }
-            anim.Play("ShapeUp");
+        if (transform != null)
+        {
+            transform.position = toPosition;
+            callback();
         }
-	}
+    }
+
+    public IEnumerator AnimateDisappear(float duration, UnityAction callback)
+    {
+        float startTime = Time.time;
+        Vector3 startMarker = this.gameObject.transform.localScale;
+        for (float t = 0.0f; t < duration; t += Time.deltaTime)
+        {
+            transform.localScale = Vector3.Lerp(startMarker, Vector3.zero, t / duration);
+            yield return new WaitForEndOfFrame();
+        }
+        callback();
+    }
 
     public void AssignEvent()
     {

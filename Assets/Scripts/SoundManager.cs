@@ -18,6 +18,7 @@ public static class SoundManager {
         AudioClip clip = Resources.Load<AudioClip>("Sounds/Effects/" + item);
         if (clip != null)
         {
+            aSource.Stop();
             aSource.PlayOneShot(clip);
         }
         else

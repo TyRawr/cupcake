@@ -45,9 +45,8 @@ public class ShapesManager : MonoBehaviour
             return shapes;
         }
     }
-    
-    private Text pointsText;
-    private int points;
+
+    private float pieceSize = 0f;
     private Dictionary<string, GameObject> piecePrefabDict = new Dictionary<string, GameObject>();
     private GameObject grid;
     private GamePlayManager gamePlayManager;
@@ -97,6 +96,45 @@ public class ShapesManager : MonoBehaviour
         GridLayoutGroup gridLayout = grid.GetComponent<GridLayoutGroup>();
         shapes = new Shape[LevelManager.LevelAsText.Length, LevelManager.LevelAsText[0].Length];
         backgroundPieces = new GameObject[LevelManager.LevelAsText.Length, LevelManager.LevelAsText[0].Length];
+
+        float maxRowCount = LevelManager.LevelAsText[0].Length - 2;
+        float maxColCount = LevelManager.LevelAsText.Length;
+        float width = (maxRowCount) + ((maxRowCount - 1) * Constants.SIZE_MARGIN);
+        float height = (maxColCount ) + ((maxColCount - 1) * Constants.SIZE_MARGIN);
+        float halfWidth = width / 2f;
+        float halfHeight = height / 2f;
+        Debug.Log("BH:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height);
+        Debug.Log("BW:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width);
+
+        float gridHeight = GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height 
+            - LevelManager.gridDescription.margin_top - LevelManager.gridDescription.margin_bottom;
+        float gridWidth = GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width 
+            - LevelManager.gridDescription.margin_left - LevelManager.gridDescription.margin_right;
+
+        //float maxGridDimension = Mathf.Min(gridWidth, gridHeight);
+        float maxPieceDimension = Mathf.Min(
+            (gridHeight / LevelManager.LevelAsText.Length) , 
+            (gridWidth / LevelManager.LevelAsText[0].Length)
+            );
+
+        pieceSize = maxPieceDimension;
+
+        float leftMargin = 0f;
+        float topMargin = 0f;
+        if (LevelManager.gridDescription.margin == "center")
+        {
+            if(maxPieceDimension * LevelManager.LevelAsText.Length < gridHeight)
+            {
+                topMargin = (gridHeight - maxPieceDimension * LevelManager.LevelAsText.Length) / 2f;
+            }
+            if (maxPieceDimension * LevelManager.LevelAsText[0].Length < gridWidth)
+            {
+                leftMargin = (gridWidth - maxPieceDimension * LevelManager.LevelAsText[0].Length) / 2f;
+            }
+        }
+
+        Debug.Log("maxPieceDimension:: " + maxPieceDimension);
+
         for (int row = 0; row < LevelManager.LevelAsText.Length; row++)
         {
             //Debug.Log(LevelManager.LevelAsText[y]);
@@ -112,27 +150,40 @@ public class ShapesManager : MonoBehaviour
                     shapes[row, col] = go.GetComponentInChildren<Shape>();
                     shapes[row, col].AssignEvent();
                 }
-                //Debug.Log("X2:" + x + " Y2:" + y + " " + LevelManager.LevelAsText[y][x]);
-                GameObject background = (GameObject)GameObject.Instantiate(backgroundPiece, new Vector3(col * Constants.SIZE_WIDTH + 30, gridHeight - (row * Constants.SIZE_WIDTH + 30), 0), Quaternion.identity);
+                float x = col * maxPieceDimension + maxPieceDimension/2;
+                x += LevelManager.gridDescription.margin_left + leftMargin;
+                float y = gridHeight - (row * maxPieceDimension) - maxPieceDimension / 2 - topMargin;
+                y += LevelManager.gridDescription.margin_bottom;
+                float z = 0f;
+
+                GameObject background = (GameObject)GameObject.Instantiate(backgroundPiece, new Vector3(x, y, z), Quaternion.identity);
+
                 background.name += col + " " + row + " " + LevelManager.LevelAsText[row][col];
                 background.transform.SetParent(GameObject.Find("BackgroundPieces").gameObject.transform, false);
                 backgroundPieces[row, col] = background;
-                SetPositionFromBackgroundPiece_SetSize(row, col);
-                //shapes[row, col].transform.position = backgroundPieces[row, col].transform.position;
-                //shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Constants.SIZE_WIDTH);
-                //shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Constants.SIZE_WIDTH);
+                SetBackgroundPieceDimensions(background, maxPieceDimension);
+                SetPositionFromBackgroundPiece_SetSize(row, col , maxPieceDimension);
             }
         }
-        //CreateSpawnPointFromLevelManager();
-        //EventManager.TriggerEvent("CreateShapesLevelFromLevelManager");
         EventManager.TriggerEvent(Constants.SHAPES_CREATED);
     }
 
-    void SetPositionFromBackgroundPiece_SetSize(int row, int col)
+    void SetBackgroundPieceDimensions(GameObject backgroundPiece , float size)
+    {
+        backgroundPiece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size);
+        backgroundPiece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size);
+    }
+
+    void SetPositionFromBackgroundPiece_SetSize(int row, int col,float size)
     {
         shapes[row, col].transform.position = backgroundPieces[row, col].transform.position;
-        shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Constants.SIZE_WIDTH);
-        shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Constants.SIZE_WIDTH);
+        shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size);
+        shapes[row, col].GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size);
+    }
+
+    public Vector3 GetPositionOfBackgroundPiece(int row, int col)
+    {
+        return backgroundPieces[row, col].transform.position;
     }
 
     void CreateSpawnPointFromLevelManager()
@@ -164,6 +215,7 @@ public class ShapesManager : MonoBehaviour
             }
         }
         Debug.LogError("Should always find gameobject " + shape.name);
+        GameObject.Destroy(shape);
         return new Vector2(-10,-10);
     }
 
@@ -177,7 +229,7 @@ public class ShapesManager : MonoBehaviour
         shape.transform.position = background.transform.position;
     }
 
-    Shape GetSwapShape(int row, int col, Constants.SwipeDirection swipeDirection = Constants.SwipeDirection.RIGHT) {
+    public Shape GetSwapShape(int row, int col, Constants.SwipeDirection swipeDirection = Constants.SwipeDirection.RIGHT) {
         int swapRow = row, swapCol = col;
         if (swipeDirection == Constants.SwipeDirection.UP)
         {
@@ -235,6 +287,7 @@ public class ShapesManager : MonoBehaviour
         string name = shapes[aRow, aCol].gameObject.name;
         Transform parent = shapes[aRow, aCol].gameObject.transform.parent.transform;
         Vector3 position = shapes[aRow, aCol].gameObject.transform.position;
+        Debug.Log("Swap");
         GameObject clone = GameObject.Instantiate(shapes[aRow, aCol].gameObject);
         GameObject.Destroy(shapes[aRow, aCol].gameObject);
         clone.GetComponentInChildren<Shape>().AssignEvent();
@@ -263,30 +316,8 @@ public class ShapesManager : MonoBehaviour
         RemoveShape(s);
         //GameObject.Destroy(s.gameObject);
         shapes[row, col] = null;
-        if(move_shapes_down)
-            MoveShapesDown();
     }
 
-    void MoveShapesDown()
-    {
-        //Debug.Log("Move Shapes Down");
-        for(int row = 0; row < shapes.GetLength(0); row++)
-        {
-            for(int col = 0; col < shapes.GetLength(1); col++)
-            {
-                Shape s = shapes[row, col];
-                if(s == null)
-                {
-                    for (int i = 0; i < row;i++)
-                    {
-                        shapes[row - i, col] = shapes[row - i - 1, col];
-                        MovePiecePosition(row - i - 1, col, row - i, col); // this needs to actually play an animation here
-                    }
-                    shapes[0, col] = null;
-                }
-            }
-        }
-    }
 
     // This probablu should be gamePlayManager specific
     public class CheckResult
@@ -416,7 +447,7 @@ public class ShapesManager : MonoBehaviour
         }
     }
 
-    public void SpawnShapes()
+    public void SpawnShapes(bool dropIn = false)
     {
         int row = 0;
         bool found = false;
@@ -426,14 +457,14 @@ public class ShapesManager : MonoBehaviour
             {
                 found = true;
                 //Debug.Log("Col: " + col);
-                SpawnShape(row, col);
+                SpawnShape(row, col,dropIn);
             }
         }
         if (found)
             SoundManager.PlaySound("woody_click");
     }
 
-    public void SpawnShape(int row, int col)
+    public void SpawnShape(int row, int col,bool dropIn = false)
     {
         Debug.Log("Spawn Shape: " + row + "  " + col);
         GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, piecePrefabs.Count)], new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
@@ -441,8 +472,29 @@ public class ShapesManager : MonoBehaviour
         go.transform.localScale = Vector3.one;
         shapes[row, col] = go.GetComponentInChildren<Shape>();
         shapes[row, col].AssignEvent();
-        SetPositionFromBackgroundPiece_SetSize(row, col);
-        gamePlayManager.AnimateFall(shapes[row, col]);
+        SetPositionFromBackgroundPiece_SetSize(row, col , pieceSize);
+        if(dropIn) { 
+            Vector3 backgroundPosition = this.GetPositionOfBackgroundPiece(row, col);
+            shapes[row, col].transform.position = new Vector3(
+                shapes[row, col].transform.position.x,
+                shapes[row, col].transform.position.y + pieceSize,
+                0
+            );
+            StartCoroutine(shapes[row, col].AnimatePosition(backgroundPosition, Constants.DEFAULT_SWAP_ANIMATION_DURATION, () => { }));
+        }
+    }
+
+    public bool ContainsEmptySpaces()
+    {
+        for(int row = 0; row < shapes.GetLength(0); row++ )
+        {
+            for(int col = 0; col < shapes.GetLength(1); col++)
+            {
+                if (shapes[row, col] == null)
+                    return true;
+            }
+        }
+        return false;
     }
 
     public void PrintArray()

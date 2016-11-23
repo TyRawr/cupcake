@@ -6,9 +6,13 @@ public class LevelManager : MonoBehaviour {
     public class GridDescription
     {
         public string[] grid;
-        public int[] grid_dimensions;
         public int[] top_spawn_points;
         public int points_to_win;
+        public string margin;
+        public float margin_top;
+        public float margin_right;
+        public float margin_bottom;
+        public float margin_left;
     }
 
     public bool DebugLog = false;

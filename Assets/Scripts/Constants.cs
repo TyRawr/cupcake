@@ -72,12 +72,14 @@ public static class Constants {
 
     }
 
+    //Animation times
+    public static readonly float DEFAULT_SWAP_ANIMATION_DURATION = .7f;
+
     //Point values
     public static readonly int NORMAL_SHAPE_VALUE = 10;
 
     // Size of images
-    public static readonly int SIZE_WIDTH = 50;
-    public static readonly int SIZE_HEIGHT = 50;
+    public static readonly int SIZE_MARGIN = 30;
 
     //Events
     public static readonly string SHAPES_CREATED = "shapes_created";
