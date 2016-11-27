@@ -149,6 +149,14 @@ public class ShapesManager : MonoBehaviour
                     go.transform.localScale = Vector3.one;
                     shapes[row, col] = go.GetComponentInChildren<Shape>();
                     shapes[row, col].AssignEvent();
+                } else
+                {
+                    // Empty, non moveable piece
+                    GameObject go = GameObject.Instantiate(emptyPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+                    go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+                    go.transform.localScale = Vector3.one;
+                    shapes[row, col] = go.GetComponentInChildren<Shape>();
+
                 }
                 float x = col * maxPieceDimension + maxPieceDimension/2;
                 x += LevelManager.gridDescription.margin_left + leftMargin;

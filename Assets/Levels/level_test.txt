@@ -2,7 +2,7 @@
 	"grid":
 	[
 		"byggyy",
-		"yggooy",
+		"yxgooy",
 		"yoobbr",
 		"robygg",
 		"rbbyog"

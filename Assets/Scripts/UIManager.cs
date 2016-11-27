@@ -1,15 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class UIManager : MonoBehaviour {
+public static class UIManager {
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    static bool init = false;
+    static Transform modal_ui;
+
+    static bool shown = false;
+    public static void Init()
+    {
+        Transform[] trans = GameObject.Find("Canvas").GetComponentsInChildren<Transform>(true);
+        foreach(Transform t in trans)
+        {
+            if(t.gameObject.name == "Modal_UI")
+            {
+                modal_ui = t as Transform;
+                break;
+            }
+        }
+    }
+
+    public static void ToggleModal()
+    {
+        if (!init) Init();
+        shown = !shown;
+        modal_ui.gameObject.SetActive(shown);
+    }
 }

@@ -27,7 +27,10 @@ public class GamePlayManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+	    if(Input.GetKeyDown( KeyCode.V) )
+        {
+            UIManager.ToggleModal();
+        }
 	}
 
     IEnumerator WaitForTime_ThenTriggerEvent(float time , string eventName)

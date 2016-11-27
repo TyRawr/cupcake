@@ -21,11 +21,6 @@ public static class SoundManager {
             aSource.Stop();
             aSource.PlayOneShot(clip);
         }
-        else
-        {
-            Debug.Log("Fuck");
-        }
-        
     }
     
     public static void SetSFXLevel(double level)
