@@ -16,20 +16,31 @@ public class GamePlayManager : MonoBehaviour {
 
     ShapesManager shapesManager;
 
-	// Use this for initialization
-	void Start () {
+    void Awake()
+    {
+        StoreManager.Init();
+        UIManager.Init();
         shapesManager = this.gameObject.GetComponent<ShapesManager>();
         EventManager.StartListening(Constants.SWIPE_RIGHT_EVENT, SwipeRightEvent);
         EventManager.StartListening(Constants.SWIPE_LEFT_EVENT, SwipeLeftEvent);
         EventManager.StartListening(Constants.SWIPE_UP_EVENT, SwipeUpEvent);
         EventManager.StartListening(Constants.SWIPE_DOWN_EVENT, SwipeDownEvent);
+    }
+
+	// Use this for initialization
+	void Start () {
+        
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	    if(Input.GetKeyDown( KeyCode.V) )
+	    if(Input.GetKeyDown(KeyCode.V))
         {
-            UIManager.ToggleModal();
+            UIManager.Toggle();
+        }
+        if(Input.GetKeyDown(KeyCode.T))
+        {
+            GameObject.Find("Main Camera").GetComponent<IAP>().BuyProductID("energy_11");
         }
 	}
 
@@ -248,7 +259,60 @@ public class GamePlayManager : MonoBehaviour {
         EventManager.StopListening("pieces_disappear_after_match_success", ShapesFall);
 
         var shapes = shapesManager.shapes;
+        int botRow = shapes.GetLength(0) - 1;
+        bool found = false;
+        float maxTime = 0f;
+        for (int col = 0; col < shapes.GetLength(1); col++)
+        {
+            for (int row = botRow ; row >= 0; row--)
+            {
+                Shape s = shapes[row, col];
+                if(s == null)
+                {
+                    found = true;
+                    // grab next non null-non empty piece and bring it down.
+                    if(row != 0)
+                    {
+                        Shape s1 = shapes[row - 1, col];
+                        if (s1 == null || s1.Shape_Type == Shape.ShapeType.EMPTY)
+                        {
+                            Debug.Log("piece is empty or null ");
+                        }
+                        else
+                        {
+                            //move the piece down
+                            shapes[row, col] = shapes[row - 1, col];
+                            Vector3 v = shapesManager.GetPositionOfBackgroundPiece(row, col);
+                            StartCoroutine(shapes[row, col].AnimatePosition(v, Constants.DEFAULT_SWAP_ANIMATION_DURATION, () => { }));
+                            shapes[row - 1, col] = null;
+                            float time = Constants.DEFAULT_SWAP_ANIMATION_DURATION;
+                            maxTime = Math.Max(time, maxTime);
+                        }
+                    }
+                    
+                    shapesManager.SpawnShapes(true);
+                }
+            }
+        }
+        StartCoroutine(WaitForTime_Action(maxTime, (bool _found) =>
+        {
+            Debug.Log("in recurs");
+            shapesManager.SpawnShapes();
+            if (_found)
+            {
+                ShapesFall();
+            }
+            else
+            {
+                Debug.Log("Done do something else");
+                CheckWholeBoard();
+            }
 
+        }, found));
+
+
+
+        /*
         float maxTime = 0f;
         bool found = false;
         int count = 0;
@@ -292,6 +356,7 @@ public class GamePlayManager : MonoBehaviour {
             }
 
         }, found));
+        */
     }
 
     

@@ -13,13 +13,15 @@ public static class SoundManager {
 
     public static void PlaySound(string item)
     {
+        Debug.Log("Play Sound " + item);
         if (!init)
             Init();
         AudioClip clip = Resources.Load<AudioClip>("Sounds/Effects/" + item);
         if (clip != null)
         {
             aSource.Stop();
-            aSource.PlayOneShot(clip);
+            aSource.clip = clip;
+            aSource.Play();
         }
     }
     

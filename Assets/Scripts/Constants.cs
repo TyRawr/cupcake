@@ -106,6 +106,19 @@ public static class Constants {
     public static readonly string ANIMATE_LEFT = "piece_animate_left";
     public static readonly string ANIMATE_END = "piece_animate_end";
 
+    // Modal UI Game Object Names
+    public static readonly string UI_Message_Modal = "Message_UI";
+    public static readonly string UI_Level = "Level_UI";
+    public static readonly string UI_Store_Modal = "Store_UI";
+    public static readonly string UI_Settings_Modal = "Settings_UI";
+
+    //Product IDs
+    public static readonly string PRODUCT_GOLD_10 = "gold_10";
+    public static readonly string PRODUCT_GOLD_50 = "gold_50";
+    public static readonly string PRODUCT_GOLD_110 = "gold_110";
+    public static readonly string PRODUCT_GOLD_250 = "gold_250";
+    public static readonly string PRODUCT_GOLD_750 = "gold_750";
+
     //Piece ID Mapping
     public static Dictionary<string, string> pieceIDMapping = new Dictionary<string, string>() {
         { "b", "blue" },
@@ -114,4 +127,6 @@ public static class Constants {
         { "r", "red" },
         { "y", "yellow" }
     };
+
+    
 }

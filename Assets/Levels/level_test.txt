@@ -1,11 +1,9 @@
 {
 	"grid":
 	[
-		"byggyy",
-		"yxgooy",
-		"yoobbr",
-		"robygg",
-		"rbbyog"
+		"yxgo",
+		"yoog",
+		"oyyg"
 	],
 	"margin": "center",
 	"margin_top": 20,

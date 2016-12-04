@@ -5,8 +5,6 @@ using System.Collections.Generic;
 
 public class EventManager : MonoBehaviour
 {
-    /*HERE
-     */
     public class ObjectEvent : UnityEvent<object> { }
     public class ObjectArrayEvent : UnityEvent<object[]> { }
 

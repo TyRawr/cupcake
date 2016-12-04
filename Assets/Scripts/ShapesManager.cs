@@ -171,6 +171,11 @@ public class ShapesManager : MonoBehaviour
                 backgroundPieces[row, col] = background;
                 SetBackgroundPieceDimensions(background, maxPieceDimension);
                 SetPositionFromBackgroundPiece_SetSize(row, col , maxPieceDimension);
+
+                if(!Constants.pieceIDMapping.ContainsKey(pieceID))
+                {
+                    background.GetComponentInChildren<Image>().enabled = false;
+                }
             }
         }
         EventManager.TriggerEvent(Constants.SHAPES_CREATED);
@@ -467,6 +472,18 @@ public class ShapesManager : MonoBehaviour
                 //Debug.Log("Col: " + col);
                 SpawnShape(row, col,dropIn);
             }
+            if (shapes[row, col].Shape_Type == Shape.ShapeType.EMPTY)
+            {
+                for (int r = 0; r < shapes.GetLength(0); r++)
+                {
+                    if(shapes[r,col] == null)
+                    {
+                        found = true;
+                        SpawnShape(r, col, dropIn);
+                        break;
+                    }
+                }
+            }
         }
         if (found)
             SoundManager.PlaySound("woody_click");
@@ -513,7 +530,8 @@ public class ShapesManager : MonoBehaviour
             for(int j = 0; j < shapes.GetLength(1); j++)
             {
                 if(shapes[i, j]) 
-                    s += shapes[i, j].gameObject.name;
+                    s += shapes[i, j].gameObject.name ;
+                s += "-";
             }
            
             Debug.Log(s);
