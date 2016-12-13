@@ -68,6 +68,7 @@ public static class UIManager {
             foreach(string productId in StoreManager.ProductIDs)
             {
                 Transform clone = (Transform)GameObject.Instantiate(productTemplate, productTemplate.position, Quaternion.identity);
+                
                 productBtns.Add(clone);
                 clone.transform.SetParent(products,false);
                 StoreManager.ProductDescription prodDesc = StoreManager.ProductInfoMap[productId];
@@ -76,13 +77,13 @@ public static class UIManager {
                 clone.FindChild("Product_Cost").gameObject.GetComponent<Text>().text = prodDesc.price;
                 clone.gameObject.SetActive(true);
                 //TODO set the icon
-
-                // TODO: buy the product ID on click
+                
                 Button.ButtonClickedEvent prodBuy = new Button.ButtonClickedEvent();
+                string s = productId;
                 prodBuy.AddListener(() => 
                 {
-                    Debug.Log("Buy Product: " + productId);
-                    GameObject.Find("Main Camera").GetComponent<IAP>().BuyProductID(productId);
+                    Debug.Log("Buy Product: " + s);
+                    StoreManager.BuyProductID(s);
                 });
                 clone.GetComponent<Button>().onClick = prodBuy;
             }

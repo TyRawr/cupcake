@@ -38,10 +38,7 @@ public class GamePlayManager : MonoBehaviour {
         {
             UIManager.Toggle();
         }
-        if(Input.GetKeyDown(KeyCode.T))
-        {
-            GameObject.Find("Main Camera").GetComponent<IAP>().BuyProductID("energy_11");
-        }
+
 	}
 
     IEnumerator WaitForTime_ThenTriggerEvent(float time , string eventName)
@@ -208,8 +205,6 @@ public class GamePlayManager : MonoBehaviour {
                 Debug.LogError("FUCK");
             }
         }
-
-
         var shapes = shapesManager.shapes;
         for (int row = 0; row < shapes.GetLength(0); row++)
         {
@@ -259,9 +254,11 @@ public class GamePlayManager : MonoBehaviour {
         EventManager.StopListening("pieces_disappear_after_match_success", ShapesFall);
 
         var shapes = shapesManager.shapes;
-        int botRow = shapes.GetLength(0) - 1;
+        int botRow = shapes.GetLength(0) - 1; // this is the bottom most row (number)
         bool found = false;
-        float maxTime = 0f;
+        float maxTime = 0f; // animation time (right now everything is set to a constant amount - all animations are the same length).
+
+        // Checks for shapes to bring down. Starting in the bottom left corner (iterative)
         for (int col = 0; col < shapes.GetLength(1); col++)
         {
             for (int row = botRow ; row >= 0; row--)

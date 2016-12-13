@@ -1,9 +1,9 @@
 {
 	"grid":
 	[
-		"yxgo",
+		"oogo",
 		"yoog",
-		"oyyg"
+		"ryyo"
 	],
 	"margin": "center",
 	"margin_top": 20,

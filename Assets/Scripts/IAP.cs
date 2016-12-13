@@ -8,15 +8,17 @@ public class IAP : MonoBehaviour, IStoreListener
 {
     private static IStoreController m_StoreController; // Reference to the Purchasing system.
     private static IExtensionProvider m_StoreExtensionProvider; // Reference to store-specific Purchasing
-
-    private static string kItem = "items_all"; // General handle for the consumable product.
-    private static string PRODUCT_ENERGY_10 = "energy_11";
-
-    public MonoBehaviour _Main;
+    private Dictionary<string, StoreManager.ProductDescription> productMap;
     void Start()
     {
         //ZPlayerPrefs.Initialize("----------------", SystemInfo.deviceUniqueIdentifier);
         // If we haven't set up the Unity Purchasing reference
+
+    }
+
+    public void Init(Dictionary<string, StoreManager.ProductDescription> _productMap)
+    {
+        productMap = _productMap;
         if (m_StoreController == null)
         {
             // Begin to configure our connection to Purchasing
@@ -26,6 +28,7 @@ public class IAP : MonoBehaviour, IStoreListener
 
     public void InitializePurchasing()
     {
+        
         // If we have already connected to Purchasing ...
         if (IsInitialized())
         {
@@ -38,7 +41,10 @@ public class IAP : MonoBehaviour, IStoreListener
 
         // Add a product to sell / restore by way of its identifier, associating the general identifier with its store-specific identifiers.
         //builder.AddProduct( kItem, ProductType.NonConsumable, new IDs() { { kGooglePlayItems,GooglePlay.Name } });// Continue adding the non-consumable product.
-        builder.AddProduct(PRODUCT_ENERGY_10, ProductType.Consumable);
+        foreach(KeyValuePair<string,StoreManager.ProductDescription> entry in productMap)
+        {
+            builder.AddProduct(entry.Key , entry.Value.productType);
+        }
         UnityPurchasing.Initialize(this, builder);
     }
 
@@ -48,13 +54,6 @@ public class IAP : MonoBehaviour, IStoreListener
         // Only say we are initialized if both the Purchasing references are set.
         return m_StoreController != null && m_StoreExtensionProvider != null;
     }
-
-    public void BuyNonConsumable()
-    {
-        // Buy the non-consumable product using its general identifier. Expect a response either through ProcessPurchase or OnPurchaseFailed asynchronously.
-        BuyProductID(kItem);
-    }
-
 
     public void BuyProductID(string productId)
     {
@@ -66,7 +65,7 @@ public class IAP : MonoBehaviour, IStoreListener
             if (IsInitialized())
             {
                 // ... look up the Product reference with the general product identifier and the Purchasing system's products collection.
-                Product product = m_StoreController.products.WithID(PRODUCT_ENERGY_10);
+                Product product = m_StoreController.products.WithID(productId);
 
                 // If the look up found a product for this device's store and that product is ready to be sold ...
                 if (product != null && product.availableToPurchase)
@@ -155,12 +154,52 @@ public class IAP : MonoBehaviour, IStoreListener
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
+        /*
+        Validate reciepts
+        https://docs.unity3d.com/Manual/UnityIAPValidatingReceipts.html
+        In App Purchase example https://github.com/voltrue2/in-app-purchase
+        bool validPurchase = true; // Presume valid for platforms with no R.V.
+        
+        // Unity IAP's validation logic is only included on these platforms.
+        #if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX
+        // Prepare the validator with the secrets we prepared in the Editor
+        // obfuscation window.
+        var validator = new CrossPlatformValidator(GooglePlayTangle.Data(),
+            AppleTangle.Data(), Application.bundleIdentifier);
+
+        try
+        {
+            // On Google Play, result has a single product ID.
+            // On Apple stores, receipts contain multiple products.
+            var result = validator.Validate(e.purchasedProduct.receipt);
+            // For informational purposes, we list the receipt(s)
+            Debug.Log("Receipt is valid. Contents:");
+            foreach (IPurchaseReceipt productReceipt in result)
+            {
+                Debug.Log(productReceipt.productID);
+                Debug.Log(productReceipt.purchaseDate);
+                Debug.Log(productReceipt.transactionID);
+            }
+        }
+        catch (IAPSecurityException)
+        {
+            Debug.Log("Invalid receipt, not unlocking content");
+            validPurchase = false;
+        }
+#endif
+
+        if (validPurchase)
+        {
+            // Unlock the appropriate content here.
+        }
+        */
         // A consumable product has been purchased by this user.
-        if (string.Equals(args.purchasedProduct.definition.id, PRODUCT_ENERGY_10, StringComparison.Ordinal))
+        if (productMap.ContainsKey(args.purchasedProduct.definition.id))
         {
             Debug.Log(string.Format("ProcessPurchase: PASS. Product: '{0}'", args.purchasedProduct.definition.id));
             //If the item has been successfully purchased, store the item for later use!
             PlayerPrefs.SetInt("Items_All", 1);
+            //args.purchasedProduct.receipt.
             //_Main.Invoke("Got_Items", 0); //Call a function in another script to play some effects.
         }
         else
