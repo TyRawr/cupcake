@@ -56,27 +56,25 @@ public class GamePlayManager : MonoBehaviour {
 
     void FireSwipeEvent(GameObject shapeObject , Constants.SwipeDirection swipeDirection)
     {
-        //if (blockEvent) return;
-        //blockEvent = true;
-        SoundManager.PlaySound("short_whoosh");
         Vector2 vec = shapesManager.GetRowColFromGameObject(shapeObject.transform.parent.gameObject);
         if (vec.x == -10f)
         {
-            Debug.LogError("Destroy");
-            GameObject.Destroy(shapeObject.transform.parent.gameObject);
+            Debug.LogError("Destroy Something is Seriously wrong ");
+            //GameObject.Destroy(shapeObject.transform.parent.gameObject);
             return;
         }
         int row = (int)vec.x;
         int col = (int)vec.y;
         // ask shape manager if can attemp to swap
         // this is dependent on if there is an edge or untouchable terrain
-        bool canSwipe = shapesManager.CanSwap(row, col, swipeDirection);
-        if (canSwipe)
+        bool validMove = shapesManager.IsValidMove(row, col, swipeDirection);
+        if (validMove)
         {
-            // Start animate
+            SoundManager.PlaySound("short_whoosh");
             Shape shape = shapesManager.GetShape(row, col);
             Vector3 position = shapesManager.GetPositionOfBackgroundPiece(row, col);
 
+            // get the other shape
             Vector2 nextRowCol = Constants.GetNextRowCol(swipeDirection, row, col);
             Shape nextShape = shapesManager.GetShape((int)nextRowCol.x, (int)nextRowCol.y);
             Vector3 nextPosition = shapesManager.GetPositionOfBackgroundPiece((int)nextRowCol.x, (int)nextRowCol.y);
@@ -84,9 +82,42 @@ public class GamePlayManager : MonoBehaviour {
             StartCoroutine(
                 shape.AnimatePosition(nextPosition, Constants.DEFAULT_SWAP_ANIMATION_DURATION, () => 
                 {
-                    //Debug.Log("HERE!!112312");
-                    //EventManager.TriggerEvent(Constants.ANIMATE_END, shapeObject);
-                    CheckMatch(row, col, (int)nextRowCol.x, (int)nextRowCol.y);
+                    //CheckMatch(row, col, (int)nextRowCol.x, (int)nextRowCol.y);
+                    //CheckWholeBoard();
+                    int nRow = (int)nextRowCol.x;
+                    int nCol = (int)nextRowCol.y;
+                    bool successfulSwap = shapesManager.SwapPieces(row, col, nRow, nCol);
+                    ShapesManager.CheckResult leftResult = shapesManager.CheckMatch(row, col);
+                    ShapesManager.CheckResult rightResult = shapesManager.CheckMatch(nRow, nCol);
+                    bool isMatch = CheckMatch(leftResult, rightResult);
+                    if (successfulSwap && !isMatch)
+                    {
+                        // also make a function
+                        SoundManager.PlaySound("button-29");
+                        Constants.SwipeDirection oppositeDirection = Constants.GetOppositeDirection(currentSwipeDirection);
+                        Shape currentShape = shapesManager.GetShape(row, col);
+                        Shape nextShape1 = shapesManager.GetShape(nRow, nCol);
+                        Vector3 currentPosition = shapesManager.GetPositionOfBackgroundPiece(row, col);
+                        Vector3 nextPosition1 = shapesManager.GetPositionOfBackgroundPiece(nRow, nCol);
+                        StartCoroutine(
+                            currentShape.AnimatePosition(nextPosition, Constants.DEFAULT_SWAP_ANIMATION_DURATION, () => {
+                                shapesManager.SwapPieces(row, col, nRow, nCol);
+                                blockEvent = false;
+                            })
+                        );
+                        
+                        StartCoroutine(
+                            nextShape1.AnimatePosition(currentPosition, Constants.DEFAULT_SWAP_ANIMATION_DURATION, () => {
+                                Debug.Log("DAH");
+                            })
+                        );
+                        
+                    }
+                    else
+                    {
+                        CheckWholeBoard();
+                    }
+
                 })
             );
             StartCoroutine(
@@ -146,52 +177,6 @@ public class GamePlayManager : MonoBehaviour {
         return isMatchL || isMatchR;
     }
 
-    void CheckMatch(int row, int col, int nRow, int nCol)
-    {
-        bool successfulSwap = shapesManager.SwapPieces(row, col, nRow, nCol);
-        ShapesManager.CheckResult leftResult = shapesManager.CheckMatch(row, col);
-        ShapesManager.CheckResult rightResult = shapesManager.CheckMatch(nRow, nCol);
-        bool isMatch = CheckMatch(leftResult, rightResult);
-        if (successfulSwap && !isMatch)
-        {
-            // also make a function
-            SoundManager.PlaySound("button-29");
-            Constants.SwipeDirection oppositeDirection = Constants.GetOppositeDirection(currentSwipeDirection);
-            Shape currentShape = shapesManager.GetShape(row, col);
-            Shape nextShape = shapesManager.GetShape(nRow, nCol);
-            Vector3 currentPosition = shapesManager.GetPositionOfBackgroundPiece(row, col);
-            Vector3 nextPosition = shapesManager.GetPositionOfBackgroundPiece(nRow, nCol);
-            StartCoroutine(
-                currentShape.AnimatePosition(nextPosition, Constants.DEFAULT_SWAP_ANIMATION_DURATION, () => {
-                    shapesManager.SwapPieces(row, col, nRow, nCol);
-                    blockEvent = false;
-                })
-            );
-            StartCoroutine(
-                nextShape.AnimatePosition(currentPosition, Constants.DEFAULT_SWAP_ANIMATION_DURATION, () => {
-                    //Debug.Log("Not Match Found 2");
-                })
-            );
-        }
-        else if (successfulSwap && isMatch)
-        {
-            // also make a function
-            List<Vector2> shapePositions = leftResult.GetMatchSet();
-            List<Vector2> shapePositionsRight = rightResult.GetMatchSet();
-            // get one list of Match Positions
-            foreach(Vector2 v in shapePositionsRight)
-            {
-                if(!shapePositions.Contains(v))
-                {
-                    shapePositions.Add(v);
-                }
-            }
-            //EventManager.StartListening("pieces_disappear_after_match_success", ShapesFall);
-            SoundManager.PlaySound("match");
-
-            Disappear_Driver(shapePositions);
-        }
-    }
 
     void CheckWholeBoard()
     {
@@ -215,36 +200,42 @@ public class GamePlayManager : MonoBehaviour {
                 //shape.transform.position = position;
             }
         }
+        List<Vector2> shapePositions = new List<Vector2>();
         for (int row = 0; row < shapes.GetLength(0); row++)
         {
             for (int col = 0; col < shapes.GetLength(1); col++)
             {
-                //Debug.Log("Check whole board: " + row + "  col: " + col);
+                Debug.Log("Check whole board: " + row + "  col: " + col);
                 ShapesManager.CheckResult result = shapesManager.CheckMatch(row, col);
                 if (result.IsMatch())
                 {
-                    //Debug.Log("successfulSwap && isMatch");
+                    Debug.Log("successfulSwap && isMatch");
                     SoundManager.PlaySound("match");
-                    List<Vector2> shapePositions = new List<Vector2>();
+                    List<Vector2> tmpShapePositions = new List<Vector2>();
                     if (result.IsHorizontalMatch())
                     {
-                        shapePositions = result.horizontalList;
+                        tmpShapePositions = result.horizontalList;
                     }
                     if (result.IsVerticalMatch())
                     {
-                        shapePositions = result.verticalList;
+                        tmpShapePositions = result.verticalList;
                     }
                     if (result.IsVerticalMatch() && result.IsHorizontalMatch())
                     {
-                        shapePositions = result.GetMatchSet();
+                        tmpShapePositions = result.GetMatchSet();
                     }
-                    //EventManager.StartListening("pieces_disappear_after_match_success", ShapesFall);
-
-                    Disappear_Driver(shapePositions);
-                    return;
+                    foreach(var shape in tmpShapePositions)
+                    {
+                        if(!shapePositions.Contains(shape))
+                        {
+                            shapePositions.Add(shape);
+                        }
+                    }
                 }
             }
         }
+        Disappear_Driver(shapePositions);
+        return;
     }
 
 

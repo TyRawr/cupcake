@@ -9,7 +9,7 @@ using System.Collections.Generic;
 public class ShapesManager : MonoBehaviour
 {
     public bool DebugLog = true;
-    public List<GameObject> prefabs;
+    public List<GameObject> prefabs12;
     public GameObject emptyPrefab;
     public GameObject backgroundPiece;
     public int gridHeight = 262;
@@ -63,7 +63,7 @@ public class ShapesManager : MonoBehaviour
             piecePrefabDict.Add(pMapping.id, pMapping.prefab);
         }
         EventManager.StartListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
-        LevelManager.ImportLevel("level_test");
+        //LevelManager.ImportLevel("level_test");
         gamePlayManager = this.GetComponent<GamePlayManager>();
     }
 
@@ -83,6 +83,28 @@ public class ShapesManager : MonoBehaviour
         return shapes[row, col];
     }
 
+    public Shape GetSwapShape(Constants.SwipeDirection direction, int row, int col)
+    {
+        int nextRow = row;
+        int nextCol = col;
+        switch(direction)
+        {
+            case Constants.SwipeDirection.UP:
+                nextRow -= 1;
+                break;
+            case Constants.SwipeDirection.RIGHT:
+                nextCol += 1;
+                break;
+            case Constants.SwipeDirection.DOWN:
+                nextRow += 1;
+                break;
+            case Constants.SwipeDirection.LEFT:
+                nextCol -= 1;
+                break;
+        }
+        return shapes[nextRow, nextCol];
+    }
+
     void LevelLoadingEnded()
     {
         if(DebugLog)
@@ -97,28 +119,26 @@ public class ShapesManager : MonoBehaviour
         shapes = new Shape[LevelManager.LevelAsText.Length, LevelManager.LevelAsText[0].Length];
         backgroundPieces = new GameObject[LevelManager.LevelAsText.Length, LevelManager.LevelAsText[0].Length];
 
-        float maxRowCount = LevelManager.LevelAsText[0].Length - 2;
-        float maxColCount = LevelManager.LevelAsText.Length;
-        float width = (maxRowCount) + ((maxRowCount - 1) * Constants.SIZE_MARGIN);
-        float height = (maxColCount ) + ((maxColCount - 1) * Constants.SIZE_MARGIN);
+        float rowCount = Constants.MAX_NUMBER_OF_GRID_ITEMS;// LevelManager.LevelAsText[0].Length;
+        float colCount = Constants.MAX_NUMBER_OF_GRID_ITEMS; //LevelManager.LevelAsText.Length;
+        float width = (rowCount) + ((rowCount - 1) * Constants.MIN_SIZE);
+        float height = (colCount ) + ((colCount - 1) * Constants.MIN_SIZE);
         float halfWidth = width / 2f;
         float halfHeight = height / 2f;
         Debug.Log("BH:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height);
         Debug.Log("BW:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width);
 
-        float gridHeight = GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height 
-            - LevelManager.gridDescription.margin_top - LevelManager.gridDescription.margin_bottom;
-        float gridWidth = GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width 
-            - LevelManager.gridDescription.margin_left - LevelManager.gridDescription.margin_right;
+        float gridHeight = GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height;
+        float gridWidth = GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width;
 
         //float maxGridDimension = Mathf.Min(gridWidth, gridHeight);
         float maxPieceDimension = Mathf.Min(
-            (gridHeight / LevelManager.LevelAsText.Length) , 
-            (gridWidth / LevelManager.LevelAsText[0].Length)
+            (gridHeight / Constants.MAX_NUMBER_OF_GRID_ITEMS) , 
+            (gridWidth / Constants.MAX_NUMBER_OF_GRID_ITEMS)
             );
 
-        pieceSize = maxPieceDimension;
-
+        maxPieceDimension = pieceSize = Mathf.Min(maxPieceDimension,Constants.MAX_SIZE);
+        Debug.Log("pieceSize" + pieceSize);
         float leftMargin = 0f;
         float topMargin = 0f;
         if (LevelManager.gridDescription.margin == "center")
@@ -159,9 +179,8 @@ public class ShapesManager : MonoBehaviour
 
                 }
                 float x = col * maxPieceDimension + maxPieceDimension/2;
-                x += LevelManager.gridDescription.margin_left + leftMargin;
+                x +=  leftMargin;
                 float y = gridHeight - (row * maxPieceDimension) - maxPieceDimension / 2 - topMargin;
-                y += LevelManager.gridDescription.margin_bottom;
                 float z = 0f;
 
                 GameObject background = (GameObject)GameObject.Instantiate(backgroundPiece, new Vector3(x, y, z), Quaternion.identity);
@@ -262,7 +281,7 @@ public class ShapesManager : MonoBehaviour
         return shapes[swapRow, swapCol];
     }
 
-    public bool CanSwap(int row, int col, Constants.SwipeDirection swipeDirection = Constants.SwipeDirection.RIGHT) {
+    public bool IsValidMove(int row, int col, Constants.SwipeDirection swipeDirection = Constants.SwipeDirection.RIGHT) {
         if (shapes[row, col] == null) return false;
         Shape swapShape = GetSwapShape(row, col, swipeDirection);
         bool canSwap = swapShape != null && swapShape.shape_type == Shape.ShapeType.NORMAL;
@@ -390,7 +409,7 @@ public class ShapesManager : MonoBehaviour
         List<Vector2> found_down_list = new List<Vector2>();
         List<Vector2> found_left_list = new List<Vector2>();
         List<Vector2> found_right_list = new List<Vector2>();
-        if (!shape) return new CheckResult(found_down_list,found_up_list);
+        if (!shape || shape is EmptyShape) return new CheckResult(found_down_list,found_up_list);
         string id = shape.ID;
         
         int col_itr = col + 1;
@@ -405,7 +424,7 @@ public class ShapesManager : MonoBehaviour
             found_left_list.Add(new Vector2(row, col_itr));
             col_itr--;
         }
-        //Debug.Log("CheckMatch:: " + id + " Left: " + found_left_list.Count + " Right: " + found_right_list.Count);
+        Debug.Log("CheckMatch:: " + id + " Left: " + found_left_list.Count + " Right: " + found_right_list.Count);
         int row_itr = row + 1;
         while (row_itr < shapes.GetLength(0) && shapes[row_itr, col] &&  shapes[row_itr, col].ID == id)
         {
@@ -492,7 +511,7 @@ public class ShapesManager : MonoBehaviour
     public void SpawnShape(int row, int col,bool dropIn = false)
     {
         Debug.Log("Spawn Shape: " + row + "  " + col);
-        GameObject go = GameObject.Instantiate(prefabs[Random.Range(0, piecePrefabs.Count)], new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+        GameObject go = GameObject.Instantiate(prefabs12[Random.Range(0, piecePrefabs.Count)], new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
         go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
         go.transform.localScale = Vector3.one;
         shapes[row, col] = go.GetComponentInChildren<Shape>();

@@ -2,20 +2,15 @@
 	"grid":
 	[
 	"bx",
-	"gx",
-	"bx",
-	"gx",
-	"bx",
-	"gx",
-	"bb",
-	"gb",
-	"gb"
+	"gx"
 	],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],
-	"order_to_fill":[],
-	"level_name":"",
-	"level_number":0,
+	"order_to_fill":[
+	"asdf"],
+	"level_name":"Level 1",
+	"level_id":"level_1",
+	"level_number":1,
 	"level_color_hex":"9DD5C0"
 }

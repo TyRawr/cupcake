@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public static class UIManager {
 
     static bool init = false;
-    static Transform message_ui, level_ui, settings_ui, store_ui;
+    static Transform message_ui, level_ui, settings_ui, store_ui, board_ui;
 
     static bool shown = false;
 
@@ -39,11 +39,15 @@ public static class UIManager {
             } else if(t.gameObject.name == Constants.UI_Settings_Modal)
             {
 
+            } else if (t.gameObject.name == Constants.UI_Board_Modal)
+            {
+                board_ui = t as Transform;
             }
         }
         SetupStoreModalButtons();
         SetupSettingsModalButtons();
         SetupLevelButtons();
+        SetupBoardUI();
     }
 
     private static void SetupStoreModalButtons()
@@ -88,6 +92,50 @@ public static class UIManager {
                 clone.GetComponent<Button>().onClick = prodBuy;
             }
             productTemplate.gameObject.SetActive(false);
+        }
+    }
+
+    private static void SetupBoardUI()
+    {
+        if (board_ui)
+        {
+            //Transform store = store_ui.FindChild("Store_Modal");
+            Transform board_modal = board_ui.FindChild("Board_Modal");
+            storeCloseButton = board_modal.FindChild("Button").gameObject.GetComponent<Button>();
+            Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
+            evnt.AddListener(() => { Debug.Log("Close Board Modal"); });
+            storeCloseButton.onClick = evnt;
+
+
+
+            Transform levels = board_modal.FindChild("Levels");
+            Transform levelTemplate = levels.FindChild("Level_Template");
+
+            List<LevelManager.LevelDescription> levelDescriptions = LevelManager.LoadLevels();
+
+            List<Transform> levelBtns = new List<Transform>();
+            foreach (LevelManager.LevelDescription levelDescription in levelDescriptions)
+            {
+                Transform clone = (Transform)GameObject.Instantiate(levelTemplate, levelTemplate.position, Quaternion.identity);
+
+                levelBtns.Add(clone);
+                clone.transform.SetParent(levels, false);
+                clone.name = levelDescription.level_name;
+                clone.FindChild("Level_Name").gameObject.GetComponent<Text>().text = levelDescription.level_name;
+                //clone.FindChild("Product_Cost").gameObject.GetComponent<Text>().text = prodDesc.price;
+                clone.gameObject.SetActive(true);
+                //TODO set the icon
+
+                Button.ButtonClickedEvent loadLevelEvent = new Button.ButtonClickedEvent();
+                string level_id = levelDescription.level_id;
+                loadLevelEvent.AddListener(() =>
+                {
+                    Debug.Log("Load Level: " + level_id);
+                    LevelManager.ImportLevel(level_id);
+                });
+                clone.GetComponent<Button>().onClick = loadLevelEvent;
+            }
+            levelTemplate.gameObject.SetActive(false);
         }
     }
 

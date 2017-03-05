@@ -73,13 +73,16 @@ public static class Constants {
     }
 
     //Animation times
-    public static readonly float DEFAULT_SWAP_ANIMATION_DURATION = .7f;
+    public static readonly float DEFAULT_SWAP_ANIMATION_DURATION = .3f;
 
     //Point values
     public static readonly int NORMAL_SHAPE_VALUE = 10;
 
     // Size of images
-    public static readonly int SIZE_MARGIN = 30;
+    public static readonly int MIN_SIZE = 30;
+    public static readonly float MAX_SIZE = 50f;
+
+    public static readonly int MAX_NUMBER_OF_GRID_ITEMS = 9; // like candy crush
 
     //Events
     public static readonly string SHAPES_CREATED = "shapes_created";
@@ -106,11 +109,15 @@ public static class Constants {
     public static readonly string ANIMATE_LEFT = "piece_animate_left";
     public static readonly string ANIMATE_END = "piece_animate_end";
 
+    //Device Rotation Event
+    public static readonly string ON_RECT_TRANSFORM_DIMENSIONS_CHANGE = "OnRectTransformDimensionsChange";
+
     // Modal UI Game Object Names
     public static readonly string UI_Message_Modal = "Message_UI";
     public static readonly string UI_Level = "Level_UI";
     public static readonly string UI_Store_Modal = "Store_UI";
     public static readonly string UI_Settings_Modal = "Settings_UI";
+    public static readonly string UI_Board_Modal = "Board_UI";
 
     //Product IDs
     public static readonly string PRODUCT_GOLD_10 = "gold_10";
