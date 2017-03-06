@@ -15,7 +15,7 @@
 	"points_to_win": 10,
 	"top_spawn_points":[0],
 	"order_to_fill":[],
-	"level_name":"",
+	"level_name":"Level Test",
 	"level_number":0,
 	"level_color_hex":"9DD5C0"
 }

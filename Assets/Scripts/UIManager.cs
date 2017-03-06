@@ -132,6 +132,8 @@ public static class UIManager {
                 {
                     Debug.Log("Load Level: " + level_id);
                     LevelManager.ImportLevel(level_id);
+                    //Toggle("board");
+                    board_ui.gameObject.SetActive(shown);
                 });
                 clone.GetComponent<Button>().onClick = loadLevelEvent;
             }
@@ -167,7 +169,7 @@ public static class UIManager {
     {
         if(level_ui)
         {
-            levelScoreButton = level_ui.FindChild("Score").gameObject.GetComponent<Button>();
+            levelScoreButton = level_ui.FindChild("Top_Left").gameObject.GetComponent<Button>();
             levelStoreButton = level_ui.FindChild("Store").gameObject.GetComponent<Button>();
             levelSettingsButton = level_ui.FindChild("Settings").gameObject.GetComponent<Button>();
 
@@ -202,6 +204,10 @@ public static class UIManager {
             // open the store
             store_ui.gameObject.SetActive(shown);
             StoreManager.OpenStore(store_ui.FindChild("General_Store_Modal"));
+        } else if(ui_id == "board")
+        {
+            //board_ui.gameObject.SetActive(shown);
+            //StoreManager.OpenStore(store_ui.FindChild("General_Store_Modal"));
         }
     }
 }

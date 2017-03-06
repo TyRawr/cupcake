@@ -1,0 +1,16 @@
+{
+	"grid":
+	[
+	"bx",
+	"gx"
+	],
+	"margin": "center",
+	"points_to_win": 10,
+	"top_spawn_points":[0],
+	"order_to_fill":[
+	"asdf"],
+	"level_name":"Level 4",
+	"level_id":"level_4",
+	"level_number":4,
+	"level_color_hex":"9DD5C0"
+}
