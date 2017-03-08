@@ -1,14 +1,17 @@
 {
 	"grid":
 	[
-	"bx",
-	"gx"
+		"bbg",
+		"bbg",
+		"gbb"
 	],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],
-	"order_to_fill":[
-	"asdf"],
+	"pieces":["red","blue","green"],
+	"order_to_fill": [
+		"1-pink-top"
+	],
 	"level_name":"Level 1",
 	"level_id":"level_1",
 	"level_number":1,

@@ -9,11 +9,12 @@ using System.Collections.Generic;
 public class ShapesManager : MonoBehaviour
 {
     public bool DebugLog = true;
-    public List<GameObject> prefabs12;
     public GameObject emptyPrefab;
     public GameObject backgroundPiece;
     public int gridHeight = 262;
     public GameObject[,] backgroundPieces;
+
+    public static ShapesManager instance;
 
     public enum PieceType
     {
@@ -53,18 +54,46 @@ public class ShapesManager : MonoBehaviour
 
     public void Start()
     {
-        Init();
+        //Init();
+        instance = this;
     }
 
-    public void Init()
+   public IEnumerator DestroyPieces() {
+        GameObject backgroundPieces = GameObject.Find("BackgroundPieces");
+        GameObject pieces = GameObject.Find("Pieces");
+
+        while( backgroundPieces.transform.childCount  > 0)
+        {
+            GameObject.Destroy(backgroundPieces.transform.GetChild(0).gameObject);
+            yield return new WaitForEndOfFrame();
+        }
+        while (pieces.transform.childCount > 0)
+        {
+            GameObject.Destroy(pieces.transform.GetChild(0).gameObject);
+            yield return new WaitForEndOfFrame();
+        }
+
+        yield return new WaitForEndOfFrame();
+
+    }
+
+    public void Init(string[] pieceIds)
     {
+        gamePlayManager = this.GetComponent<GamePlayManager>();
+        piecePrefabDict = new Dictionary<string, GameObject>();
+        //backgroundPieces = null;
+        
+
+        ICollection<string> pieceIdsCol = pieceIds;
         foreach (PieceMapping pMapping in piecePrefabs)
         {
-            piecePrefabDict.Add(pMapping.id, pMapping.prefab);
+            if(pieceIdsCol.Contains(pMapping.id))
+            {
+                piecePrefabDict.Add(pMapping.id, pMapping.prefab);
+            }
+            
         }
         EventManager.StartListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
-        //LevelManager.ImportLevel("level_test");
-        gamePlayManager = this.GetComponent<GamePlayManager>();
     }
 
     public void Update()
@@ -107,7 +136,8 @@ public class ShapesManager : MonoBehaviour
 
     void LevelLoadingEnded()
     {
-        if(DebugLog)
+        EventManager.StopListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
+        if (DebugLog)
             Debug.Log("Shapes Manager: LevelLoadingEnded");
         CreateShapesLevelFromLevelManager();
     }
@@ -511,7 +541,11 @@ public class ShapesManager : MonoBehaviour
     public void SpawnShape(int row, int col,bool dropIn = false)
     {
         Debug.Log("Spawn Shape: " + row + "  " + col);
-        GameObject go = GameObject.Instantiate(prefabs12[Random.Range(0, piecePrefabs.Count)], new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+
+        //TODO: Fix this garbage
+        PieceMapping mapping = piecePrefabs[Random.Range(0, piecePrefabs.Count)];
+
+        GameObject go = GameObject.Instantiate(mapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
         go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
         go.transform.localScale = Vector3.one;
         shapes[row, col] = go.GetComponentInChildren<Shape>();

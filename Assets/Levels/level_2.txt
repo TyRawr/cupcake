@@ -4,6 +4,7 @@
 	"gg",
 	"gg"
 	],
+	"pieces":["blue","green"],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],

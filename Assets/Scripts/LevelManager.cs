@@ -16,11 +16,14 @@ public class LevelManager : MonoBehaviour {
         public string level_id;
         public int level_number;
         public string level_color_hex;
+        public string[] pieces;
     }
 
     public bool DebugLog = false;
     public static string[] LevelAsText;
     public static LevelDescription gridDescription;
+    public static LevelManager instance;
+    public GameObject levelManagerGameObject;
 
     public static void ImportLevel (string levelID)
     {
@@ -29,8 +32,18 @@ public class LevelManager : MonoBehaviour {
         LevelDescription _gridDescription = JsonUtility.FromJson<LevelDescription>(level);
         gridDescription = _gridDescription;
         LevelAsText = gridDescription.grid;
+        ShapesManager.instance.Init(_gridDescription.pieces);
+        instance.StartCoroutine(instance.ClearShapes());
+       
+    }
+
+    IEnumerator ClearShapes()
+    {
+        Debug.Log("C;ear");
+        yield return ShapesManager.instance.DestroyPieces();
         EventManager.TriggerEvent(Constants.LEVEL_ENDED_LOADING_EVENT);
     }
+
 
     public static List<LevelDescription> LoadLevels()
     {
@@ -48,9 +61,16 @@ public class LevelManager : MonoBehaviour {
         return levels;
     }
 
+    public static void ClearLevel()
+    {
+
+    }
+
     void Start()
     {
-        if(DebugLog)
+        instance = this;
+        levelManagerGameObject = this.gameObject;
+        if (DebugLog)
             Debug.Log("LevelManager Start");
     }
 
