@@ -46,6 +46,7 @@ public static class UIManager {
         }
         SetupStoreModalButtons();
         SetupSettingsModalButtons();
+        SetupMapModalButtons();
         SetupLevelButtons();
         SetupBoardUI();
     }
@@ -131,9 +132,13 @@ public static class UIManager {
                 loadLevelEvent.AddListener(() =>
                 {
                     Debug.Log("Load Level: " + level_id);
-                    LevelManager.ImportLevel(level_id);
+                    LevelManager.ImportLevel(level_id, () => {
+                        bool isShown = board_ui.gameObject.activeInHierarchy;
+                        board_ui.gameObject.SetActive(!isShown);
+                        message_ui.gameObject.SetActive(false);
+                    });
                     //Toggle("board");
-                    board_ui.gameObject.SetActive(shown);
+                    
                 });
                 clone.GetComponent<Button>().onClick = loadLevelEvent;
             }
@@ -150,6 +155,21 @@ public static class UIManager {
             Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
             evnt.AddListener(() => { Toggle("settings"); });
             settingsCloseButton.onClick = evnt;
+        }
+    }
+
+    private static void SetupMapModalButtons()
+    {
+        if (level_ui)
+        {
+            Transform bottomLeft = level_ui.FindChild("Bottom_Left");
+            Button closeButton = bottomLeft.gameObject.GetComponent<Button>();
+
+            Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
+            evnt.AddListener(() => { Debug.Log("Open Map");
+                Toggle("map");
+            });
+            closeButton.onClick = evnt;
         }
     }
 
@@ -188,7 +208,25 @@ public static class UIManager {
         }
     }
 
-    
+    public static void UpdateMoveValue(int newCurrentMoveValue, int newMaxMoveValue)
+    {
+        if (!level_ui) return;
+
+        level_ui.FindChild("Top_Left").FindChild("Moves").FindChild("Moves_Value").GetComponent<Text>().text = newCurrentMoveValue + "/" + newMaxMoveValue;
+
+        
+    }
+
+    public static void UpdateScoreValue(int newCurrentMoveValue)
+    {
+        if (!level_ui) return;
+
+        level_ui.FindChild("Top_Right").FindChild("Score").FindChild("Score_Value").GetComponent<Text>().text = newCurrentMoveValue.ToString();
+
+
+    }
+
+
     public static void Toggle(string ui_id = "general_store" , string submenu = "")
     {
         Debug.Log("Togggle modal");
@@ -208,6 +246,10 @@ public static class UIManager {
         {
             //board_ui.gameObject.SetActive(shown);
             //StoreManager.OpenStore(store_ui.FindChild("General_Store_Modal"));
+        } else if(ui_id == "map")
+        {
+            board_ui.gameObject.SetActive(true);
+            board_ui.FindChild("Board_Modal").gameObject.SetActive(true);
         }
     }
 }

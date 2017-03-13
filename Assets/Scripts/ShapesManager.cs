@@ -52,6 +52,7 @@ public class ShapesManager : MonoBehaviour
     private GameObject grid;
     private GamePlayManager gamePlayManager;
 
+
     public void Start()
     {
         //Init();
@@ -140,6 +141,10 @@ public class ShapesManager : MonoBehaviour
         if (DebugLog)
             Debug.Log("Shapes Manager: LevelLoadingEnded");
         CreateShapesLevelFromLevelManager();
+        gamePlayManager.maxMoves = LevelManager.gridDescription.number_of_moves;
+        gamePlayManager.currentMoves = LevelManager.gridDescription.number_of_moves;
+        gamePlayManager.score = 0;
+        UIManager.UpdateMoveValue(LevelManager.gridDescription.number_of_moves, LevelManager.gridDescription.number_of_moves);
     }
 
     void CreateShapesLevelFromLevelManager()

@@ -1,12 +1,12 @@
 {
 	"grid":
 	[
-		"bbg",
-		"bbg",
-		"gbb"
+		"bbrg",
+		"bbrg",
+		"grbb"
 	],
 	"margin": "center",
-	"points_to_win": 10,
+	"points_to_win": 120,
 	"top_spawn_points":[0],
 	"pieces":["red","blue","green"],
 	"order_to_fill": [
@@ -15,5 +15,6 @@
 	"level_name":"Level 1",
 	"level_id":"level_1",
 	"level_number":1,
-	"level_color_hex":"9DD5C0"
+	"level_color_hex":"9DD5C0",
+	"number_of_moves": 3
 }

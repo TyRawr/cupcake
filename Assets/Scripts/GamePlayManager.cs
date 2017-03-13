@@ -15,6 +15,9 @@ public class GamePlayManager : MonoBehaviour {
     Constants.SwipeDirection currentSwipeDirection;
 
     ShapesManager shapesManager;
+    public int currentMoves = LevelManager.gridDescription.number_of_moves;
+    public int maxMoves = LevelManager.gridDescription.number_of_moves;
+    public int score = 0;
 
     void Awake()
     {
@@ -115,6 +118,8 @@ public class GamePlayManager : MonoBehaviour {
                     }
                     else
                     {
+                        this.currentMoves--;
+                        UIManager.UpdateMoveValue(this.currentMoves, this.maxMoves);
                         CheckWholeBoard();
                     }
 
@@ -235,6 +240,19 @@ public class GamePlayManager : MonoBehaviour {
             }
         }
         Disappear_Driver(shapePositions);
+        if(shapePositions.Count == 0)
+        {
+            if(currentMoves == 0)
+            {
+                Debug.LogError("End the Match");
+                UIManager.Toggle();
+            }
+        } else
+        {
+            //update score
+            score += shapePositions.Count * 10;
+            UIManager.UpdateScoreValue( score ); // multiple by amount per piece
+        }
         return;
     }
 
