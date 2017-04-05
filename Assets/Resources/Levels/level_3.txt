@@ -6,7 +6,7 @@
 	],
 	"pieces":["blue","green"],
 	"margin": "center",
-	"points_to_win": 10,
+	"points_to_win":  [120,240,300],
 	"top_spawn_points":[0],
 	"order_to_fill":[
 	"asdf"],

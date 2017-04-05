@@ -11,7 +11,7 @@ public class LevelManager : MonoBehaviour {
         public string[] grid;
         public string margin;
         public int[] top_spawn_points;
-        public int points_to_win;
+        public int[] points_to_win;
         public string order_to_fill;
         public string level_name;
         public string level_id;

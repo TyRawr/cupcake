@@ -6,7 +6,7 @@
 		"grbb"
 	],
 	"margin": "center",
-	"points_to_win": 120,
+	"points_to_win": [120,240,300],
 	"top_spawn_points":[0],
 	"pieces":["red","blue","green"],
 	"order_to_fill": [
@@ -16,5 +16,5 @@
 	"level_id":"level_1",
 	"level_number":1,
 	"level_color_hex":"9DD5C0",
-	"number_of_moves": 3
+	"number_of_moves": 10
 }

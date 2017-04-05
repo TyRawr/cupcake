@@ -217,15 +217,67 @@ public static class UIManager {
         
     }
 
-    public static void UpdateScoreValue(int newCurrentMoveValue)
+    public static void UpdateScoreValue( int newCurrentMoveValue)
     {
+        
         if (!level_ui) return;
+        int starOneValue = LevelManager.gridDescription.points_to_win[0];
+        int starTwoValue = LevelManager.gridDescription.points_to_win[1];
+        int starThreeValue = LevelManager.gridDescription.points_to_win[2];
 
-        level_ui.FindChild("Top_Right").FindChild("Score").FindChild("Score_Value").GetComponent<Text>().text = newCurrentMoveValue.ToString();
+        Debug.Log("UpdateScoreValue::" + newCurrentMoveValue);
+        Debug.Log("starOneValue::" + starOneValue);
+        Debug.Log("starTwoValue::" + starTwoValue);
+        Debug.Log("starThreeValue::" + starThreeValue);
+
+        GameObject starOne = level_ui.FindChild("Top_Right").FindChild("Score").FindChild("Star_1").gameObject;
+        GameObject starTwo = level_ui.FindChild("Top_Right").FindChild("Score").FindChild("Star_2").gameObject;
+        GameObject starThree = level_ui.FindChild("Top_Right").FindChild("Score").FindChild("Star_3").gameObject;
+
+        Image starOneImage = starOne.GetComponent<Image>();
+        Image starTwoImage = starTwo.GetComponent<Image>();
+        Image starThreeImage = starThree.GetComponent<Image>();
+
+        if (newCurrentMoveValue < starOneValue)
+        {
+            float f = (float)(newCurrentMoveValue) / (float)starOneValue;
+            Debug.Log("New Fill Amount = " + f);
+            starOneImage.fillAmount = f;
+        }
+        if (newCurrentMoveValue >= starOneValue && newCurrentMoveValue < starThreeValue)
+        {
+            starOneImage.fillAmount = 1f;
+            starTwoImage.fillAmount = ((float)newCurrentMoveValue - (float)starOneValue) / ((float)starTwoValue - (float)starOneValue);
+        }
+        if (newCurrentMoveValue >= starTwoValue)
+        {
+            starOneImage.fillAmount = 1f;
+            starTwoImage.fillAmount = 1f;
+            starThreeImage.fillAmount = ((float)newCurrentMoveValue - (float)starTwoValue) / ((float)starThreeValue - (float)starTwoValue);
+        }
 
 
     }
 
+    public static void SpawnGraphicForPiecePoints(int row, int col, int value)
+    {
+        GameObject backgroundPiece = ShapesManager.instance.backgroundPieces[row, col];
+        GameObject pointsGraphic = new GameObject("points");
+        pointsGraphic.transform.parent = backgroundPiece.transform.FindChild("Background").transform;
+        pointsGraphic.transform.localPosition = Vector3.zero;
+        Text pointsText = pointsGraphic.AddComponent<Text>();
+        pointsText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+        pointsText.text = value.ToString();
+        pointsText.alignment = TextAnchor.MiddleCenter;
+        pointsGraphic.transform.parent = level_ui.FindChild("Grid/Points");
+        //play sound here?
+        ShapesManager.instance.StartCoroutine(Utility.instance.WaitForTime_Action(.5f , ()=> {
+            if (!pointsGraphic)
+                Debug.LogError("Something bad happened with the points graphic object");
+            else 
+                GameObject.Destroy(pointsGraphic);
+        }));
+    }
 
     public static void Toggle(string ui_id = "general_store" , string submenu = "")
     {

@@ -18,6 +18,7 @@ public class GamePlayManager : MonoBehaviour {
     public int currentMoves = LevelManager.gridDescription.number_of_moves;
     public int maxMoves = LevelManager.gridDescription.number_of_moves;
     public int score = 0;
+    public static GamePlayManager instance;
 
     void Awake()
     {
@@ -32,14 +33,16 @@ public class GamePlayManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        
+        instance = this;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 	    if(Input.GetKeyDown(KeyCode.V))
         {
-            UIManager.Toggle();
+            Debug.Log("KEY CODE V");
+            //UIManager.Toggle();
+            StartCoroutine( Utility.instance.DestroyGameObject(GameObject.Find("GameObject").gameObject,() => { Debug.Log("AYE"); }) );
         }
 
 	}
@@ -164,18 +167,6 @@ public class GamePlayManager : MonoBehaviour {
         FireSwipeEvent(shapeObject, currentSwipeDirection);
     }
 
-    IEnumerator WaitForTime_Action(float time , Action action)
-    {
-        yield return new WaitForSeconds(time);
-        action();
-    }
-
-    IEnumerator WaitForTime_Action(float time, Action<bool> action , bool val)
-    {
-        yield return new WaitForSeconds(time);
-        action(val);
-    }
-
     bool CheckMatch(ShapesManager.CheckResult leftResult, ShapesManager.CheckResult rightResult) {
         bool isMatchL = leftResult.IsMatch();
         bool isMatchR = rightResult.IsMatch();
@@ -250,7 +241,7 @@ public class GamePlayManager : MonoBehaviour {
         } else
         {
             //update score
-            score += shapePositions.Count * 10;
+            score += shapePositions.Count * Constants.NORMAL_SHAPE_VALUE; // TODO get shape value here
             UIManager.UpdateScoreValue( score ); // multiple by amount per piece
         }
         return;
@@ -300,7 +291,7 @@ public class GamePlayManager : MonoBehaviour {
                 }
             }
         }
-        StartCoroutine(WaitForTime_Action(maxTime, (bool _found) =>
+        StartCoroutine(Utility.instance.WaitForTime_Action(maxTime, (bool _found) =>
         {
             Debug.Log("in recurs");
             shapesManager.SpawnShapes();
@@ -374,6 +365,7 @@ public class GamePlayManager : MonoBehaviour {
         {
             int matchRow = (int)v.x;
             int matchCol = (int)v.y;
+            UIManager.SpawnGraphicForPiecePoints(matchRow, matchCol, Constants.NORMAL_SHAPE_VALUE);
             Shape shape = shapesManager.GetShape(matchRow, matchCol);
             //shapesManager.RemoveShape(matchRow,matchCol);
             //StartCoroutine(ShapesFall_Driver());
