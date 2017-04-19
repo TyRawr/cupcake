@@ -4,30 +4,30 @@ using System.Collections.Generic;
 namespace AssemblyCSharp
 {
 	
-	public class GameCell 
+	public class CellModel 
 	{
 		//maybe these?
-		private GameCell cellUp;
-		private GameCell cellRight;
-		private GameCell cellLeft;
-		private GameCell cellDown;
+		private CellModel cellUp;
+		private CellModel cellRight;
+		private CellModel cellLeft;
+		private CellModel cellDown;
 
 		public GamePiece piece;
 		private int row;
 		private int col;
 		private CellState state;
 
-		public GameCell (int row, int col)
+		public CellModel (int row, int col)
 		{
 			this.row = row;
 			this.col = col;
 		}
 
-		public Stack<List<GameCell>> Matches () 
+		public Stack<List<CellModel>> Matches () 
 		{
-			Stack<List<GameCell>> matches = new Stack<> ();
-			List<GameCell> colMatches = MatchCol ();
-			List<GameCell> rowMatches = MatchRow ();
+			Stack<List<CellModel>> matches = new Stack<> ();
+			List<CellModel> colMatches = MatchCol ();
+			List<CellModel> rowMatches = MatchRow ();
 			if (colMatches.Count > 2)
 				matches.Push (colMatches);
 			if (rowMatches.Count > 2)
@@ -35,27 +35,27 @@ namespace AssemblyCSharp
 			return matches;
 		}
 
-		private List<GameCell> MatchCol () 
+		private List<CellModel> MatchCol () 
 		{
-			List<GameCell> cells = new List<GameCell>();
+			List<CellModel> cells = new List<CellModel>();
 			cells.Add (this);
 			if (cellUp != null) cells.AddRange(cellUp.MatchDirection(this.piece, Constants.Direction.UP));
 			if (cellDown != null) cells.AddRange (cellDown.MatchDirection (this.piece, Constants.Direction.Down));
 			return cells;
 		}
 
-		private List<GameCell> MatchRow () 
+		private List<CellModel> MatchRow () 
 		{
-			List<GameCell> cells = new List<GameCell>();
+			List<CellModel> cells = new List<CellModel>();
 			cells.Add (this);
 			if (cellRight != null) cells.AddRange (cellRight.MatchDirection(this.piece, Constants.Direction.Right));
 			if (cellLeft != null) cells.AddRange (cellLeft.MatchDirection (this.piece, Constants.Direction.Left));
 			return cells;
 		}
 
-		private List<GameCell> MatchDirection(GamePiece gamePiece, Constants.Direction direction) 
+		private List<CellModel> MatchDirection(GamePiece gamePiece, Constants.Direction direction) 
 		{
-			List<GameCell> cells = new List<GameCell>();
+			List<CellModel> cells = new List<CellModel>();
 			if (this.piece == gamePiece) {
 				cells.Add(this);
 				switch(direction)

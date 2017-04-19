@@ -13,8 +13,6 @@ namespace AssemblyCSharp
 		private CellModel selectedCell;
 		private CellModel destinationCell;
 
-		public Board board;
-
 		public BoardModel()
 		{
 			
