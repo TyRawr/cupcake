@@ -374,15 +374,20 @@ public class GamePlayManager : MonoBehaviour {
                 shape.AnimateDisappear(Constants.DEFAULT_SWAP_ANIMATION_DURATION, () =>
                 {
                     count++;
+                    Utility.instance.StartCoroutine( Utility.instance.DestroyGameObject(shape.gameObject , 
+                        () => {
+                            shapesManager.shapes[matchRow, matchCol] = null;
+                            if (count == desiredCount)
+                            {
+                                //EventManager.TriggerEvent("pieces_disappear_after_match_success");
+                                Debug.Log("Disappear_Driver ShapesFall");
+                                ShapesFall();
+                            }
+                        }
+                    ));
                     // could there be a race condition here?
-                    shapesManager.shapes[matchRow, matchCol] = null;
-                    GameObject.Destroy(shape.gameObject);
-                    if (count == desiredCount)
-                    {
-                        //EventManager.TriggerEvent("pieces_disappear_after_match_success");
-                        Debug.Log("Disappear_Driver ShapesFall");
-                        ShapesFall();
-                    }
+                    
+
                 })
             );
             
