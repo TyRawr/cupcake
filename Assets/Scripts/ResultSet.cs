@@ -5,7 +5,7 @@ namespace AssemblyCSharp
 {
 	public class ResultSet
 	{
-
+		
 		private Stack<List<CellResult>> matches;
 		private List<List<GamePiece>> columns;
 
