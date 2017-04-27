@@ -142,7 +142,8 @@ public static class Constants {
 		PURPLE,
 		YELLOW,
 		BLUE,
-		RED
+		RED,
+		NULL
 	}
 
 	public enum PieceType 
@@ -150,7 +151,7 @@ public static class Constants {
 		NORMAL,
 		STRIPED,
 		DOTTED,
-		CANDLE,
+		CANDLE
 	}	
     
 }

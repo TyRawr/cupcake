@@ -8,9 +8,11 @@ public class BoardModel
 {
 
 	private CellModel[,] gameBoard;
-	private int score;
+	private int score = 0;
+	private int multiplier = 0;
 	private List<List<CellModel>> matches;
 	private HashSet<CellModel> matched;
+
 	public BoardModel(LevelManager.LevelDescription levelDescription)
 	{
 		Debug.Log("Create Board Model");
@@ -34,9 +36,97 @@ public class BoardModel
 			}
 		}
 
+		matches = new List<List<CellModel>>();
+
+		PrintGameBoard();
+		SwapResult swapResult = SwapPiece(1,2,Direction.DOWN);
+		Debug.Log(swapResult);
+		PrintGameBoard();
+		PrintCellResults(EvaluateMatches());
+	}
+
+	public void PrintGameBoard() {
+		string prettyprint = "";
+		for(int row = 0; row < gameBoard.GetLength(0); row++) {
+			for(int col = 0; col < gameBoard.GetLength(1); col++) {
+				prettyprint += gameBoard[row,col].piece.GetColor() + "\t";
+			}
+			prettyprint += "\n";
+		}
+		Debug.Log(prettyprint);
+	}
+
+	public void PrintCellResults(CellResult[,] cellResult) {
+		string prettyprint = "";
+		for(int row = 0; row < cellResult.GetLength(0); row++) {
+			for(int col = 0; col < cellResult.GetLength(1); col++) {
+				String s = "0";
+				CellResult result = cellResult[row,col];
+				if(result != null) {
+					s = result.GetPoints().ToString();
+				}
+				prettyprint += s + "\t";
+			}
+			prettyprint += "\n";
+		}
+		Debug.Log(prettyprint);
+	}
+
+	public void CheckMatch(CellModel cellModel)
+	{
+		int row = cellModel.GetRow(); 
+		int col = cellModel.GetCol();
+		Constants.PieceColor color = cellModel.piece.GetColor();
+
+		List<CellModel> horizontal = new List<CellModel> ();
+		List<CellModel> vertical = new List<CellModel> ();
+		horizontal.Add (cellModel);
+		vertical.Add (cellModel);
+
+		// Check HORIZONTAL
+		// Check Right
+		int col_itr = col + 1;
+		while(col_itr < gameBoard.GetLength(1) && gameBoard[row, col_itr].GetColor() == color)
+		{
+			horizontal.Add(gameBoard[row, col_itr]);
+			col_itr++;
+		}
+		// Check Left
+		col_itr = col - 1;
+		while (col_itr >= 0 && gameBoard[row,col_itr].GetColor() == color)
+		{
+			horizontal.Add(gameBoard[row, col_itr]);
+			col_itr--;
+		}
+
+		// Check VERTICAL
+		// Check Down
+		int row_itr = row + 1;
+		while (row_itr < gameBoard.GetLength(0) && gameBoard[row_itr,col].piece.GetColor() == color)
+		{
+			vertical.Add(gameBoard[row_itr, col]);
+			row_itr++;
+		}
+		// Check Up
+		row_itr = row - 1;
+		while (row_itr >= 0 && gameBoard[row_itr,col].GetColor() == color)
+		{
+			vertical.Add(gameBoard[row_itr, col]);
+			row_itr--;
+		}
+
+		// Add to Matches
+		if (horizontal.Count > 2) 
+		{
+			matches.Add(horizontal);
+		}
+		if (vertical.Count > 2) 
+		{
+			matches.Add(vertical);
+		}
 	}
 		
-	public SwapResult swapPiece (int row, int col, Direction direction)
+	public SwapResult SwapPiece (int row, int col, Direction direction)
 	{
 		int nextRow = row;
 		int nextCol = col;
@@ -78,19 +168,8 @@ public class BoardModel
 		selectedCell.piece = tempPiece;
 
 		// Find Matches
-		List<List<CellModel>> selectedMatches = selectedCell.GetMatches ();
-		List<List<CellModel>> destinationMatches = destinationCell.GetMatches (); 
-
-
-		for (int index = 0; index < selectedMatches.Count; index++) 
-		{	
-			matches.Add (selectedMatches[index]);
-		}
-
-		for (int index = 0; index < destinationMatches.Count; index++) 
-		{
-			matches.Add (destinationMatches [index]);
-		}
+		CheckMatch(selectedCell);
+		CheckMatch(destinationCell);
 
 		// FAILURE: Revert Swap
 		if (matches.Count == 0)
@@ -124,40 +203,62 @@ public class BoardModel
 	 * 	Iterate calculated matches (from swap or evaluation)
 	 * 
 	 */
-	private List<List<CellResult>> evaluateMatches () {
-		List<List<CellResult>> results = new List<List<CellResult>> ();	
-		int multiplier = 0;
+	private CellResult[,] EvaluateMatches () {
 
-		// Pop List for each match
+		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];	
+
+		// List for each match
 		for (int index = 0; index < matches.Count; index++) 
 		{
 			List<CellModel> match = matches[index];
-			List<CellResult> result = new List<CellResult> ();
-//			PieceModel piece = null;
-			int points = 0;
 
-			// Handle First Cell for Special Pieces
+			// Handle First Cell
 			CellModel cell = match [0];
-			points = cell.EvaluateMatch (multiplier++);
+			int points = cell.EvaluateMatch (multiplier);
+			int row = cell.GetRow();
+			int col = cell.GetCol();
 			score += points;
 //			cell.AddSpecialPiece (match.Count);
-			result.Add (new CellResult(cell.GetRow(), cell.GetCol(), points));
-			matched.Add (cell);
+			if(results[row,col] == null) {
+//				Debug.Log("Found null CellResult location");
+				results[row,col] = new CellResult(points);
+			} else {
+				results[row,col].AddPoints(points);
+			}
 
-			// Iterate Over match cells
+			// Iterate over other cells
 			for (int jndex = 1; jndex < match.Count; jndex ++) 
 			{
 				cell = match [jndex];
-				points = cell.EvaluateMatch (multiplier++);
+				row = cell.GetRow();
+				col = cell.GetCol();
+				points = cell.EvaluateMatch (multiplier);
 				score += points;
-				result.Add (new CellResult(cell.GetRow(), cell.GetCol(), points));
-				matched.Add (cell);
+				//			cell.AddSpecialPiece (match.Count);
+				if(results[row,col] == null) {
+//					Debug.Log("Found null CellResult location");
+					results[row,col] = new CellResult(points);
+				} else {
+					results[row,col].AddPoints(points);
+				}
 			}
-			
-			results.Add (result);
 		}
 		return results;
 	}
+
+	private void DestroyPieces() {
+
+	}
+
+	private void DropPieces() {
+
+	}
+
+	private void SpawnPiece() {
+		
+	}
+
+
 }
 
 public enum SwapResult

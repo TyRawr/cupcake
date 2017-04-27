@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 
 public class CellModel 
@@ -24,67 +25,12 @@ public class CellModel
 		this.col = col;
 	}
 
-	public List<List<CellModel>> GetMatches () 
-	{
-		List<List<CellModel>> matches = new List<List<CellModel>> ();
-		List<CellModel> colMatches = MatchCol ();
-		List<CellModel> rowMatches = MatchRow ();
-		if (colMatches.Count > 2)
-			matches.Add (colMatches);
-		if (rowMatches.Count > 2)
-			matches.Add (rowMatches);
-		return matches;
-	}
-
 	public int EvaluateMatch (int multiplier) {
-		this.piece = null;
 		return 10 + (10 * multiplier);
 	}
 
 	public void AddSpecialPiece () {
 
-	}
-
-	private List<CellModel> MatchCol () 
-	{
-		List<CellModel> cells = new List<CellModel>();
-		cells.Add (this);
-		if (cellUp != null) cells.AddRange (cellUp.MatchDirection(this.piece.GetColor(), Direction.UP));
-		if (cellDown != null) cells.AddRange (cellDown.MatchDirection (this.piece.GetColor(), Direction.DOWN));
-		return cells;
-	}
-
-	private List<CellModel> MatchRow () 
-	{
-		List<CellModel> cells = new List<CellModel>();
-		cells.Add (this);
-		if (cellRight != null) cells.AddRange (MatchDirection(this.piece.GetColor(), Direction.RIGHT));
-		if (cellLeft != null) cells.AddRange (MatchDirection (this.piece.GetColor(), Direction.LEFT));
-		return cells;
-	}
-
-	public List<CellModel> MatchDirection(Constants.PieceColor color, Direction direction) 
-	{
-		List<CellModel> cells = new List<CellModel>();
-		if (this.piece.GetColor() == color) {
-			cells.Add(this);
-			switch(direction)
-			{
-			case Direction.UP:
-				if (cellUp != null) cells.AddRange(cellUp.MatchDirection(color, direction));
-				break;
-			case Direction.RIGHT:
-				if (cellRight != null) cells.AddRange(cellRight.MatchDirection(color, direction));
-				break;
-			case Direction.DOWN:
-				if (cellDown != null) cells.AddRange(cellDown.MatchDirection(color, direction));
-				break;
-			case Direction.LEFT:
-						if (cellLeft != null) cells.AddRange(cellLeft.MatchDirection(color, direction));
-				break;
-			}
-		}
-		return cells;
 	}
 
 	public bool IsSwappable() {
@@ -104,6 +50,19 @@ public class CellModel
 	public int GetCol() 
 	{
 		return this.col;
+	}
+
+	/*
+	 * Returns Piece Color or Null
+	 */
+	public Constants.PieceColor GetColor() 
+	{
+		if (this.piece != null) {
+			return this.piece.GetColor();
+		} else {
+			Debug.Log("CellModel piece is null.");
+			return Constants.PieceColor.NULL;
+		}
 	}
 }
 

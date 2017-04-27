@@ -26,6 +26,7 @@ public class LevelManager : MonoBehaviour {
     public static LevelDescription levelDescription;
     public static LevelManager instance;
     public GameObject levelManagerGameObject;
+	public static BoardModel boardModel;
 
     public static void ImportLevel (string levelID, UnityAction callbackForWhenLevelDoneLoading )
     {
@@ -35,7 +36,8 @@ public class LevelManager : MonoBehaviour {
         LevelDescription _gridDescription = JsonUtility.FromJson<LevelDescription>(level);
         levelDescription = _gridDescription;
         LevelAsText = levelDescription.grid;
-		BoardModel bm = new BoardModel(levelDescription);
+		// be sure to destroy all stuff
+		boardModel = new BoardModel(levelDescription);
         //ShapesManager.instance.Init(_gridDescription.pieces);
         //instance.StartCoroutine(instance.ClearShapes(callbackForWhenLevelDoneLoading));
        

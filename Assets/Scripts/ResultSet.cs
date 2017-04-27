@@ -4,16 +4,16 @@ using System.Collections.Generic;
 public class ResultSet
 {
 	
-	private Stack<List<CellResult>> matches;
+	private List<List<CellResult>> matches;
 	private List<List<PieceModel>> columns;
 
-	public ResultSet (Stack<List<CellResult>> matches, List<List<PieceModel>> columns)
+	public ResultSet (List<List<CellResult>> matches, List<List<PieceModel>> columns)
 	{
 		this.matches = matches;
 		this.columns = columns;
 	}
 
-	public Stack<List<CellResult>> GetMatches () {
+	public List<List<CellResult>> GetMatches () {
 		return matches; 
 	}
 
@@ -24,26 +24,18 @@ public class ResultSet
 }
 
 public class CellResult {
-	private int row;
-	private int col;
 	private int points;
 
-	public CellResult (int row, int col, int point) {
-		this.row = row;
-		this.col = col;
-		this.points = points;
+	public CellResult (int point) {
+		this.points = point;
 	}
 
-	private int GetRow() {
-		return row;
-	}
-
-	private int GetCol() {
-		return col;
-	}
-
-	private int GetPoints() {
+	public int GetPoints() {
 		return points;
+	}
+
+	public void AddPoints(int pointsToAdd) {
+		this.points += pointsToAdd;
 	}
 
 }
