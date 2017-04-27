@@ -1,7 +1,5 @@
 ﻿using System;
 
-namespace AssemblyCSharp
-{
 	public class PieceModel
 	{
 		private PieceColor color;
@@ -11,6 +9,15 @@ namespace AssemblyCSharp
 		{
 			this.type = type;
 			this.color = color;
+		}
+		// GETTERS
+
+		public PieceColor GetColor () {
+			return this.color;
+		}
+
+		public PieceType GetPieceType () {
+			return this.type;
 		}
 	}
 
@@ -31,13 +38,4 @@ namespace AssemblyCSharp
 		CANDLE,
 	}	
 
-	// GETTERS
-
-	public PieceColor GetColor () {
-		return this.color;
-	}
-	public PieceType GetType () {
-		return this.type;
-	}
-}
 
