@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 
 public class BoardModel
@@ -10,9 +11,29 @@ public class BoardModel
 	private int score;
 	private List<List<CellModel>> matches;
 	private HashSet<CellModel> matched;
-	public BoardModel()
+	public BoardModel(LevelManager.LevelDescription levelDescription)
 	{
-		
+		Debug.Log("Create Board Model");
+		string[] grid = levelDescription.grid;
+		this.gameBoard = new CellModel[grid.Length,grid[0].Length];
+		// iterate through the grid
+		for (int row = 0; row < grid.Length; row++)
+		{
+			//Debug.Log(LevelManager.LevelAsText[y]);
+			for(int col = 0; col < grid[row].Length; col++)
+			{
+				string pieceColorID = grid[row][col].ToString();
+
+				CellModel cellModel = new CellModel(row, col);
+				gameBoard[row,col] = cellModel;
+
+				PieceModel pieceModel = new PieceModel(pieceColorID);
+				cellModel.piece = pieceModel;
+				
+				Debug.Log("pieceID:: " + pieceColorID);
+			}
+		}
+
 	}
 		
 	public SwapResult swapPiece (int row, int col, Direction direction)
@@ -112,7 +133,7 @@ public class BoardModel
 		{
 			List<CellModel> match = matches[index];
 			List<CellResult> result = new List<CellResult> ();
-			PieceModel piece = null;
+//			PieceModel piece = null;
 			int points = 0;
 
 			// Handle First Cell for Special Pieces

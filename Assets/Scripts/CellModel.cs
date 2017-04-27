@@ -63,7 +63,7 @@ public class CellModel
 		return cells;
 	}
 
-	public List<CellModel> MatchDirection(PieceColor color, Direction direction) 
+	public List<CellModel> MatchDirection(Constants.PieceColor color, Direction direction) 
 	{
 		List<CellModel> cells = new List<CellModel>();
 		if (this.piece.GetColor() == color) {

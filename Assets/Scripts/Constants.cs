@@ -127,13 +127,30 @@ public static class Constants {
     public static readonly string PRODUCT_GOLD_750 = "gold_750";
 
     //Piece ID Mapping
-    public static Dictionary<string, string> pieceIDMapping = new Dictionary<string, string>() {
-        { "b", "blue" },
-        { "g", "green" },
-        { "o", "orange" },
-        { "r", "red" },
-        { "y", "yellow" }
+	public static Dictionary<string, PieceColor> PieceIDMapping = new Dictionary<string, PieceColor>() {
+		{ "b", PieceColor.BLUE },
+		{ "g", PieceColor.GREEN },
+		{ "o", PieceColor.ORANGE },
+		{ "r", PieceColor.RED },
+		{ "y", PieceColor.YELLOW }
     };
+	public enum PieceColor 
+	{
+		PINK,
+		ORANGE,
+		GREEN,
+		PURPLE,
+		YELLOW,
+		BLUE,
+		RED
+	}
 
+	public enum PieceType 
+	{
+		NORMAL,
+		STRIPED,
+		DOTTED,
+		CANDLE,
+	}	
     
 }

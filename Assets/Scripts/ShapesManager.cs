@@ -141,10 +141,10 @@ public class ShapesManager : MonoBehaviour
         if (DebugLog)
             Debug.Log("Shapes Manager: LevelLoadingEnded");
         CreateShapesLevelFromLevelManager();
-        gamePlayManager.maxMoves = LevelManager.gridDescription.number_of_moves;
-        gamePlayManager.currentMoves = LevelManager.gridDescription.number_of_moves;
+        gamePlayManager.maxMoves = LevelManager.levelDescription.number_of_moves; 
+        gamePlayManager.currentMoves = LevelManager.levelDescription.number_of_moves;
         gamePlayManager.score = 0;
-        UIManager.UpdateMoveValue(LevelManager.gridDescription.number_of_moves, LevelManager.gridDescription.number_of_moves);
+        UIManager.UpdateMoveValue(LevelManager.levelDescription.number_of_moves, LevelManager.levelDescription.number_of_moves);
     }
 
     void CreateShapesLevelFromLevelManager()
@@ -176,7 +176,7 @@ public class ShapesManager : MonoBehaviour
         Debug.Log("pieceSize" + pieceSize);
         float leftMargin = 0f;
         float topMargin = 0f;
-        if (LevelManager.gridDescription.margin == "center")
+        if (LevelManager.levelDescription.margin == "center")
         {
             if(maxPieceDimension * LevelManager.LevelAsText.Length < gridHeight)
             {
@@ -196,8 +196,8 @@ public class ShapesManager : MonoBehaviour
             for(int col = 0; col < LevelManager.LevelAsText[row].Length; col++)
             {
                 string pieceID = LevelManager.LevelAsText[row][col].ToString();
-                if (Constants.pieceIDMapping.ContainsKey(pieceID)) {
-                    string prefabID = Constants.pieceIDMapping[pieceID];
+                if (Constants.PieceIDMapping.ContainsKey(pieceID)) {
+					string prefabID = "";//Constants.PieceIDMapping[pieceID];
                     GameObject piecePrefab = piecePrefabDict[prefabID];
                     GameObject go = GameObject.Instantiate(piecePrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
                     go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
@@ -226,7 +226,7 @@ public class ShapesManager : MonoBehaviour
                 SetBackgroundPieceDimensions(background, maxPieceDimension);
                 SetPositionFromBackgroundPiece_SetSize(row, col , maxPieceDimension);
 
-                if(!Constants.pieceIDMapping.ContainsKey(pieceID))
+                if(!Constants.PieceIDMapping.ContainsKey(pieceID))
                 {
                     background.GetComponentInChildren<Image>().enabled = false;
                 }
@@ -255,7 +255,7 @@ public class ShapesManager : MonoBehaviour
 
     void CreateSpawnPointFromLevelManager()
     {
-        int[] spawnPoints = LevelManager.gridDescription.top_spawn_points;
+        int[] spawnPoints = LevelManager.levelDescription.top_spawn_points;
         //make function out of this
         GameObject shapeObject = backgroundPieces[0, spawnPoints[0]].gameObject;
         RectTransform rectTransform = shapeObject.GetComponent<RectTransform>();

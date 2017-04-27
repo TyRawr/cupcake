@@ -1,41 +1,26 @@
 ﻿using System;
 
-	public class PieceModel
+public class PieceModel
+{
+	private Constants.PieceColor color;
+	private Constants.PieceType type;
+
+	public PieceModel (string colorID, Constants.PieceType type = Constants.PieceType.NORMAL)
 	{
-		private PieceColor color;
-		private PieceType type;
+		this.color = Constants.PieceIDMapping[colorID];
+		this.type = type;
+	}
+	// GETTERS
 
-		public PieceModel (PieceType type, PieceColor color)
-		{
-			this.type = type;
-			this.color = color;
-		}
-		// GETTERS
-
-		public PieceColor GetColor () {
-			return this.color;
-		}
-
-		public PieceType GetPieceType () {
-			return this.type;
-		}
+	public Constants.PieceColor GetColor () {
+		return this.color;
 	}
 
-	public enum PieceColor 
-	{
-		PINK,
-		ORANGE,
-		GREEN,
-		PURPLE,
-		YELLOW
+	public Constants.PieceType GetPieceType () {
+		return this.type;
 	}
+}
 
-	public enum PieceType 
-	{
-		NORMAL,
-		STRIPED,
-		DOTTED,
-		CANDLE,
-	}	
+
 
 

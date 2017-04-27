@@ -15,8 +15,8 @@ public class GamePlayManager : MonoBehaviour {
     Constants.SwipeDirection currentSwipeDirection;
 
     ShapesManager shapesManager;
-    public int currentMoves = LevelManager.gridDescription.number_of_moves;
-    public int maxMoves = LevelManager.gridDescription.number_of_moves;
+    public int currentMoves = LevelManager.levelDescription.number_of_moves;
+    public int maxMoves = LevelManager.levelDescription.number_of_moves;
     public int score = 0;
 
     void Awake()

@@ -23,7 +23,7 @@ public class LevelManager : MonoBehaviour {
 
     public bool DebugLog = false;
     public static string[] LevelAsText;
-    public static LevelDescription gridDescription;
+    public static LevelDescription levelDescription;
     public static LevelManager instance;
     public GameObject levelManagerGameObject;
 
@@ -33,10 +33,11 @@ public class LevelManager : MonoBehaviour {
         TextAsset ass = Resources.Load<TextAsset>("Levels/" + levelID.Trim()) as TextAsset;
         string level = ass.ToString(); //System.IO.File.ReadAllText(Application.dataPath + @"\Resources\Levels\" + levelID + ".txt");
         LevelDescription _gridDescription = JsonUtility.FromJson<LevelDescription>(level);
-        gridDescription = _gridDescription;
-        LevelAsText = gridDescription.grid;
-        ShapesManager.instance.Init(_gridDescription.pieces);
-        instance.StartCoroutine(instance.ClearShapes(callbackForWhenLevelDoneLoading));
+        levelDescription = _gridDescription;
+        LevelAsText = levelDescription.grid;
+		BoardModel bm = new BoardModel(levelDescription);
+        //ShapesManager.instance.Init(_gridDescription.pieces);
+        //instance.StartCoroutine(instance.ClearShapes(callbackForWhenLevelDoneLoading));
        
     }
 
