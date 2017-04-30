@@ -78,6 +78,19 @@ public class View : MonoBehaviour {
 			(gridHeight / Constants.MAX_NUMBER_OF_GRID_ITEMS) , 
 			(gridWidth / Constants.MAX_NUMBER_OF_GRID_ITEMS)
 		);
+
+		float leftMargin = 0f;
+		float topMargin = 0f;
+
+		if(maxPieceDimension * LevelManager.LevelAsText.Length < gridHeight)
+		{
+			topMargin = (gridHeight - maxPieceDimension * LevelManager.LevelAsText.Length) / 2f;
+		}
+		if (maxPieceDimension * LevelManager.LevelAsText[0].Length < gridWidth)
+		{
+			leftMargin = (gridWidth - maxPieceDimension * LevelManager.LevelAsText[0].Length) / 2f;
+		}
+
 		for (int row = 0; row < gameBoard.GetLength(0); row++)
 		{
 			//Debug.Log(LevelManager.LevelAsText[y]);
@@ -85,8 +98,8 @@ public class View : MonoBehaviour {
 			{
 				// make background piece
 				float x = col * maxPieceDimension + maxPieceDimension/2;
-				//x +=  leftMargin;
-				float y = gridHeight - (row * maxPieceDimension) - maxPieceDimension / 2 ;
+				x +=  leftMargin;
+				float y = gridHeight - (row * maxPieceDimension) - maxPieceDimension / 2 - topMargin;
 				float z = 0f;
 				GameObject background = (GameObject)GameObject.Instantiate(backgroundPiece, new Vector3(x, y, z), Quaternion.identity);
 
