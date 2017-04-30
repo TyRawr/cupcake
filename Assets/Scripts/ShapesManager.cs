@@ -94,7 +94,7 @@ public class ShapesManager : MonoBehaviour
             }
             
         }
-        EventManager.StartListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
+        EventManager.StartListening(Constants.LEVEL_LOAD_END_EVENT, LevelLoadingEnded);
     }
 
     public void Update()
@@ -137,7 +137,7 @@ public class ShapesManager : MonoBehaviour
 
     void LevelLoadingEnded()
     {
-        EventManager.StopListening(Constants.LEVEL_ENDED_LOADING_EVENT, LevelLoadingEnded);
+        EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT, LevelLoadingEnded);
         if (DebugLog)
             Debug.Log("Shapes Manager: LevelLoadingEnded");
         CreateShapesLevelFromLevelManager();

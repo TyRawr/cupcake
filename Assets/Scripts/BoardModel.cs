@@ -38,11 +38,17 @@ public class BoardModel
 
 		matches = new List<List<CellModel>>();
 
-		PrintGameBoard();
-		SwapResult swapResult = SwapPiece(1,2,Direction.DOWN);
-		Debug.Log(swapResult);
-		PrintGameBoard();
-		PrintCellResults(EvaluateMatches());
+		EventManager.TriggerEvent(Constants.LEVEL_LOAD_END_EVENT,this);
+
+		//PrintGameBoard();
+		//SwapResult swapResult = SwapPiece(1,2,Direction.DOWN);
+		//Debug.Log(swapResult);
+		//PrintGameBoard();
+		//PrintCellResults(EvaluateMatches());
+	}
+
+	public CellModel[,] GetGameBoard() {
+		return gameBoard;
 	}
 
 	public void PrintGameBoard() {

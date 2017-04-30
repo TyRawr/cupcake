@@ -30,7 +30,7 @@ public class LevelManager : MonoBehaviour {
 
     public static void ImportLevel (string levelID, UnityAction callbackForWhenLevelDoneLoading )
     {
-        EventManager.TriggerEvent(Constants.LEVEL_BEGAN_LOADING_EVENT);
+        EventManager.TriggerEvent(Constants.LEVEL_LOAD_BEGIN_EVENT);
         TextAsset ass = Resources.Load<TextAsset>("Levels/" + levelID.Trim()) as TextAsset;
         string level = ass.ToString(); //System.IO.File.ReadAllText(Application.dataPath + @"\Resources\Levels\" + levelID + ".txt");
         LevelDescription _gridDescription = JsonUtility.FromJson<LevelDescription>(level);
@@ -48,7 +48,7 @@ public class LevelManager : MonoBehaviour {
         Debug.Log("Clear");
         yield return ShapesManager.instance.DestroyPieces();
         callback();
-        EventManager.TriggerEvent(Constants.LEVEL_ENDED_LOADING_EVENT);
+        EventManager.TriggerEvent(Constants.LEVEL_LOAD_END_EVENT);
     }
 
 

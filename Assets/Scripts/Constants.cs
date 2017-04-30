@@ -94,8 +94,8 @@ public static class Constants {
     public static readonly string SWIPE_ENDED_EVENT = "swipe_ended_event";
     public static readonly string SWIPE_BEGAN_EVENT = "swipe_began_event";
 
-    public static readonly string LEVEL_BEGAN_LOADING_EVENT = "level_began_loading";
-    public static readonly string LEVEL_ENDED_LOADING_EVENT = "level_ended_loading";
+    public static readonly string LEVEL_LOAD_BEGIN_EVENT = "level_began_loading";
+    public static readonly string LEVEL_LOAD_END_EVENT = "level_ended_loading";
     public static readonly string LEVEL_START_EVENT = "level_start_event";
     public static readonly string LEVEL_END_EVENT = "level_end_event";
 
@@ -134,6 +134,7 @@ public static class Constants {
 		{ "r", PieceColor.RED },
 		{ "y", PieceColor.YELLOW }
     };
+
 	public enum PieceColor 
 	{
 		PINK,
