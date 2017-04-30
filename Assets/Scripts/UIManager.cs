@@ -7,7 +7,13 @@ public static class UIManager {
 
     static bool init = false;
     static Transform message_ui, level_ui, settings_ui, store_ui, board_ui;
-
+	static Dictionary<string,Transform> uiTransforms = new Dictionary<string, Transform>() {
+		{Constants.UI_Message_Modal,message_ui},
+		{Constants.UI_Board_Modal,board_ui},
+		{Constants.UI_Settings_Modal,settings_ui},
+		{Constants.UI_Store_Modal,store_ui},
+		{Constants.UI_Level,level_ui}
+	};
     static bool shown = false;
 
 
@@ -49,6 +55,13 @@ public static class UIManager {
         SetupMapModalButtons();
         SetupLevelButtons();
         SetupBoardUI();
+		uiTransforms = new Dictionary<string, Transform>() {
+			{Constants.UI_Message_Modal,message_ui},
+			{Constants.UI_Board_Modal,board_ui},
+			{Constants.UI_Settings_Modal,settings_ui},
+			{Constants.UI_Store_Modal,store_ui},
+			{Constants.UI_Level,level_ui}
+		};
     }
 
     private static void SetupStoreModalButtons()
@@ -226,6 +239,17 @@ public static class UIManager {
 
     }
 
+	public static void TurnModalOff(string ui_id){
+		if (!init) Init();
+		Transform ui = uiTransforms[ui_id];
+		ui.gameObject.SetActive(false);
+	}
+
+	public static void TurnModalOn(string ui_id){
+		if (!init) Init();
+		Transform ui = uiTransforms[ui_id];
+		ui.gameObject.SetActive(true);
+	}
 
     public static void Toggle(string ui_id = "general_store" , string submenu = "")
     {

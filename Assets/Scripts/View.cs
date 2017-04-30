@@ -54,6 +54,7 @@ public class View : MonoBehaviour {
 	}
 
 	void UpdateViewFromBoardModel() {
+		UIManager.TurnModalOff(Constants.UI_Board_Modal);
 		grid = GameObject.Find("Grid");
 		GridLayoutGroup gridLayout = grid.GetComponent<GridLayoutGroup>();
 		CellModel[,] gameBoard = boardModel.GetGameBoard();
@@ -93,14 +94,6 @@ public class View : MonoBehaviour {
 				background.transform.SetParent(GameObject.Find("BackgroundPieces").gameObject.transform, false);
 				//backgroundPieces[row, col] = background;
 				SetBackgroundPieceDimensions(background, maxPieceDimension);
-
-
-
-
-
-
-
-
 
 				CellModel cell = gameBoard[row,col];
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
