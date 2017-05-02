@@ -21,6 +21,7 @@ public class GamePlayManager : MonoBehaviour {
 
     void Awake()
     {
+		/*
         StoreManager.Init();
         UIManager.Init();
         shapesManager = this.gameObject.GetComponent<ShapesManager>();
@@ -28,7 +29,8 @@ public class GamePlayManager : MonoBehaviour {
         EventManager.StartListening(Constants.SWIPE_LEFT_EVENT, SwipeLeftEvent);
         EventManager.StartListening(Constants.SWIPE_UP_EVENT, SwipeUpEvent);
         EventManager.StartListening(Constants.SWIPE_DOWN_EVENT, SwipeDownEvent);
-    }
+		*/
+	}
 
 	// Use this for initialization
 	void Start () {

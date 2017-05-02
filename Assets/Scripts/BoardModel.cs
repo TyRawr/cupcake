@@ -209,7 +209,7 @@ public class BoardModel
 	 * 	Iterate calculated matches (from swap or evaluation)
 	 * 
 	 */
-	private CellResult[,] EvaluateMatches () {
+	public CellResult[,] EvaluateMatches () {
 
 		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];	
 

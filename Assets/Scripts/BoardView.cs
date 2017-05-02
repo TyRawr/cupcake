@@ -32,6 +32,8 @@ public class BoardView : MonoBehaviour {
 	private CellView[,] cells;
 	// Use this for initialization
 	void Start () {
+		StoreManager.Init();
+		UIManager.Init();
 		boardModel = LevelManager.boardModel;
 		EventManager.StartListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
 		backgroundPiecesParent = GameObject.Find("BackgroundPieces") as GameObject;
@@ -80,8 +82,56 @@ public class BoardView : MonoBehaviour {
 		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size);
 	}
 
+	void SwipeUpEventListener(object pieceViewObj) {
+		PieceView pieceView = (PieceView) pieceViewObj;
+		Debug.Log("swipe up\trow: " + pieceView.row + "\tcol: " + pieceView.col);
+		SwapPieces(pieceView,Direction.UP);
+	}
+
+	void SwipeRightEventListener(object pieceViewObj) {
+		PieceView pieceView = (PieceView) pieceViewObj;
+		Debug.Log("swipe right\trow: " + pieceView.row + "\tcol: " + pieceView.col);
+		SwapPieces(pieceView,Direction.RIGHT);
+	}
+
+	void SwipeDownEventListener(object pieceViewObj) {
+		PieceView pieceView = (PieceView) pieceViewObj;
+		Debug.Log("swipe down\trow: " + pieceView.row + "\tcol: " + pieceView.col);
+		SwapPieces(pieceView,Direction.DOWN);
+	}
+
+	void SwipeLeftEventListener(object pieceViewObj) {
+		PieceView pieceView = (PieceView) pieceViewObj;
+		Debug.Log("swipe left\trow: " + pieceView.row + "\tcol: " + pieceView.col);
+		SwapPieces(pieceView,Direction.LEFT);
+	}
+
+	void SwapPieces(int row, int col, Direction direction) {
+		//EventManager.StopListening()
+		SwapResult result = boardModel.SwapPiece(row,col,direction);
+		if(result == SwapResult.FAILURE) {
+			//Animate swap back and forth
+			Debug.Log("Swap back and forth");
+		} else if (result == SwapResult.INVALID) {
+			// Do nothing
+		} else if (result == SwapResult.SUCCESS) {
+			// Animate match(s)
+			Debug.Log("Animate");
+			boardModel.EvaluateMatches();
+		}
+		boardModel.PrintGameBoard();
+		UpdateViewFromBoardModel();
+	}
+
+	void SwapPieces(PieceView pieceView, Direction direction) {
+		SwapPieces(pieceView.row,pieceView.col,direction);
+	}
+
 	void UpdateViewFromBoardModel() {
-		UIManager.TurnModalOff(Constants.UI_Board_Modal);
+		// turn off level select
+		UIManager.TurnModalOff(Constants.UI_Board_Modal); // could be better/ is this needed?
+
+		// destroy stuff if already exists
 		if(backGroundPieces != null) {
 			foreach(var backgroundPiece in backGroundPieces) {
 				GameObject.Destroy(backgroundPiece);
@@ -96,10 +146,11 @@ public class BoardView : MonoBehaviour {
 
 		GridLayoutGroup gridLayout = grid.GetComponent<GridLayoutGroup>();
 		CellModel[,] gameBoard = boardModel.GetGameBoard();
-		cells = new CellView[gameBoard.GetLength(0), gameBoard.GetLength(1)];
+		//cells = new CellView[gameBoard.GetLength(0), gameBoard.GetLength(1)];
 		backGroundPieces = new GameObject[gameBoard.GetLength(0), gameBoard.GetLength(1)];
 		pieces = new GameObject[gameBoard.GetLength(0), gameBoard.GetLength(1)];
 
+		// sets up the dimensions, world view type stuff
 		float rowCount = Constants.MAX_NUMBER_OF_GRID_ITEMS;// LevelManager.LevelAsText[0].Length;
 		float colCount = Constants.MAX_NUMBER_OF_GRID_ITEMS; //LevelManager.LevelAsText.Length;
 		float width = (rowCount) + ((rowCount - 1) * Constants.MIN_SIZE);
@@ -121,13 +172,14 @@ public class BoardView : MonoBehaviour {
 
 		if(maxPieceDimension * LevelManager.LevelAsText.Length < gridHeight)
 		{
-			topMargin = (gridHeight - maxPieceDimension * LevelManager.LevelAsText.Length) / 2f;
+			topMargin = (gridHeight - maxPieceDimension * gameBoard.GetLength(0)) / 2f;
 		}
 		if (maxPieceDimension * LevelManager.LevelAsText[0].Length < gridWidth)
 		{
-			leftMargin = (gridWidth - maxPieceDimension * LevelManager.LevelAsText[0].Length) / 2f;
+			leftMargin = (gridWidth - maxPieceDimension * gameBoard.GetLength(1)) / 2f;
 		}
 
+		// meat of stuff
 		for (int row = 0; row < gameBoard.GetLength(0); row++)
 		{
 			//Debug.Log(LevelManager.LevelAsText[y]);
@@ -149,21 +201,27 @@ public class BoardView : MonoBehaviour {
 
 				CellModel cell = gameBoard[row,col];
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
-					PieceMapping pieceMapping = piecePrefabs[i];
+					PieceMapping pieceMapping = piecePrefabs[i]; // could be replaced with something else, just a map
 					if(pieceMapping.color == cell.piece.GetColor() && pieceMapping.type == cell.piece.GetPieceType() ) {
-						
 						GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
 						go.transform.SetParent(piecesParent.transform);
 						go.transform.localScale = Vector3.one;
 						SetPositionFromBackgroundPiece_SetSize(go, background, maxPieceDimension);
 						pieces[row,col] = go;
+						PieceView pieceView = go.AddComponent<PieceView>();
+						pieceView.row = row;
+						pieceView.col = col;
+						pieceView.AssignEvent();
 						break;
 					}
 				}
-
-
 			}
 		}
+		// run initial animations for each piece
+		EventManager.StartListening(Constants.SWIPE_UP_EVENT,SwipeUpEventListener);
+		EventManager.StartListening(Constants.SWIPE_RIGHT_EVENT,SwipeRightEventListener);
+		EventManager.StartListening(Constants.SWIPE_DOWN_EVENT,SwipeDownEventListener);
+		EventManager.StartListening(Constants.SWIPE_LEFT_EVENT,SwipeLeftEventListener);
 	}
 	
 	// Update is called once per frame
