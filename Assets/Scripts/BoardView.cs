@@ -117,7 +117,7 @@ public class BoardView : MonoBehaviour {
 		} else if (result == SwapResult.SUCCESS) {
 			// Animate match(s)
 			Debug.Log("Animate");
-			boardModel.EvaluateMatches();
+			boardModel.GetResults();
 		}
 		boardModel.PrintGameBoard();
 		UpdateViewFromBoardModel();

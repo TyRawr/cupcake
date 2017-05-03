@@ -4,21 +4,21 @@ using System.Collections.Generic;
 public class ResultSet
 {
 	
-	private List<List<CellResult>> matches;
-	private List<List<PieceModel>> columns;
+	private CellResult[,] matches;
+	private List<PieceModel>[] newPieces; // iterate columns, these are new pieces
 
-	public ResultSet (List<List<CellResult>> matches, List<List<PieceModel>> columns)
+	public ResultSet (CellResult[,] matches, List<PieceModel>[] pieces)
 	{
 		this.matches = matches;
-		this.columns = columns;
+		this.newPieces = pieces;
 	}
 
-	public List<List<CellResult>> GetMatches () {
+	public CellResult[,] GetMatches () {
 		return matches; 
 	}
 
-	public List<List<PieceModel>> GetColumns() {
-		return columns;
+	public List<PieceModel>[]  GetNewPieces() {
+		return newPieces;
 	}
 
 }

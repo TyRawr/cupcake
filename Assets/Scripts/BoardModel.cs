@@ -12,6 +12,7 @@ public class BoardModel
 	private int multiplier = 0;
 	private List<List<CellModel>> matches;
 	private HashSet<CellModel> matched;
+	private HashSet<CellModel> checkForMatches;
 
 	public BoardModel(LevelManager.LevelDescription levelDescription)
 	{
@@ -37,6 +38,8 @@ public class BoardModel
 		}
 
 		matches = new List<List<CellModel>>();
+		matched = new HashSet<CellModel>();
+		checkForMatches = new HashSet<CellModel>();
 
 		EventManager.TriggerEvent(Constants.LEVEL_LOAD_END_EVENT,this);
 
@@ -64,14 +67,34 @@ public class BoardModel
 
 	public void PrintCellResults(CellResult[,] cellResult) {
 		string prettyprint = "";
-		for(int row = 0; row < cellResult.GetLength(0); row++) {
-			for(int col = 0; col < cellResult.GetLength(1); col++) {
+		for(int row = 0; row < cellResult.GetLength(0); row++) 
+		{
+			for(int col = 0; col < cellResult.GetLength(1); col++) 
+			{
 				String s = "0";
 				CellResult result = cellResult[row,col];
 				if(result != null) {
 					s = result.GetPoints().ToString();
 				}
 				prettyprint += s + "\t";
+			}
+			prettyprint += "\n";
+		}
+		Debug.Log(prettyprint);
+	}
+
+	public void PrintSpawnArray(List<PieceModel>[] array) {
+		string prettyprint = "";
+		for (int col = 0; col < array.Length; col++) 
+		{
+			prettyprint += "Col" + col + "\t";
+			List<PieceModel> list = array[col];
+			if (list != null) 
+			{
+				for (int index = 0; index < list.Count; index++) 
+				{
+					prettyprint += list[index].GetColor() + "\t";
+				}
 			}
 			prettyprint += "\n";
 		}
@@ -191,17 +214,24 @@ public class BoardModel
 	 * Evaluate matches Swap and following matches
 	 * 
 	 */
-	public List<ResultSet> GetResults () {
+	public List<ResultSet> GetResults () 
+	{
 		List<ResultSet> results = new List<ResultSet> ();
 
-//		List<List<CellResult>> cellResults = ConvertMatchesToResult();
-//		List<List<SpawnPieces>> spawnPieces = SpawnPieces();
+		do {
+			ResultSet resultSet = EvaluateMatches();
+			DestroyPieces();
+			DropPieces(resultSet.GetNewPieces());
+			matches = new List<List<CellModel>>();
+			CheckForMatches();
+			PrintGameBoard();
+
+			results.Add(resultSet);
+
+		} while (matches.Count > 0);
+
 
 		return results;
-	}
-
-	private List<List<PieceModel>> SpawnPieces() {
-		return null;
 	}
 
 
@@ -209,9 +239,15 @@ public class BoardModel
 	 * 	Iterate calculated matches (from swap or evaluation)
 	 * 
 	 */
-	public CellResult[,] EvaluateMatches () {
+	private ResultSet EvaluateMatches () {
 
+		// Init ResultSet elements: CellResult [] and List<PieceModel> []
 		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];	
+		List<PieceModel>[] spawned = new List<PieceModel>[gameBoard.GetLength(1)];
+
+		for (int index = 0; index < gameBoard.GetLength(1); index++) {
+			spawned[index] = new List<PieceModel>();
+		}
 
 		// List for each match
 		for (int index = 0; index < matches.Count; index++) 
@@ -228,9 +264,11 @@ public class BoardModel
 			if(results[row,col] == null) {
 //				Debug.Log("Found null CellResult location");
 				results[row,col] = new CellResult(points);
+				spawned[col].Add(SpawnPiece());
 			} else {
 				results[row,col].AddPoints(points);
 			}
+			matched.Add(cell);
 
 			// Iterate over other cells
 			for (int jndex = 1; jndex < match.Count; jndex ++) 
@@ -244,24 +282,96 @@ public class BoardModel
 				if(results[row,col] == null) {
 //					Debug.Log("Found null CellResult location");
 					results[row,col] = new CellResult(points);
+					// SPAWN PIECE HERE (col)
+					spawned[col].Add(SpawnPiece());
 				} else {
 					results[row,col].AddPoints(points);
 				}
+				matched.Add(cell);
 			}
 		}
-		return results;
+		PrintCellResults(results);
+		PrintSpawnArray(spawned);
+
+		return new ResultSet(results,spawned);
 	}
 
 	private void DestroyPieces() {
-
+		// Destroy Pieces
+		foreach (CellModel cell in matched) 
+		{
+			cell.Consume();
+		}
+		matched = new HashSet<CellModel>();
 	}
 
-	private void DropPieces() {
+	private void DropPieces(List<PieceModel> [] spawnPieces) {
 
+		int cols = gameBoard.GetLength(1);
+		int rows = gameBoard.GetLength(0);
+
+		// Iterate over Columns
+		for (int col = 0; col < cols; col ++) 
+		{
+			// If a piece was spawned in this column
+			if (spawnPieces[col].Count > 0) 
+			{
+				// Loop from the bottom up
+				int spawnIndex = 0;
+				for (int row = 0; row < rows; row ++) 
+				{
+					CellModel cell = gameBoard[rows - row - 1, col];
+
+					// TODO: MAKE SURE ONLY VALID CELL TYPES DO THIS
+					// If empty, find a piece
+					if (cell.piece == null) 
+					{
+						int reach = 1;
+						bool grabSpawnPiece = true;
+
+						// Look at cells above this one for a piece
+						while (reach < rows - row) 
+						{
+							int index = (rows - row - 1) - reach++;
+							Debug.Log(index);
+							CellModel reachedCell = gameBoard[index, col];
+							if (reachedCell.piece != null) 
+							{
+								cell.piece = reachedCell.piece;
+								reachedCell.piece = null;
+								grabSpawnPiece = false;
+								break;
+							}
+						}
+
+						// If no piece was found in grid, grab it from spawnPieces
+						if (grabSpawnPiece) 
+						{
+							cell.piece = spawnPieces[col][spawnIndex++];
+						}
+
+						checkForMatches.Add(cell);
+					}
+				}
+			}
+		}
 	}
 
-	private void SpawnPiece() {
-		
+	private void CheckForMatches() 
+	{
+		foreach (CellModel cell in checkForMatches) 
+		{
+			CheckMatch(cell);
+		}
+	}
+
+	private PieceModel SpawnPiece() {
+		// grab available pieces to spawn
+		int length = LevelManager.levelDescription.pieces.Length;
+		int randomInt = UnityEngine.Random.Range(0,length);
+		string id = LevelManager.levelDescription.pieces[randomInt];
+		PieceModel model = new PieceModel(id);
+		return model;
 	}
 
 

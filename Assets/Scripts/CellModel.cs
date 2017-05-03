@@ -25,13 +25,19 @@ public class CellModel
 		this.col = col;
 	}
 
+	public void AddSpecialPiece () {
+
+	}
+
+	public void Consume () {
+		this.piece = null;
+	}
+
 	public int EvaluateMatch (int multiplier) {
 		return 10 + (10 * multiplier);
 	}
 
-	public void AddSpecialPiece () {
 
-	}
 
 	public bool IsSwappable() {
 		if (piece == null) {
