@@ -14,6 +14,12 @@ public class BoardModel
 	private HashSet<CellModel> matched;
 	private HashSet<CellModel> checkForMatches;
 
+	public int Score {
+		get {
+			return score;
+		}
+	}
+
 	public BoardModel(LevelManager.LevelDescription levelDescription)
 	{
 		Debug.Log("Create Board Model");

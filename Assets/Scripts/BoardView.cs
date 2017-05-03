@@ -45,7 +45,7 @@ public class BoardView : MonoBehaviour {
 		//EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
 		boardModel = (BoardModel)model;
 		Debug.Log("Print board after level level");
-		boardModel.PrintGameBoard();
+		//boardModel.PrintGameBoard();
 		UpdateViewFromBoardModel();
 		//Test, uncomment to make an auto move after 3 seconds wait
 		/*
@@ -117,9 +117,12 @@ public class BoardView : MonoBehaviour {
 		} else if (result == SwapResult.SUCCESS) {
 			// Animate match(s)
 			Debug.Log("Animate");
-			boardModel.GetResults();
+			List<ResultSet> resultSet = boardModel.GetResults();
+
 		}
-		boardModel.PrintGameBoard();
+		//boardModel.PrintGameBoard();
+		UIManager.UpdateScoreValue(boardModel.Score);
+
 		UpdateViewFromBoardModel();
 	}
 
