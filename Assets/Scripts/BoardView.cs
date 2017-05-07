@@ -117,13 +117,70 @@ public class BoardView : MonoBehaviour {
 		} else if (result == SwapResult.SUCCESS) {
 			// Animate match(s)
 			Debug.Log("Animate");
-			List<ResultSet> resultSet = boardModel.GetResults();
-
+			List<ResultSet> resultSets = boardModel.GetResults();
+			StartCoroutine(RunResultsAnimation(resultSets));
 		}
-		//boardModel.PrintGameBoard();
 		UIManager.UpdateScoreValue(boardModel.Score);
+		//UpdateViewFromBoardModel();
+	}
 
-		UpdateViewFromBoardModel();
+	IEnumerator RunResultsAnimation(List<ResultSet> resultSets) {
+		foreach(ResultSet resultSet in resultSets) {
+
+			// Destroy
+			CellResult[,] cellsMatches = resultSet.GetMatches();
+			for(int row = 0; row < cellsMatches.GetLength(0); row++) {
+				for(int col = 0; col < cellsMatches.GetLength(1);col++) {
+					CellResult cellView = cellsMatches[row,col];
+					if(cellView != null) {
+						StartCoroutine(AnimateDisappear(Constants.DEFAULT_SWAP_ANIMATION_DURATION,()=>{}));
+						//TODO: do points?
+					}
+				}
+			}
+			yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+
+			//Animate Pieces
+			List<PieceModel>[] newPieces = resultSet.GetNewPieces();
+			for(int column = 0; column < newPieces.Length; column++) {
+				List<PieceModel> listOfNewPieces = newPieces[column];
+				//TODO: Start here
+			}
+			yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+		}
+		yield return null;
+	}
+
+	public IEnumerator AnimatePosition(Vector3 toPosition, float duration, UnityAction callback = null)
+	{
+		float startTime = Time.time;
+		Vector3 startMarker = this.gameObject.transform.position;
+		float journeyLength = Vector3.Distance(startMarker, toPosition);
+		for(float t = 0.0f; t < duration; t+= Time.deltaTime)
+		{
+			if (transform == null) break;
+			transform.position = Vector3.Lerp(startMarker, toPosition, t/duration);
+			yield return new WaitForEndOfFrame();
+		}
+		if (transform != null)
+		{
+			transform.position = toPosition;
+			if(callback != null) {
+				callback();
+			}
+		}
+	}
+
+	public IEnumerator AnimateDisappear(float duration, UnityAction callback)
+	{
+		float startTime = Time.time;
+		Vector3 startMarker = this.gameObject.transform.localScale;
+		for (float t = 0.0f; t < duration; t += Time.deltaTime)
+		{
+			transform.localScale = Vector3.Lerp(startMarker, Vector3.zero, t / duration);
+			yield return new WaitForEndOfFrame();
+		}
+		callback();
 	}
 
 	void SwapPieces(PieceView pieceView, Direction direction) {
