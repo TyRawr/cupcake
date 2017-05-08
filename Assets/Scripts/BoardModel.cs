@@ -296,8 +296,8 @@ public class BoardModel
 				matched.Add(cell);
 			}
 		}
-		PrintCellResults(results);
-		PrintSpawnArray(spawned);
+		//PrintCellResults(results);
+		//PrintSpawnArray(spawned);
 
 		return new ResultSet(results,spawned);
 	}
@@ -339,7 +339,7 @@ public class BoardModel
 						while (reach < rows - row) 
 						{
 							int index = (rows - row - 1) - reach++;
-							Debug.Log(index);
+							//Debug.Log(index);
 							CellModel reachedCell = gameBoard[index, col];
 							if (reachedCell.piece != null) 
 							{

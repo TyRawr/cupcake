@@ -30,6 +30,35 @@ public class BoardView : MonoBehaviour {
 	GameObject gridParent;
 
 	private CellView[,] cells;
+    private float maxPieceSize;
+
+    GameObject CreatePieceView(int row, int col, Constants.PieceColor color)
+    {
+        GameObject piece = new GameObject(color.ToString());
+        for(int i = 0; i < piecePrefabs.Count; i++)
+        {
+            if(piecePrefabs[i].color == color)
+            {
+                piece = GameObject.Instantiate(piecePrefabs[i].prefab);
+                pieces[row, col] = piece;
+
+                //grab background
+                GameObject background = backGroundPieces[row, col];
+                piece.transform.SetParent(piecesParent.transform);
+                piece.transform.localScale = Vector3.one;
+                piece.transform.position = background.transform.position;
+                piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize);
+                piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize);
+                PieceView pieceView = piece.AddComponent<PieceView>();
+                pieceView.row = row;
+                pieceView.col = col;
+                pieceView.AssignEvent();
+            }
+                
+        }
+        return piece;
+    }
+
 	// Use this for initialization
 	void Start () {
 		StoreManager.Init();
@@ -115,9 +144,35 @@ public class BoardView : MonoBehaviour {
 		} else if (result == SwapResult.INVALID) {
 			// Do nothing
 		} else if (result == SwapResult.SUCCESS) {
-			// Animate match(s)
-			Debug.Log("Animate");
-			List<ResultSet> resultSets = boardModel.GetResults();
+            // Animate match(s)
+            // we have to do the swap on our game objects as well
+            int nextRow = row;
+            int nextCol = col;
+            switch (direction)
+            {
+                case Direction.UP:
+                    nextRow -= 1;
+                    break;
+                case Direction.RIGHT:
+                    nextCol += 1;
+                    break;
+                case Direction.DOWN:
+                    nextRow += 1;
+                    break;
+                case Direction.LEFT:
+                    nextCol -= 1;
+                    break;
+            }
+            GameObject temp = pieces[row, col];
+            pieces[row, col] = pieces[nextRow, nextCol];
+            pieces[nextRow, nextCol] = temp;
+            PieceView pieceView1 = pieces[row, col].GetComponent<PieceView>();
+            PieceView pieceView2 = pieces[nextRow, nextCol].GetComponent<PieceView>();
+            pieceView1.row = row;
+            pieceView1.col = col;
+            pieceView2.row = nextRow;
+            pieceView2.col = nextCol;
+            List<ResultSet> resultSets = boardModel.GetResults();
 			StartCoroutine(RunResultsAnimation(resultSets));
 		}
 		UIManager.UpdateScoreValue(boardModel.Score);
@@ -125,62 +180,192 @@ public class BoardView : MonoBehaviour {
 	}
 
 	IEnumerator RunResultsAnimation(List<ResultSet> resultSets) {
-		foreach(ResultSet resultSet in resultSets) {
+        //Animate Pieces into background position
+        for (int row = 0; row < pieces.GetLength(0); row++)
+        {
+            for (int col = 0; col < pieces.GetLength(1); col++)
+            {
+                if (pieces[row, col] != null)
+                    StartCoroutine(AnimatePosition(row, col, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
+            }
+        }
+        yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+        //End Animate pieces into background position
 
-			// Destroy
+        foreach (ResultSet resultSet in resultSets) {
+			// Animate Destroy Pieces
 			CellResult[,] cellsMatches = resultSet.GetMatches();
 			for(int row = 0; row < cellsMatches.GetLength(0); row++) {
 				for(int col = 0; col < cellsMatches.GetLength(1);col++) {
 					CellResult cellView = cellsMatches[row,col];
 					if(cellView != null) {
-						StartCoroutine(AnimateDisappear(Constants.DEFAULT_SWAP_ANIMATION_DURATION,()=>{}));
+						StartCoroutine(AnimateDisappear(row,col));
 						//TODO: do points?
 					}
 				}
 			}
 			yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
 
-			//Animate Pieces
-			List<PieceModel>[] newPieces = resultSet.GetNewPieces();
-			for(int column = 0; column < newPieces.Length; column++) {
-				List<PieceModel> listOfNewPieces = newPieces[column];
-				//TODO: Start here
-			}
+
+            //Logically Move Pieces To Bottom - Can this be put into the model?
+            for (int col = cellsMatches.GetLength(1) - 1; col >= 0; col--)
+            {
+                for (int row = cellsMatches.GetLength(0) - 1; row >= 0; row--)
+                {
+                    if (pieces[row, col] == null)
+                    {
+                        for(int r = row; r >= 0; r --)
+                        {
+                            if(pieces[r,col] != null)
+                            {
+                                pieces[row, col] = pieces[r, col];
+                                pieces[r, col] = null;
+                                PieceView pieceView = pieces[row, col].GetComponent<PieceView>();
+                                pieceView.row = row;
+                                pieceView.col = col;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            //End Logically Move Pieces To Bottom
+
+            //Animate Pieces into background position
+            for (int row = 0; row < cellsMatches.GetLength(0); row++)
+            {
+                for (int col = 0; col < cellsMatches.GetLength(1); col++)
+                {
+                    if (pieces[row, col] != null)
+                        StartCoroutine(AnimatePosition(row, col, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
+                }
+            }
+            yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+            //End Animate pieces into background position
+
+            //Adjust Grid With New Pieces
+            List<PieceModel>[] newPieces = resultSet.GetNewPieces();
+            for (int column = 0; column < newPieces.Length; column++)
+            {
+                List<PieceModel> listOfNewPieces = newPieces[column];
+                listOfNewPieces.Reverse();
+                for (int pieceCounter = listOfNewPieces.Count - 1; pieceCounter >= 0; pieceCounter--)
+                {
+                    PieceModel pieceModel = listOfNewPieces[pieceCounter];
+                    Constants.PieceColor color = pieceModel.GetColor();
+                    GameObject piece = CreatePieceView(pieceCounter, column, color);
+                    //StartCoroutine(AnimateAppear(pieceCounter, column,Constants.DEFAULT_SWAP_ANIMATION_DURATION));
+                }
+            }
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+            //PrintPieces();
+
+            //Animate Pieces into background position
+            for (int row = 0; row < cellsMatches.GetLength(0); row ++)
+            {
+                for(int col= 0; col < cellsMatches.GetLength(1); col++)
+                {
+                    if(pieces[row,col] != null)
+                        StartCoroutine(AnimatePosition(row, col, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
+                }
+            }
 			yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+            //End Animate pieces into background position
 		}
-		yield return null;
+        //UpdateViewFromBoardModel();
+        yield return null;
 	}
 
-	public IEnumerator AnimatePosition(Vector3 toPosition, float duration, UnityAction callback = null)
+    public void PrintPieces()
+    {
+        //print pieces
+        string s = "";
+        for (int row = 0; row < pieces.GetLength(0); row++)
+        {
+            for (int col = 0; col < pieces.GetLength(1); col++)
+            {
+                if(pieces[row,col] != null)
+                {
+                    s += pieces[row, col] + "\t";
+                } else
+                {
+                    s += " NULL\t";
+                }
+               
+            }
+            s += "\n";
+        }
+        Debug.Log(s);
+    }
+
+	public IEnumerator AnimatePosition(int row, int col, float duration, UnityAction callback = null)
 	{
+        GameObject piece = pieces[row, col];
+        GameObject background = backGroundPieces[row, col];
 		float startTime = Time.time;
-		Vector3 startMarker = this.gameObject.transform.position;
+        Vector3 startMarker = piece.transform.position;
+        Vector3 toPosition = background.transform.position;
 		float journeyLength = Vector3.Distance(startMarker, toPosition);
 		for(float t = 0.0f; t < duration; t+= Time.deltaTime)
 		{
-			if (transform == null) break;
-			transform.position = Vector3.Lerp(startMarker, toPosition, t/duration);
+            if (piece != null && piece.transform == null) break;
+            piece.transform.position = Vector3.Lerp(startMarker, toPosition, t/duration);
 			yield return new WaitForEndOfFrame();
 		}
-		if (transform != null)
+		if (piece != null && piece.transform != null)
 		{
-			transform.position = toPosition;
-			if(callback != null) {
-				callback();
-			}
+            piece.transform.position = toPosition;
+			
 		}
-	}
+        if (callback != null)
+        {
+            callback();
+        }
+    }
 
-	public IEnumerator AnimateDisappear(float duration, UnityAction callback)
+    public IEnumerator AnimateAppear(int row, int col, float duration = -1f, UnityAction callback = null)
+    {
+        if (duration < 0f)
+        {
+            duration = Constants.DEFAULT_SWAP_ANIMATION_DURATION;
+        }
+        GameObject piece = pieces[row, col];
+        float startTime = Time.time;
+        Vector3 startMarker = piece.transform.localScale;
+        for (float t = 0.0f; t < duration; t += Time.deltaTime)
+        {
+            piece.transform.localScale = Vector3.Lerp(Vector3.zero, startMarker, t / duration);
+            yield return new WaitForEndOfFrame();
+        }
+        GameObject.Destroy(piece);
+        pieces[row, col] = null;
+        if (callback != null)
+        {
+            callback();
+        }
+    }
+
+    public IEnumerator AnimateDisappear(int row, int col, float duration =-1f, UnityAction callback = null)
 	{
+        if(duration < 0f)
+        {
+            duration = Constants.DEFAULT_SWAP_ANIMATION_DURATION;
+        }
+        GameObject piece = pieces[row, col];
 		float startTime = Time.time;
-		Vector3 startMarker = this.gameObject.transform.localScale;
+		Vector3 startMarker = piece.transform.localScale;
 		for (float t = 0.0f; t < duration; t += Time.deltaTime)
 		{
-			transform.localScale = Vector3.Lerp(startMarker, Vector3.zero, t / duration);
+            piece.transform.localScale = Vector3.Lerp(startMarker, Vector3.zero, t / duration);
 			yield return new WaitForEndOfFrame();
-		}
-		callback();
+        }
+        GameObject.Destroy(piece);
+        pieces[row, col] = null;
+        if(callback != null)
+        {
+            callback();
+        }
 	}
 
 	void SwapPieces(PieceView pieceView, Direction direction) {
@@ -238,7 +423,7 @@ public class BoardView : MonoBehaviour {
 		{
 			leftMargin = (gridWidth - maxPieceDimension * gameBoard.GetLength(1)) / 2f;
 		}
-
+        maxPieceSize = maxPieceDimension;
 		// meat of stuff
 		for (int row = 0; row < gameBoard.GetLength(0); row++)
 		{
@@ -286,6 +471,9 @@ public class BoardView : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+	    if(Input.GetKeyDown(KeyCode.L))
+        {
+            boardModel.PrintGameBoard();
+        }
 	}
 }

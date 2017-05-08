@@ -2,7 +2,7 @@
 	"grid":
 	[
 		"bbrg",
-		"bbro",
+		"bboo",
 		"grbb"
 	],
 	"margin": "center",
