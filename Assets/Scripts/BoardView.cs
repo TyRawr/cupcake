@@ -180,6 +180,7 @@ public class BoardView : MonoBehaviour {
 	}
 
 	IEnumerator RunResultsAnimation(List<ResultSet> resultSets) {
+        // First one takes care of the swap
         //Animate Pieces into background position
         for (int row = 0; row < pieces.GetLength(0); row++)
         {
@@ -237,7 +238,10 @@ public class BoardView : MonoBehaviour {
                 for (int col = 0; col < cellsMatches.GetLength(1); col++)
                 {
                     if (pieces[row, col] != null)
+                    {
                         StartCoroutine(AnimatePosition(row, col, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
+                    }
+                        
                 }
             }
             yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
@@ -254,10 +258,11 @@ public class BoardView : MonoBehaviour {
                     PieceModel pieceModel = listOfNewPieces[pieceCounter];
                     Constants.PieceColor color = pieceModel.GetColor();
                     GameObject piece = CreatePieceView(pieceCounter, column, color);
-                    //StartCoroutine(AnimateAppear(pieceCounter, column,Constants.DEFAULT_SWAP_ANIMATION_DURATION));
+                    //yield return new WaitForEndOfFrame();
+                    StartCoroutine(AnimateAppear(pieceCounter, column,Constants.DEFAULT_SWAP_ANIMATION_DURATION));
                 }
             }
-            yield return new WaitForEndOfFrame();
+            //yield return new 
             yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
             //PrintPieces();
 
@@ -335,11 +340,9 @@ public class BoardView : MonoBehaviour {
         Vector3 startMarker = piece.transform.localScale;
         for (float t = 0.0f; t < duration; t += Time.deltaTime)
         {
-            piece.transform.localScale = Vector3.Lerp(Vector3.zero, startMarker, t / duration);
+            piece.transform.localScale = Vector3.Lerp(Vector3.zero, startMarker, t / duration); 
             yield return new WaitForEndOfFrame();
         }
-        GameObject.Destroy(piece);
-        pieces[row, col] = null;
         if (callback != null)
         {
             callback();
