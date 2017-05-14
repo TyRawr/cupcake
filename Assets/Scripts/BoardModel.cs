@@ -230,7 +230,7 @@ public class BoardModel
 			DropPieces(resultSet.GetNewPieces());
 			matches = new List<List<CellModel>>();
 			CheckForMatches();
-			PrintGameBoard();
+			//PrintGameBoard();
 
 			results.Add(resultSet);
 
@@ -240,12 +240,100 @@ public class BoardModel
 		return results;
 	}
 
+    /**
+     *  Only need to check 2 dimensions, we'll check right and down - for matches
+     */
+     public List<CellModel> GetRecommendedMatch()
+    {
+        for(int row = 0; row < gameBoard.GetLength(0); row += 3)
+        {
+            for(int col = 0; col < gameBoard.GetLength(1); col += 3)
+            {
+                List<CellModel> right = GetRightCells(row,col);
+                List<CellModel> down = GetDownCells(row, col);
+                if(right != null)
+                {
+                    // there are 4 cells to the right of me
+                    Constants.PieceColor pc = right[0].piece.GetColor();
+                    int found = 0;
+                    for(int i = 1; i < 4; i++)
+                    {
+                        Constants.PieceColor pcNext = right[i].piece.GetColor();
+                        if(pcNext == pc)
+                        {
+                            found++;
+                        }
+                    }
+                    if(found > 2)
+                    {
+                        return right;
+                    }
+                }
+                if(down != null)
+                {
+                    // there are 4 cells below me
+                    // there are 4 cells to the right of me
+                    Constants.PieceColor pc = down[0].piece.GetColor();
+                    int found = 0;
+                    for (int i = 1; i < 4; i++)
+                    {
+                        Constants.PieceColor pcNext = down[i].piece.GetColor();
+                        if (pcNext == pc)
+                        {
+                            found++;
+                        }
+                    }
+                    if (found > 2)
+                    {
+                        return right;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
-	/**
+    /**
+     returns the next 4 cells to the right of the given index
+    */
+    private List<CellModel> GetRightCells(int row, int col)
+    {
+        try
+        {
+            List<CellModel> cells = new List<CellModel>();
+            for(int i = 0; i < 4; i++)
+            {
+                cells.Add(gameBoard[row, col + i]);
+            }
+            return cells;
+        } catch (IndexOutOfRangeException ex)
+        {
+            return null;
+        }
+    }
+
+    private List<CellModel> GetDownCells(int row, int col)
+    {
+        try
+        {
+            List<CellModel> cells = new List<CellModel>();
+            for (int i = 0; i < 4; i++)
+            {
+                cells.Add(gameBoard[row + i, col]);
+            }
+            return cells;
+        }
+        catch (IndexOutOfRangeException ex)
+        {
+            return null;
+        }
+    }
+
+    /**
 	 * 	Iterate calculated matches (from swap or evaluation)
 	 * 
 	 */
-	private ResultSet EvaluateMatches () {
+    private ResultSet EvaluateMatches () {
 
 		// Init ResultSet elements: CellResult [] and List<PieceModel> []
 		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];	
