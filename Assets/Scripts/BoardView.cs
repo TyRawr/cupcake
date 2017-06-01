@@ -35,6 +35,12 @@ public class BoardView : MonoBehaviour {
     private float maxPieceSize;
     private bool inputAllowed = false;
 
+	/*
+	 * 	Triggers the animation for the pieces when they move to a new position.
+	 * 
+	 * 	This function currently animates based on a fixed time. Meaning that if an entire column is removed the piece will take a fixed amount of time to get from top to bottom
+	 *  of the column. This should probably be a fixed speed rather than fixed time. TODO: update this function to be fixed speed rather than fixed time.
+	 */
     private IEnumerator AnimateAllPiecesIntoBackgroundPosition()
     {
         for (int row = 0; row < pieces.GetLength(0); row++)
@@ -48,6 +54,11 @@ public class BoardView : MonoBehaviour {
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
     }
 
+	/*
+	 * 	this is the function that consumes a result set and triggers an animation when a piece is to be destroyed (the default animation) for the result set frame.
+	 * 
+	 * 	TODO: run a custom function based on the current Piece type.
+	 */ 
     private IEnumerator AnimateDestroyPieces(ResultSet resultSet)
     {
         // Animate Destroy Pieces
@@ -59,6 +70,7 @@ public class BoardView : MonoBehaviour {
                 CellResult cellView = cellsMatches[row, col];
                 if (cellView != null)
                 {
+					// start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));
                     //TODO: do points?
                 }
@@ -99,8 +111,14 @@ public class BoardView : MonoBehaviour {
             duration = Constants.DEFAULT_SWAP_ANIMATION_DURATION;
         }
         GameObject piece = pieces[row, col];
+		if(piece == null ) {
+			Debug.LogError("Piece Error");
+		}
         float startTime = Time.time;
         Vector3 startMarker = piece.transform.localScale;
+		piece.SetActive(false);
+		yield return new WaitForEndOfFrame();
+		piece.SetActive(true);
         for (float t = 0.0f; t < duration; t += Time.deltaTime)
         {
             piece.transform.localScale = Vector3.Lerp(Vector3.zero, startMarker, t / duration);
@@ -273,19 +291,18 @@ public class BoardView : MonoBehaviour {
             CellResult[,] cellsMatches = resultSet.GetMatches();
             yield return StartCoroutine(AnimateDestroyPieces(resultSet));
             
+
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
 
-            //yield return new WaitForSeconds(1f); // time for user to see points
-
+			// Delete the points objects
             for(int i = 0; i < pointsParent.transform.childCount; i++)
             {
                 Transform child = pointsParent.transform.GetChild(i);
                 GameObject.Destroy(child.gameObject);
             }
-
+            
             //move the pieces down, logically - have to find out where they belong - probably not the best - can be added to model?
             MovePiecesToBottom(cellsMatches);
-
             // move pieces into position
             yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
             // spawn and animate the new pieces
@@ -316,14 +333,17 @@ public class BoardView : MonoBehaviour {
         List<PieceModel>[] newPieces = resultSet.GetNewPieces();
         for (int column = 0; column < newPieces.Length; column++)
         {
+			
             List<PieceModel> listOfNewPieces = newPieces[column];
             listOfNewPieces.Reverse();
             for (int pieceCounter = listOfNewPieces.Count - 1; pieceCounter >= 0; pieceCounter--)
             {
+				Debug.Log("Column: " + column);
                 PieceModel pieceModel = listOfNewPieces[pieceCounter];
                 Constants.PieceColor color = pieceModel.GetColor();
                 GameObject piece = CreatePieceView(pieceCounter, column, color);
                 //yield return new WaitForEndOfFrame();
+				Debug.Log("Spawn Piece " + color);
                 StartCoroutine(AnimateAppear(pieceCounter, column, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
             }
         }
@@ -420,6 +440,7 @@ public class BoardView : MonoBehaviour {
             pieceView2.row = nextRow;
             pieceView2.col = nextCol;
             List<ResultSet> resultSets = boardModel.GetResults();
+			Debug.Log("Length of Result Sets: " + resultSets.Count);
             StartCoroutine(RunResultsAnimation(resultSets));
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
             if (recommendedMatch == null)
@@ -464,7 +485,12 @@ public class BoardView : MonoBehaviour {
 
     void Update()
     {
-
+		if(Input.GetKeyDown(KeyCode.A)) {
+			UpdateViewFromBoardModel();
+		}
+		if(Input.GetKeyDown(KeyCode.S)) {
+			boardModel.PrintGameBoard();
+		}
     }
 
     void UpdateViewFromBoardModel() {
