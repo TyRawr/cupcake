@@ -152,6 +152,44 @@ public class BoardView : MonoBehaviour {
         }
     }
 
+	public IEnumerator AnimatePieceSwapFailure(int row, int col, int nextRow, int nextCol, float duration = .3f) {
+		GameObject background = backGroundPieces[row,col];
+		GameObject nextBackground = backGroundPieces[nextRow,nextCol];
+		GameObject piece = pieces[row,col];
+		GameObject nextPiece = pieces[nextRow,nextCol];
+
+		float startTime = Time.time;
+		Vector3 pieceStartPosition = piece.transform.position;
+		Vector3 nextPieceStartPosition = nextPiece.transform.position;
+
+
+		Vector3 backgroundPosition = background.transform.position;
+		Vector3 nextBackgroundPosition = nextBackground.transform.position;
+		float journeyLength = Vector3.Distance(backgroundPosition, nextBackgroundPosition);
+
+		//animate to
+		for (float t = 0.0f; t < duration; t += Time.deltaTime)
+		{
+			if (piece != null && piece.transform == null) break;
+			piece.transform.position = Vector3.Lerp(pieceStartPosition, nextBackgroundPosition, t / duration);
+			nextPiece.transform.position = Vector3.Lerp(nextPieceStartPosition, backgroundPosition, t/duration);
+			yield return new WaitForEndOfFrame();
+		}
+		startTime = Time.time;
+		//animate from
+		for (float t = 0.0f; t < duration; t += Time.deltaTime)
+		{
+			if (piece != null && piece.transform == null) break;
+			piece.transform.position = Vector3.Lerp(nextBackgroundPosition, pieceStartPosition, t / duration);
+			nextPiece.transform.position = Vector3.Lerp(backgroundPosition,nextPieceStartPosition, t/duration);
+			yield return new WaitForEndOfFrame();
+		}
+		piece.transform.position = pieceStartPosition;
+		nextPiece.transform.position = nextPieceStartPosition;
+		inputAllowed = true;
+		yield return null;
+	}
+
     public IEnumerator AnimatePointsDisappear(GameObject text, float duration = -1f, UnityAction callback = null)
     {
         if (duration < 0f)
@@ -399,11 +437,34 @@ public class BoardView : MonoBehaviour {
     {
         if (!inputAllowed) return;
         inputAllowed = false;
+
+		int nextRow = row;
+		int nextCol = col;
+		switch (direction)
+		{
+		case Direction.UP:
+			nextRow -= 1;
+			break;
+		case Direction.RIGHT:
+			nextCol += 1;
+			break;
+		case Direction.DOWN:
+			nextRow += 1;
+			break;
+		case Direction.LEFT:
+			nextCol -= 1;
+			break;
+		}
+
         SwapResult result = boardModel.SwapPiece(row, col, direction);
+
         if (result == SwapResult.FAILURE)
         {
             //Animate swap back and forth
             Debug.Log("Swap back and forth");
+			StartCoroutine(AnimatePieceSwapFailure(row,col,nextRow,nextCol));
+
+
         }
         else if (result == SwapResult.INVALID)
         {
@@ -413,23 +474,7 @@ public class BoardView : MonoBehaviour {
         {
             // Animate match(s)
             // we have to do the swap on our game objects as well
-            int nextRow = row;
-            int nextCol = col;
-            switch (direction)
-            {
-                case Direction.UP:
-                    nextRow -= 1;
-                    break;
-                case Direction.RIGHT:
-                    nextCol += 1;
-                    break;
-                case Direction.DOWN:
-                    nextRow += 1;
-                    break;
-                case Direction.LEFT:
-                    nextCol -= 1;
-                    break;
-            }
+
             GameObject temp = pieces[row, col];
             pieces[row, col] = pieces[nextRow, nextCol];
             pieces[nextRow, nextCol] = temp;
