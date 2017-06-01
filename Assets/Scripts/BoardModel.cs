@@ -8,9 +8,9 @@ public class BoardModel
 {
 
 	private CellModel[,] gameBoard;
-	private int score = 0;
-	private int multiplier = 0;
-	private List<List<CellModel>> matches;
+	private int score;
+	private int multiplier;
+	private List<MatchModel> matches;
 	private HashSet<CellModel> matched;
 	private HashSet<CellModel> checkForMatches;
 
@@ -25,6 +25,7 @@ public class BoardModel
 		Debug.Log("Create Board Model");
 		string[] grid = levelDescription.grid;
 		this.gameBoard = new CellModel[grid.Length,grid[0].Length];
+		this.score = 0;
 		// iterate through the grid
 		for (int row = 0; row < grid.Length; row++)
 		{
@@ -39,11 +40,11 @@ public class BoardModel
 				PieceModel pieceModel = new PieceModel(pieceColorID);
 				cellModel.piece = pieceModel;
 				
-				Debug.Log("pieceID:: " + pieceColorID);
+//				Debug.Log("pieceID:: " + pieceColorID);
 			}
 		}
 
-		matches = new List<List<CellModel>>();
+		matches = new List<MatchModel>();
 		matched = new HashSet<CellModel>();
 		checkForMatches = new HashSet<CellModel>();
 
@@ -153,11 +154,17 @@ public class BoardModel
 		// Add to Matches
 		if (horizontal.Count > 2) 
 		{
-			matches.Add(horizontal);
+			MatchModel match = new MatchModel (horizontal);
+			if (MatchIsUnique(match)) {
+				matches.Add(match);
+			}
 		}
 		if (vertical.Count > 2) 
 		{
-			matches.Add(vertical);
+			MatchModel match = new MatchModel (vertical);
+			if (MatchIsUnique(match)) {
+				matches.Add(match);			
+			}
 		}
 	}
 		
@@ -223,17 +230,17 @@ public class BoardModel
 	public List<ResultSet> GetResults () 
 	{
 		List<ResultSet> results = new List<ResultSet> ();
+		multiplier = 0;
 
 		do {
 			ResultSet resultSet = EvaluateMatches();
 			DestroyPieces();
 			DropPieces(resultSet.GetNewPieces());
-			matches = new List<List<CellModel>>();
+			matches = new List<MatchModel>();
 			CheckForMatches();
-			//PrintGameBoard();
-
 			results.Add(resultSet);
-
+			//PrintGameBoard();
+			multiplier ++;
 		} while (matches.Count > 0);
 
 
@@ -346,7 +353,7 @@ public class BoardModel
 		// List for each match
 		for (int index = 0; index < matches.Count; index++) 
 		{
-			List<CellModel> match = matches[index];
+			List<CellModel> match = matches[index].GetCells();
 
 			// Handle First Cell
 			CellModel cell = match [0];
@@ -384,7 +391,7 @@ public class BoardModel
 				matched.Add(cell);
 			}
 		}
-		//PrintCellResults(results);
+		PrintCellResults(results);
 		//PrintSpawnArray(spawned);
 
 		return new ResultSet(results,spawned);
@@ -451,6 +458,15 @@ public class BoardModel
 		}
 	}
 
+	private bool MatchIsUnique (MatchModel newMatch) {
+		foreach (MatchModel match in matches) {
+			if (match.Equals(newMatch)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private void CheckForMatches() 
 	{
 		foreach (CellModel cell in checkForMatches) 
@@ -467,8 +483,7 @@ public class BoardModel
 		PieceModel model = new PieceModel(id);
 		return model;
 	}
-
-
+					
 }
 
 public enum SwapResult
