@@ -1,10 +1,12 @@
 {
 	"grid":
 	[
-	"bx",
-	"gx"
+	"xbbox",
+	"ggboo",
+	"obggb",
+	"xggbx"
 	],
-	"pieces":["blue","green"],
+	"pieces":["b","g","o"],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],

@@ -152,7 +152,8 @@ public static class Constants {
 		NORMAL,
 		STRIPED,
 		DOTTED,
-		CANDLE
+		CANDLE,
+		NULL
 	}	
     
 }

@@ -32,14 +32,18 @@ public class BoardModel
 			//Debug.Log(LevelManager.LevelAsText[y]);
 			for(int col = 0; col < grid[row].Length; col++)
 			{
+				// TODO: Make the level load better
 				string pieceColorID = grid[row][col].ToString();
-
-				CellModel cellModel = new CellModel(row, col);
-				gameBoard[row,col] = cellModel;
-
-				PieceModel pieceModel = new PieceModel(pieceColorID);
-				cellModel.piece = pieceModel;
-				
+				if (pieceColorID.Equals ("x")) 
+				{
+					CellModel cellModel = new CellModel(row, col, CellState.NULL);
+					gameBoard[row,col] = cellModel;
+				} else {
+					CellModel cellModel = new CellModel(row, col);
+					gameBoard[row,col] = cellModel;
+					PieceModel pieceModel = new PieceModel(pieceColorID);
+					cellModel.SetPiece (pieceModel);
+				}
 //				Debug.Log("pieceID:: " + pieceColorID);
 			}
 		}
@@ -65,7 +69,7 @@ public class BoardModel
 		string prettyprint = "";
 		for(int row = 0; row < gameBoard.GetLength(0); row++) {
 			for(int col = 0; col < gameBoard.GetLength(1); col++) {
-				prettyprint += gameBoard[row,col].piece.GetColor() + "\t";
+				prettyprint += gameBoard[row,col].GetPieceColor() + "\t";
 			}
 			prettyprint += "\n";
 		}
@@ -112,7 +116,7 @@ public class BoardModel
 	{
 		int row = cellModel.GetRow(); 
 		int col = cellModel.GetCol();
-		Constants.PieceColor color = cellModel.piece.GetColor();
+		Constants.PieceColor color = cellModel.GetPieceColor();
 
 		List<CellModel> horizontal = new List<CellModel> ();
 		List<CellModel> vertical = new List<CellModel> ();
@@ -122,14 +126,14 @@ public class BoardModel
 		// Check HORIZONTAL
 		// Check Right
 		int col_itr = col + 1;
-		while(col_itr < gameBoard.GetLength(1) && gameBoard[row, col_itr].GetColor() == color)
+		while(col_itr < gameBoard.GetLength(1) && gameBoard[row, col_itr].GetPieceColor() == color)
 		{
 			horizontal.Add(gameBoard[row, col_itr]);
 			col_itr++;
 		}
 		// Check Left
 		col_itr = col - 1;
-		while (col_itr >= 0 && gameBoard[row,col_itr].GetColor() == color)
+		while (col_itr >= 0 && gameBoard[row,col_itr].GetPieceColor() == color)
 		{
 			horizontal.Add(gameBoard[row, col_itr]);
 			col_itr--;
@@ -138,14 +142,14 @@ public class BoardModel
 		// Check VERTICAL
 		// Check Down
 		int row_itr = row + 1;
-		while (row_itr < gameBoard.GetLength(0) && gameBoard[row_itr,col].piece.GetColor() == color)
+		while (row_itr < gameBoard.GetLength(0) && gameBoard[row_itr,col].GetPieceColor() == color)
 		{
 			vertical.Add(gameBoard[row_itr, col]);
 			row_itr++;
 		}
 		// Check Up
 		row_itr = row - 1;
-		while (row_itr >= 0 && gameBoard[row_itr,col].GetColor() == color)
+		while (row_itr >= 0 && gameBoard[row_itr,col].GetPieceColor() == color)
 		{
 			vertical.Add(gameBoard[row_itr, col]);
 			row_itr--;
@@ -196,7 +200,13 @@ public class BoardModel
 				nextCol -= 1;
 				break;
 		}
-		destinationCell = gameBoard [nextRow, nextCol];
+
+		// Catch Out Of Range Exception
+		try {
+			destinationCell = gameBoard [nextRow, nextCol];
+		} catch(IndexOutOfRangeException e) {
+			return SwapResult.INVALID;
+		}
 
 		// Validate Destination Cell
 		if (destinationCell == null || !destinationCell.IsSwappable ()) 
@@ -205,9 +215,9 @@ public class BoardModel
 		}
 
 		// VALID: Perform Swap
-		PieceModel tempPiece = destinationCell.piece;
-		destinationCell.piece = selectedCell.piece;
-		selectedCell.piece = tempPiece;
+		PieceModel tempPiece = destinationCell.GetPiece();
+		destinationCell.SetPiece(selectedCell.GetPiece());
+		selectedCell.SetPiece (tempPiece);
 
 		// Find Matches
 		CheckMatch(selectedCell);
@@ -216,8 +226,8 @@ public class BoardModel
 		// FAILURE: Revert Swap
 		if (matches.Count == 0)
 		{
-			selectedCell.piece = destinationCell.piece;
-			destinationCell.piece = tempPiece;
+			selectedCell.SetPiece (destinationCell.GetPiece ());
+			destinationCell.SetPiece (tempPiece);
 			return SwapResult.FAILURE;
 		}
 		return SwapResult.SUCCESS;
@@ -261,11 +271,11 @@ public class BoardModel
                 if(right != null)
                 {
                     // there are 4 cells to the right of me
-                    Constants.PieceColor pc = right[0].piece.GetColor();
+                    Constants.PieceColor pc = right[0].GetPieceColor();
                     int found = 0;
                     for(int i = 1; i < 4; i++)
                     {
-                        Constants.PieceColor pcNext = right[i].piece.GetColor();
+                        Constants.PieceColor pcNext = right[i].GetPieceColor();
                         if(pcNext == pc)
                         {
                             found++;
@@ -280,11 +290,11 @@ public class BoardModel
                 {
                     // there are 4 cells below me
                     // there are 4 cells to the right of me
-                    Constants.PieceColor pc = down[0].piece.GetColor();
+                    Constants.PieceColor pc = down[0].GetPieceColor();
                     int found = 0;
                     for (int i = 1; i < 4; i++)
                     {
-                        Constants.PieceColor pcNext = down[i].piece.GetColor();
+                        Constants.PieceColor pcNext = down[i].GetPieceColor();
                         if (pcNext == pc)
                         {
                             found++;
@@ -425,7 +435,7 @@ public class BoardModel
 
 					// TODO: MAKE SURE ONLY VALID CELL TYPES DO THIS
 					// If empty, find a piece
-					if (cell.piece == null) 
+					if (cell.IsWanting())
 					{
 						int reach = 1;
 						bool grabSpawnPiece = true;
@@ -436,10 +446,10 @@ public class BoardModel
 							int index = (rows - row - 1) - reach++;
 							//Debug.Log(index);
 							CellModel reachedCell = gameBoard[index, col];
-							if (reachedCell.piece != null) 
+							if (reachedCell.IsDroppable()) 
 							{
-								cell.piece = reachedCell.piece;
-								reachedCell.piece = null;
+								cell.SetPiece (reachedCell.GetPiece ());
+								reachedCell.Consume ();
 								grabSpawnPiece = false;
 								break;
 							}
@@ -448,7 +458,7 @@ public class BoardModel
 						// If no piece was found in grid, grab it from spawnPieces
 						if (grabSpawnPiece) 
 						{
-							cell.piece = spawnPieces[col][spawnIndex++];
+							cell.SetPiece (spawnPieces [col] [spawnIndex++]);
 						}
 
 						checkForMatches.Add(cell);

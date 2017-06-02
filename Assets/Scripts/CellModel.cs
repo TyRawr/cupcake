@@ -6,11 +6,9 @@ using UnityEngine;
 public class CellModel 
 {
 
-	public class CellState {
-		//possibly jelly
-	}
+
 	//maybe these?
-	public PieceModel piece;
+	private PieceModel piece;
 	private CellModel cellUp;
 	private CellModel cellRight;
 	private CellModel cellLeft;
@@ -19,34 +17,64 @@ public class CellModel
 	private int col;
 	private CellState state;
 
-	public CellModel (int row, int col)
+	public CellModel (int row, int col, CellState state = CellState.NORMAL)
 	{
 		this.row = row;
 		this.col = col;
+		this.state = state;
 	}
 
 	public void AddSpecialPiece () {
 
 	}
 
-	public void Consume () {
+	public void Consume () 
+	{
 		this.piece = null;
 	}
 
-	public int EvaluateMatch (int multiplier) {
+	public int EvaluateMatch (int multiplier) 
+	{
 		return 10 + (10 * multiplier);
 	}
 
-
-
-	public bool IsSwappable() {
-		if (piece == null) {
+	/**
+	 * Is this a cell with a piece we can drop?
+	 */
+	public bool IsDroppable() 
+	{
+		if (piece == null) 
+		{
 			return false;
 		}
 		return true;
 	}
 
-	// GETTERS ======================================================================
+	/**
+	 * Is this a cell with a piece we can swap?
+	 */
+	public bool IsSwappable() 
+	{
+		if (piece == null) 
+		{
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Is this a cell that needs a piece?
+	 */
+	public bool IsWanting() 
+	{
+		if (piece != null || state == CellState.NULL) 
+		{
+			return false;
+		}
+		return true;
+	}
+
+	// GETTERS/SETTERS ================================================================
 
 	public int GetRow() 
 	{
@@ -58,18 +86,49 @@ public class CellModel
 		return this.col;
 	}
 
+	public CellState GetState() 
+	{
+		return this.state;
+	}
+		
+	public PieceModel GetPiece() 
+	{
+		return this.piece;
+	}
+
+	public void SetPiece(PieceModel piece) 
+	{
+		this.piece = piece;
+	}
+
 	/*
-	 * Returns Piece Color or Null
+	 * Returns Piece Color or NULL
 	 */
-	public Constants.PieceColor GetColor() 
+	public Constants.PieceColor GetPieceColor() 
 	{
 		if (this.piece != null) {
 			return this.piece.GetColor();
 		} else {
-			Debug.Log("CellModel piece is null.");
 			return Constants.PieceColor.NULL;
+		}
+	}
+
+	/*
+	 * Returns Piece Type or NULL
+	 */
+	public Constants.PieceType GetPieceType() 
+	{
+		if (this.piece != null) {
+			return this.piece.GetPieceType();
+		} else {
+			return Constants.PieceType.NULL;
 		}
 	}
 }
 
+// ENUMS =======================================================================
 
+public enum CellState {
+	NORMAL,
+	NULL
+}

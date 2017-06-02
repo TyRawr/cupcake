@@ -487,18 +487,18 @@ public class BoardView : MonoBehaviour {
             List<ResultSet> resultSets = boardModel.GetResults();
 			Debug.Log("Length of Result Sets: " + resultSets.Count);
             StartCoroutine(RunResultsAnimation(resultSets));
-            List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
-            if (recommendedMatch == null)
-            {
-                Debug.Log("Cannot recommend match");
-            }
-            else
-            {
-                for (int i = 0; i < recommendedMatch.Count; i++)
-                {
-                    Debug.Log("recommendedMatch:: row " + recommendedMatch[i].GetRow() + " \tcol " + recommendedMatch[i].GetCol());
-                }
-            }
+//            List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
+//            if (recommendedMatch == null)
+//            {
+//                Debug.Log("Cannot recommend match");
+//            }
+//            else
+//            {
+//                for (int i = 0; i < recommendedMatch.Count; i++)
+//                {
+//                    Debug.Log("recommendedMatch:: row " + recommendedMatch[i].GetRow() + " \tcol " + recommendedMatch[i].GetCol());
+//                }
+//            }
         }
         UIManager.UpdateScoreValue(boardModel.Score);
         //UpdateViewFromBoardModel();
@@ -611,9 +611,14 @@ public class BoardView : MonoBehaviour {
 				backGroundPieces[row,col] = background;
 
 				CellModel cell = gameBoard[row,col];
+				CellState cellState = cell.GetState ();
+				if (cellState.Equals (CellState.NULL)) 
+				{
+					continue;
+				}
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
 					PieceMapping pieceMapping = piecePrefabs[i]; // could be replaced with something else, just a map
-					if(pieceMapping.color == cell.piece.GetColor() && pieceMapping.type == cell.piece.GetPieceType() ) {
+					if(pieceMapping.color == cell.GetPieceColor() && pieceMapping.type == cell.GetPieceType() ) {
 						GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
 						go.transform.SetParent(piecesParent.transform);
 						go.transform.localScale = Vector3.one;
