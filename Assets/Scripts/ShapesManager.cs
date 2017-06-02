@@ -200,7 +200,7 @@ public class ShapesManager : MonoBehaviour
 					string prefabID = "";//Constants.PieceIDMapping[pieceID];
                     GameObject piecePrefab = piecePrefabDict[prefabID];
                     GameObject go = GameObject.Instantiate(piecePrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
-                    go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+                    go.transform.SetParent(grid.transform.Find("Pieces").gameObject.transform);
                     go.transform.localScale = Vector3.one;
                     shapes[row, col] = go.GetComponentInChildren<Shape>();
                     shapes[row, col].AssignEvent();
@@ -208,7 +208,7 @@ public class ShapesManager : MonoBehaviour
                 {
                     // Empty, non moveable piece
                     GameObject go = GameObject.Instantiate(emptyPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
-                    go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+                    go.transform.SetParent(grid.transform.Find("Pieces").gameObject.transform);
                     go.transform.localScale = Vector3.one;
                     shapes[row, col] = go.GetComponentInChildren<Shape>();
 
@@ -551,7 +551,7 @@ public class ShapesManager : MonoBehaviour
         PieceMapping mapping = piecePrefabs[Random.Range(0, piecePrefabs.Count)];
 
         GameObject go = GameObject.Instantiate(mapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
-        go.transform.SetParent(grid.transform.FindChild("Pieces").gameObject.transform);
+        go.transform.SetParent(grid.transform.Find("Pieces").gameObject.transform);
         go.transform.localScale = Vector3.one;
         shapes[row, col] = go.GetComponentInChildren<Shape>();
         shapes[row, col].AssignEvent();
