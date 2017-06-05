@@ -149,6 +149,7 @@ public static class UIManager {
                         bool isShown = board_ui.gameObject.activeInHierarchy;
                         board_ui.gameObject.SetActive(!isShown);
                         message_ui.gameObject.SetActive(false);
+                        
                     });
                     //Toggle("board");
                     

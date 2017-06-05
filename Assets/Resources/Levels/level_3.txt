@@ -1,9 +1,9 @@
 {
 	"grid":
 	[
-	"xbbox",
-	"ggboo",
-	"obggb",
+	"xppox",
+	"ggpoo",
+	"opggb",
 	"xggbx"
 	],
 	"pieces":["b","g","o"],

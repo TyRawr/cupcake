@@ -131,8 +131,8 @@ public static class Constants {
 		{ "b", PieceColor.BLUE },
 		{ "g", PieceColor.GREEN },
 		{ "o", PieceColor.ORANGE },
-		{ "r", PieceColor.RED },
-		{ "y", PieceColor.YELLOW }
+		{ "i", PieceColor.PINK },
+		{ "p", PieceColor.PURPLE }
     };
 
 	public enum PieceColor 
@@ -141,9 +141,7 @@ public static class Constants {
 		ORANGE,
 		GREEN,
 		PURPLE,
-		YELLOW,
 		BLUE,
-		RED,
 		NULL
 	}
 

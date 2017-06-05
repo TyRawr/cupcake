@@ -18,7 +18,12 @@ public class BoardView : MonoBehaviour {
 	public List<PieceMapping> piecePrefabs;
 	public GameObject backgroundPiece;
     public GameObject pointsPrefab;
-    public Sprite[] eyeOptions;
+    // this used to be a public array populated from the Inspector
+    public Sprite eyesDown;
+    public Sprite eyesFlat;
+    public Sprite eyesTilt;
+    public Sprite eyesUp;
+
 
     // View reads from model
     private BoardModel boardModel;
@@ -213,7 +218,7 @@ public class BoardView : MonoBehaviour {
 
     GameObject CreatePieceView(int row, int col, Constants.PieceColor color)
     {
-        
+        Debug.Log("Create");
         for(int i = 0; i < piecePrefabs.Count; i++)
         {
             if(piecePrefabs[i].color == color)
@@ -230,18 +235,16 @@ public class BoardView : MonoBehaviour {
                 piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize);
                 piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize);
 
-                // handle random eye attachment
-                Transform eyes = piece.transform.Find("Eyes_Attach_Point");
-                if(eyes != null)
-                {
-                    Image eyeImg = eyes.gameObject.GetComponent<Image>();
-                    eyeImg.sprite = eyeOptions[Random.Range(0, eyeOptions.Length)];
-                }
+               
+                
 
                 PieceView pieceView = piece.AddComponent<PieceView>();
                 pieceView.row = row;
                 pieceView.col = col;
                 pieceView.AssignEvent();
+
+                // handle random eye attachment
+                HandleEyeAttachment(piece);
                 return piece;
             }
                 
@@ -260,6 +263,31 @@ public class BoardView : MonoBehaviour {
         piece.transform.position = background.transform.position;
 
         return piece;
+    }
+
+    // handle random eye attachment
+    void HandleEyeAttachment(GameObject piece)
+    {
+        Shape shape = piece.GetComponent<Shape>();
+        Transform eyes = piece.transform.Find("Eyes_Attach_Point");
+        if(shape.ID == "blue")
+        {
+            eyes.GetComponent<Image>().sprite = eyesDown;
+        }
+        else if (shape.ID == "green")
+        {
+            eyes.GetComponent<Image>().sprite = eyesFlat;
+        }
+        else if (shape.ID == "pink")
+        {
+            eyes.GetComponent<Image>().sprite = eyesTilt;
+        } else if(shape.ID == "purple")
+        {
+            eyes.GetComponent<Image>().sprite = eyesUp;
+        } else if(shape.ID == "orange")
+        {
+            eyes.GetComponent<Image>().sprite = eyesFlat;
+        }
     }
 
     /*
@@ -549,6 +577,7 @@ public class BoardView : MonoBehaviour {
     }
 
     void UpdateViewFromBoardModel() {
+        Debug.Log("UpdateViewFromBoardModel");
 		// turn off level select
 		UIManager.TurnModalOff(Constants.UI_Board_Modal); // could be better/ is this needed?
 
@@ -638,6 +667,7 @@ public class BoardView : MonoBehaviour {
 						pieceView.row = row;
 						pieceView.col = col;
 						pieceView.AssignEvent();
+                        HandleEyeAttachment(go);
 						break;
 					}
 				}
