@@ -18,6 +18,7 @@ public class BoardView : MonoBehaviour {
 	public List<PieceMapping> piecePrefabs;
 	public GameObject backgroundPiece;
     public GameObject pointsPrefab;
+    public Sprite[] eyeOptions;
 
     // View reads from model
     private BoardModel boardModel;
@@ -228,6 +229,15 @@ public class BoardView : MonoBehaviour {
                 piece.transform.position = background.transform.position;
                 piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize);
                 piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize);
+
+                // handle random eye attachment
+                Transform eyes = piece.transform.Find("Eyes_Attach_Point");
+                if(eyes != null)
+                {
+                    Image eyeImg = eyes.gameObject.GetComponent<Image>();
+                    eyeImg.sprite = eyeOptions[Random.Range(0, eyeOptions.Length)];
+                }
+
                 PieceView pieceView = piece.AddComponent<PieceView>();
                 pieceView.row = row;
                 pieceView.col = col;

@@ -69,17 +69,17 @@ public static class UIManager {
         if(store_ui)
         {
             //Transform store = store_ui.FindChild("Store_Modal");
-            Transform general_store = store_ui.FindChild("General_Store_Modal");
+            Transform general_store = store_ui.Find("General_Store_Modal");
 
-            storeCloseButton = general_store.FindChild("Button").gameObject.GetComponent<Button>();
+            storeCloseButton = general_store.Find("Button").gameObject.GetComponent<Button>();
             Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
             evnt.AddListener(() => { Toggle("general_store"); });
             storeCloseButton.onClick = evnt;
 
             // Setup the Products
             // Grab the Product Template
-            Transform products = general_store.FindChild("Products");
-            Transform productTemplate = products.FindChild("Product_Template");
+            Transform products = general_store.Find("Products");
+            Transform productTemplate = products.Find("Product_Template");
             
 
             List<Transform> productBtns = new List<Transform>();
@@ -91,8 +91,8 @@ public static class UIManager {
                 clone.transform.SetParent(products,false);
                 StoreManager.ProductDescription prodDesc = StoreManager.ProductInfoMap[productId];
                 clone.name = productId;
-                clone.FindChild("Product_Name").gameObject.GetComponent<Text>().text = prodDesc.display_name;
-                clone.FindChild("Product_Cost").gameObject.GetComponent<Text>().text = prodDesc.price;
+                clone.Find("Product_Name").gameObject.GetComponent<Text>().text = prodDesc.display_name;
+                clone.Find("Product_Cost").gameObject.GetComponent<Text>().text = prodDesc.price;
                 clone.gameObject.SetActive(true);
                 //TODO set the icon
                 
@@ -114,16 +114,16 @@ public static class UIManager {
         if (board_ui)
         {
             //Transform store = store_ui.FindChild("Store_Modal");
-            Transform board_modal = board_ui.FindChild("Board_Modal");
-            storeCloseButton = board_modal.FindChild("Button").gameObject.GetComponent<Button>();
+            Transform board_modal = board_ui.Find("Board_Modal");
+            storeCloseButton = board_modal.Find("Button").gameObject.GetComponent<Button>();
             Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
             evnt.AddListener(() => { Debug.Log("Close Board Modal"); });
             storeCloseButton.onClick = evnt;
 
 
 
-            Transform levels = board_modal.FindChild("Levels");
-            Transform levelTemplate = levels.FindChild("Level_Template");
+            Transform levels = board_modal.Find("Levels");
+            Transform levelTemplate = levels.Find("Level_Template");
 
             List<LevelManager.LevelDescription> levelDescriptions = LevelManager.LoadLevels();
 
@@ -135,7 +135,7 @@ public static class UIManager {
                 levelBtns.Add(clone);
                 clone.transform.SetParent(levels, false);
                 clone.name = levelDescription.level_name;
-                clone.FindChild("Level_Name").gameObject.GetComponent<Text>().text = levelDescription.level_name;
+                clone.Find("Level_Name").gameObject.GetComponent<Text>().text = levelDescription.level_name;
                 //clone.FindChild("Product_Cost").gameObject.GetComponent<Text>().text = prodDesc.price;
                 clone.gameObject.SetActive(true);
                 //TODO set the icon
@@ -163,8 +163,8 @@ public static class UIManager {
     {
         if (message_ui)
         {
-            Transform settings = message_ui.FindChild("Settings_Modal");
-            settingsCloseButton = settings.FindChild("Button").gameObject.GetComponent<Button>();
+            Transform settings = message_ui.Find("Settings_Modal");
+            settingsCloseButton = settings.Find("Button").gameObject.GetComponent<Button>();
             Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
             evnt.AddListener(() => { Toggle("settings"); });
             settingsCloseButton.onClick = evnt;
@@ -175,7 +175,7 @@ public static class UIManager {
     {
         if (level_ui)
         {
-            Transform bottomLeft = level_ui.FindChild("Bottom_Left");
+            Transform bottomLeft = level_ui.Find("Bottom_Left");
             Button closeButton = bottomLeft.gameObject.GetComponent<Button>();
 
             Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
@@ -202,9 +202,9 @@ public static class UIManager {
     {
         if(level_ui)
         {
-            levelScoreButton = level_ui.FindChild("Top_Left").gameObject.GetComponent<Button>();
-            levelStoreButton = level_ui.FindChild("Store").gameObject.GetComponent<Button>();
-            levelSettingsButton = level_ui.FindChild("Settings").gameObject.GetComponent<Button>();
+            levelScoreButton = level_ui.Find("Top_Left").gameObject.GetComponent<Button>();
+            levelStoreButton = level_ui.Find("Store").gameObject.GetComponent<Button>();
+            levelSettingsButton = level_ui.Find("Settings").gameObject.GetComponent<Button>();
 
             Button.ButtonClickedEvent scoreEvent = new Button.ButtonClickedEvent();
             scoreEvent.AddListener(() => { Debug.Log("todo?"); });
@@ -225,7 +225,7 @@ public static class UIManager {
     {
         if (!level_ui) return;
 
-        level_ui.FindChild("Top_Left").FindChild("Moves").FindChild("Moves_Value").GetComponent<Text>().text = newCurrentMoveValue + "/" + newMaxMoveValue;
+        level_ui.Find("Top_Left").Find("Moves").Find("Moves_Value").GetComponent<Text>().text = newCurrentMoveValue + "/" + newMaxMoveValue;
 
         
     }
@@ -234,7 +234,7 @@ public static class UIManager {
     {
         if (!level_ui) return;
 
-        level_ui.FindChild("Top_Right").FindChild("Score").FindChild("Score_Value").GetComponent<Text>().text = newCurrentMoveValue.ToString();
+        level_ui.Find("Top_Right").Find("Score").Find("Score_Value").GetComponent<Text>().text = newCurrentMoveValue.ToString();
 
 
     }
@@ -265,7 +265,7 @@ public static class UIManager {
         {
             // open the store
             store_ui.gameObject.SetActive(shown);
-            StoreManager.OpenStore(store_ui.FindChild("General_Store_Modal"));
+            StoreManager.OpenStore(store_ui.Find("General_Store_Modal"));
         } else if(ui_id == "board")
         {
             //board_ui.gameObject.SetActive(shown);
@@ -273,7 +273,7 @@ public static class UIManager {
         } else if(ui_id == "map")
         {
             board_ui.gameObject.SetActive(true);
-            board_ui.FindChild("Board_Modal").gameObject.SetActive(true);
+            board_ui.Find("Board_Modal").gameObject.SetActive(true);
         }
     }
 }
