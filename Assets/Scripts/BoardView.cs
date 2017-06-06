@@ -41,6 +41,7 @@ public class BoardView : MonoBehaviour {
     private float maxPieceSize;
     private bool inputAllowed = false;
 
+	public int currentMoves;
 	/*
 	 * 	Triggers the animation for the pieces when they move to a new position.
 	 * 
@@ -390,6 +391,10 @@ public class BoardView : MonoBehaviour {
         yield return null;
     }
 
+	public void SetCurrentMovesFromLevelDescription() {
+		this.currentMoves = LevelManager.levelDescription.number_of_moves;
+	}
+
     void SetBackgroundPieceDimensions(GameObject backgroundPiece , float size)
 	{
 		backgroundPiece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size);
@@ -512,7 +517,10 @@ public class BoardView : MonoBehaviour {
         {
             // Animate match(s)
             // we have to do the swap on our game objects as well
-
+			//LevelManager.levelDescription.number_of_moves;
+			currentMoves--;
+			UIManager.UpdateMoveValue(currentMoves,LevelManager.levelDescription.number_of_moves);
+			UpdateUIMoves();
             GameObject temp = pieces[row, col];
             pieces[row, col] = pieces[nextRow, nextCol];
             pieces[nextRow, nextCol] = temp;
@@ -574,7 +582,11 @@ public class BoardView : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.S)) {
 			boardModel.PrintGameBoard();
 		}
-    }
+	}
+
+	void UpdateUIMoves() {
+		
+	}
 
     void UpdateViewFromBoardModel() {
         Debug.Log("UpdateViewFromBoardModel");

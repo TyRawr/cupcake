@@ -38,6 +38,9 @@ public class LevelManager : MonoBehaviour {
         LevelAsText = levelDescription.grid;
 		// be sure to destroy all stuff
 		boardModel = new BoardModel(levelDescription);
+		BoardView view = GameObject.Find("Canvas").GetComponent<BoardView>();
+		view.SetCurrentMovesFromLevelDescription();
+		UIManager.UpdateMoveValue(levelDescription.number_of_moves,levelDescription.number_of_moves);
         //ShapesManager.instance.Init(_gridDescription.pieces);
         //instance.StartCoroutine(instance.ClearShapes(callbackForWhenLevelDoneLoading));
        

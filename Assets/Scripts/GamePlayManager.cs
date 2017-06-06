@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System;
 
 public class GamePlayManager : MonoBehaviour {
-
+	public static GamePlayManager instance;
     public bool DebugLog = true;
 
     bool blockEvent = false;
@@ -21,6 +21,7 @@ public class GamePlayManager : MonoBehaviour {
 
     void Awake()
     {
+		instance = this;
 		/*
         StoreManager.Init();
         UIManager.Init();
