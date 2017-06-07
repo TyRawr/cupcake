@@ -38,11 +38,14 @@ public class BoardModel
 				{
 					CellModel cellModel = new CellModel(row, col, CellState.NULL);
 					gameBoard[row,col] = cellModel;
+					cellModel.SetPiece (Constants.PieceColor.NULL);
 				} else {
 					CellModel cellModel = new CellModel(row, col);
 					gameBoard[row,col] = cellModel;
-					PieceModel pieceModel = new PieceModel(pieceColorID);
-					cellModel.SetPiece (pieceModel);
+
+					//PieceModel pieceModel = new PieceModel(pieceColorID);
+					cellModel.SetPiece (Constants.PieceIDMapping[pieceColorID]);
+
 				}
 //				Debug.Log("pieceID:: " + pieceColorID);
 			}
@@ -86,26 +89,11 @@ public class BoardModel
 				CellResult result = cellResult[row,col];
 				if(result != null) {
 					s = result.GetPoints().ToString();
+					if (s.Equals("0")) {
+						s= result.GetPieceColor().ToString();
+					}
 				}
 				prettyprint += s + "\t";
-			}
-			prettyprint += "\n";
-		}
-		Debug.Log(prettyprint);
-	}
-
-	public void PrintSpawnArray(List<PieceModel>[] array) {
-		string prettyprint = "";
-		for (int col = 0; col < array.Length; col++) 
-		{
-			prettyprint += "Col" + col + "\t";
-			List<PieceModel> list = array[col];
-			if (list != null) 
-			{
-				for (int index = 0; index < list.Count; index++) 
-				{
-					prettyprint += list[index].GetColor() + "\t";
-				}
 			}
 			prettyprint += "\n";
 		}
@@ -215,9 +203,10 @@ public class BoardModel
 		}
 
 		// VALID: Perform Swap
-		PieceModel tempPiece = destinationCell.GetPiece();
-		destinationCell.SetPiece(selectedCell.GetPiece());
-		selectedCell.SetPiece (tempPiece);
+		Constants.PieceColor tempPieceColor = destinationCell.GetPieceColor();
+		Constants.PieceType tempPieceType = destinationCell.GetPieceType();
+		destinationCell.SetPiece(selectedCell.GetPieceColor(), selectedCell.GetPieceType());
+		selectedCell.SetPiece (tempPieceColor, tempPieceType);
 
 		// Find Matches
 		CheckMatch(selectedCell);
@@ -226,8 +215,8 @@ public class BoardModel
 		// FAILURE: Revert Swap
 		if (matches.Count == 0)
 		{
-			selectedCell.SetPiece (destinationCell.GetPiece ());
-			destinationCell.SetPiece (tempPiece);
+			selectedCell.SetPiece (destinationCell.GetPieceColor (), destinationCell.GetPieceType ());
+			destinationCell.SetPiece (tempPieceColor, tempPieceType);
 			return SwapResult.FAILURE;
 		}
 		return SwapResult.SUCCESS;
@@ -237,18 +226,19 @@ public class BoardModel
 	 * Evaluate matches Swap and following matches
 	 * 
 	 */
-	public List<ResultSet> GetResults () 
+	public List<CellResult[,]> GetResults () 
 	{
-		List<ResultSet> results = new List<ResultSet> ();
+		List<CellResult[,]> results = new List<CellResult[,]> ();
 		multiplier = 0;
 
 		do {
-			ResultSet resultSet = EvaluateMatches();
+			CellResult[,] cellResult = EvaluateMatches();
 			DestroyPieces();
-			DropPieces(resultSet.GetNewPieces());
 			matches = new List<MatchModel>();
+			DropPieces(cellResult);
 			CheckForMatches();
-			results.Add(resultSet);
+			results.Add(cellResult);
+			PrintGameBoard();
 			//PrintGameBoard();
 			multiplier ++;
 		} while (matches.Count > 0);
@@ -350,15 +340,10 @@ public class BoardModel
 	 * 	Iterate calculated matches (from swap or evaluation)
 	 * 
 	 */
-    private ResultSet EvaluateMatches () {
+	private CellResult[,] EvaluateMatches () {
 
 		// Init ResultSet elements: CellResult [] and List<PieceModel> []
 		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];	
-		List<PieceModel>[] spawned = new List<PieceModel>[gameBoard.GetLength(1)];
-
-		for (int index = 0; index < gameBoard.GetLength(1); index++) {
-			spawned[index] = new List<PieceModel>();
-		}
 
 		// List for each match
 		for (int index = 0; index < matches.Count; index++) 
@@ -375,7 +360,6 @@ public class BoardModel
 			if(results[row,col] == null) {
 //				Debug.Log("Found null CellResult location");
 				results[row,col] = new CellResult(points);
-				spawned[col].Add(SpawnPiece());
 			} else {
 				results[row,col].AddPoints(points);
 			}
@@ -393,18 +377,13 @@ public class BoardModel
 				if(results[row,col] == null) {
 //					Debug.Log("Found null CellResult location");
 					results[row,col] = new CellResult(points);
-					// SPAWN PIECE HERE (col)
-					spawned[col].Add(SpawnPiece());
 				} else {
 					results[row,col].AddPoints(points);
 				}
 				matched.Add(cell);
 			}
 		}
-		PrintCellResults(results);
-		//PrintSpawnArray(spawned);
-
-		return new ResultSet(results,spawned);
+		return results;
 	}
 
 	private void DestroyPieces() {
@@ -416,56 +395,66 @@ public class BoardModel
 		matched = new HashSet<CellModel>();
 	}
 
-	private void DropPieces(List<PieceModel> [] spawnPieces) {
-
+	private void DropPieces(CellResult[,] cellResults) {
 		int cols = gameBoard.GetLength(1);
 		int rows = gameBoard.GetLength(0);
 
+		//List<List<KeyValuePair<int,int>>> mapOriginDestination = new List<KeyValuePair<int, int>>();
 		// Iterate over Columns
 		for (int col = 0; col < cols; col ++) 
 		{
-			// If a piece was spawned in this column
-			if (spawnPieces[col].Count > 0) 
+			int spawnRow = -1;
+			// Loop from the bottom up
+			for (int row = 0; row < rows; row ++) 
 			{
-				// Loop from the bottom up
-				int spawnIndex = 0;
-				for (int row = 0; row < rows; row ++) 
+				CellModel cell = gameBoard[rows - row - 1, col];
+
+				// TODO: MAKE SURE ONLY VALID CELL TYPES DO THIS
+				// If empty, find a piece
+				if (cell.IsWanting())
 				{
-					CellModel cell = gameBoard[rows - row - 1, col];
+					int reach = 1;
+					bool spawnPiece = true;
 
-					// TODO: MAKE SURE ONLY VALID CELL TYPES DO THIS
-					// If empty, find a piece
-					if (cell.IsWanting())
+					// Look at cells above this one for a piece
+					while (reach < rows - row) 
 					{
-						int reach = 1;
-						bool grabSpawnPiece = true;
-
-						// Look at cells above this one for a piece
-						while (reach < rows - row) 
-						{
-							int index = (rows - row - 1) - reach++;
-							//Debug.Log(index);
-							CellModel reachedCell = gameBoard[index, col];
-							if (reachedCell.IsDroppable()) 
-							{
-								cell.SetPiece (reachedCell.GetPiece ());
-								reachedCell.Consume ();
-								grabSpawnPiece = false;
-								break;
+						int index = (rows - row - 1) - reach++;
+						//Debug.Log(index);
+						CellModel reachedCell = gameBoard[index, col];
+						if (reachedCell.IsDroppable()) 
+						{	
+							CellResult cellResult = cellResults[rows-row-1, col];
+							if (cellResult == null) {
+								cellResult = new CellResult(0);
+								cellResults[rows-row-1, col] = cellResult;
 							}
+							cellResult.Set(reachedCell);
+							cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
+							reachedCell.Consume ();
+							spawnPiece = false;
+							break;
 						}
-
-						// If no piece was found in grid, grab it from spawnPieces
-						if (grabSpawnPiece) 
-						{
-							cell.SetPiece (spawnPieces [col] [spawnIndex++]);
-						}
-
-						checkForMatches.Add(cell);
 					}
+
+					// If no piece was found in grid, grab it from spawnPieces
+					if (spawnPiece) 
+					{
+						cell.SetPiece (SpawnPiece());
+						CellResult cellResult = cellResults[rows-row-1, col];
+						if (cellResult == null) {
+							cellResult = new CellResult(0);
+							cellResults[rows-row-1, col] = cellResult;
+						}
+						cellResult.Set(cell);
+						cellResult.SetFromRow(spawnRow --);
+					}
+
+					checkForMatches.Add(cell);
 				}
 			}
 		}
+		PrintCellResults(cellResults);
 	}
 
 	private bool MatchIsUnique (MatchModel newMatch) {
@@ -485,13 +474,13 @@ public class BoardModel
 		}
 	}
 
-	private PieceModel SpawnPiece() {
+	private Constants.PieceColor SpawnPiece() {
 		// grab available pieces to spawn
 		int length = LevelManager.levelDescription.pieces.Length;
 		int randomInt = UnityEngine.Random.Range(0,length);
 		string id = LevelManager.levelDescription.pieces[randomInt];
-		PieceModel model = new PieceModel(id);
-		return model;
+		Constants.PieceColor pieceColor = Constants.PieceIDMapping[id];// new PieceModel(id);
+		return pieceColor;
 	}
 					
 }

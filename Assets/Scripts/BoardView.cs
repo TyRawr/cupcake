@@ -18,6 +18,12 @@ public class BoardView : MonoBehaviour {
 	public List<PieceMapping> piecePrefabs;
 	public GameObject backgroundPiece;
     public GameObject pointsPrefab;
+    // this used to be a public array populated from the Inspector
+    public Sprite eyesDown;
+    public Sprite eyesFlat;
+    public Sprite eyesTilt;
+    public Sprite eyesUp;
+
 
     // View reads from model
     private BoardModel boardModel;
@@ -35,6 +41,7 @@ public class BoardView : MonoBehaviour {
     private float maxPieceSize;
     private bool inputAllowed = false;
 
+	public int currentMoves;
 	/*
 	 * 	Triggers the animation for the pieces when they move to a new position.
 	 * 
@@ -59,10 +66,10 @@ public class BoardView : MonoBehaviour {
 	 * 
 	 * 	TODO: run a custom function based on the current Piece type.
 	 */ 
-    private IEnumerator AnimateDestroyPieces(ResultSet resultSet)
+	private IEnumerator AnimateDestroyPieces(CellResult[,] resultSet)
     {
         // Animate Destroy Pieces
-        CellResult[,] cellsMatches = resultSet.GetMatches();
+        CellResult[,] cellsMatches = resultSet;
         for (int row = 0; row < cellsMatches.GetLength(0); row++)
         {
             for (int col = 0; col < cellsMatches.GetLength(1); col++)
@@ -212,7 +219,7 @@ public class BoardView : MonoBehaviour {
 
     GameObject CreatePieceView(int row, int col, Constants.PieceColor color)
     {
-        
+        Debug.Log("Create");
         for(int i = 0; i < piecePrefabs.Count; i++)
         {
             if(piecePrefabs[i].color == color)
@@ -228,10 +235,17 @@ public class BoardView : MonoBehaviour {
                 piece.transform.position = background.transform.position;
                 piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize);
                 piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize);
+
+               
+                
+
                 PieceView pieceView = piece.AddComponent<PieceView>();
                 pieceView.row = row;
                 pieceView.col = col;
                 pieceView.AssignEvent();
+
+                // handle random eye attachment
+                HandleEyeAttachment(piece);
                 return piece;
             }
                 
@@ -250,6 +264,31 @@ public class BoardView : MonoBehaviour {
         piece.transform.position = background.transform.position;
 
         return piece;
+    }
+
+    // handle random eye attachment
+    void HandleEyeAttachment(GameObject piece)
+    {
+        Shape shape = piece.GetComponent<Shape>();
+        Transform eyes = piece.transform.Find("Eyes_Attach_Point");
+        if(shape.ID == "blue")
+        {
+            eyes.GetComponent<Image>().sprite = eyesDown;
+        }
+        else if (shape.ID == "green")
+        {
+            eyes.GetComponent<Image>().sprite = eyesFlat;
+        }
+        else if (shape.ID == "pink")
+        {
+            eyes.GetComponent<Image>().sprite = eyesTilt;
+        } else if(shape.ID == "purple")
+        {
+            eyes.GetComponent<Image>().sprite = eyesUp;
+        } else if(shape.ID == "orange")
+        {
+            eyes.GetComponent<Image>().sprite = eyesFlat;
+        }
     }
 
     /*
@@ -320,13 +359,13 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
-    IEnumerator RunResultsAnimation(List<ResultSet> resultSets)
+	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets)
     {
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
-        foreach (ResultSet resultSet in resultSets)
+		foreach (CellResult[,] resultSet in resultSets)
         {
-            CellResult[,] cellsMatches = resultSet.GetMatches();
+			CellResult[,] cellsMatches = resultSet;
             yield return StartCoroutine(AnimateDestroyPieces(resultSet));
             
 
@@ -352,6 +391,10 @@ public class BoardView : MonoBehaviour {
         yield return null;
     }
 
+	public void SetCurrentMovesFromLevelDescription() {
+		this.currentMoves = LevelManager.levelDescription.number_of_moves;
+	}
+
     void SetBackgroundPieceDimensions(GameObject backgroundPiece , float size)
 	{
 		backgroundPiece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size);
@@ -365,9 +408,10 @@ public class BoardView : MonoBehaviour {
 		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size);
 	}
 
-    private IEnumerator SpawnPieces(ResultSet resultSet)
+	private IEnumerator SpawnPieces(CellResult[,] resultSet)
     {
         //Adjust Grid With New Pieces
+		/*
         List<PieceModel>[] newPieces = resultSet.GetNewPieces();
         for (int column = 0; column < newPieces.Length; column++)
         {
@@ -385,6 +429,7 @@ public class BoardView : MonoBehaviour {
                 StartCoroutine(AnimateAppear(pieceCounter, column, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
             }
         }
+        */
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
     }
 
@@ -435,8 +480,8 @@ public class BoardView : MonoBehaviour {
 
     void SwapPieces(int row, int col, Direction direction)
     {
-        if (!inputAllowed) return;
-        inputAllowed = false;
+        //if (!inputAllowed) return;
+        //inputAllowed = false;
 
 		int nextRow = row;
 		int nextCol = col;
@@ -474,7 +519,10 @@ public class BoardView : MonoBehaviour {
         {
             // Animate match(s)
             // we have to do the swap on our game objects as well
-
+			//LevelManager.levelDescription.number_of_moves;
+			currentMoves--;
+			UIManager.UpdateMoveValue(currentMoves,LevelManager.levelDescription.number_of_moves);
+			UpdateUIMoves();
             GameObject temp = pieces[row, col];
             pieces[row, col] = pieces[nextRow, nextCol];
             pieces[nextRow, nextCol] = temp;
@@ -484,9 +532,9 @@ public class BoardView : MonoBehaviour {
             pieceView1.col = col;
             pieceView2.row = nextRow;
             pieceView2.col = nextCol;
-            List<ResultSet> resultSets = boardModel.GetResults();
+			List<CellResult[,]> resultSets = boardModel.GetResults(); 
 			Debug.Log("Length of Result Sets: " + resultSets.Count);
-            StartCoroutine(RunResultsAnimation(resultSets));
+            //StartCoroutine(RunResultsAnimation(resultSets));
 //            List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
 //            if (recommendedMatch == null)
 //            {
@@ -501,7 +549,8 @@ public class BoardView : MonoBehaviour {
 //            }
         }
         UIManager.UpdateScoreValue(boardModel.Score);
-        //UpdateViewFromBoardModel();
+//		boardModel.PrintGameBoard();
+        UpdateViewFromBoardModel();
     }
 
     void SwipeUpEventListener(object pieceViewObj) {
@@ -536,9 +585,14 @@ public class BoardView : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.S)) {
 			boardModel.PrintGameBoard();
 		}
-    }
+	}
+
+	void UpdateUIMoves() {
+		
+	}
 
     void UpdateViewFromBoardModel() {
+        Debug.Log("UpdateViewFromBoardModel");
 		// turn off level select
 		UIManager.TurnModalOff(Constants.UI_Board_Modal); // could be better/ is this needed?
 
@@ -568,8 +622,8 @@ public class BoardView : MonoBehaviour {
 		float height = (colCount ) + ((colCount - 1) * Constants.MIN_SIZE);
 		float halfWidth = width / 2f;
 		float halfHeight = height / 2f;
-		Debug.Log("BH:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height);
-		Debug.Log("BW:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width);
+//		Debug.Log("BH:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height);
+//		Debug.Log("BW:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width);
 		float gridHeight = backgroundPiecesParent.GetComponent<RectTransform>().rect.height;
 		float gridWidth = backgroundPiecesParent.GetComponent<RectTransform>().rect.width;
 		float maxGridDimension = Mathf.Min(gridWidth, gridHeight);
@@ -628,6 +682,7 @@ public class BoardView : MonoBehaviour {
 						pieceView.row = row;
 						pieceView.col = col;
 						pieceView.AssignEvent();
+                        HandleEyeAttachment(go);
 						break;
 					}
 				}

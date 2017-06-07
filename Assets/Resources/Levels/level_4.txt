@@ -7,7 +7,7 @@
 	"gxbbgx",
 	"gggbgg"
 	],
-	"pieces":["blue","green","red","yellow"],
+	"pieces":["blue","green","red","purple"],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],

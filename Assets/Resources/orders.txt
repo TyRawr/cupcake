@@ -1,8 +1,6 @@
 // use this file to read in the orders from the level file. used to satisfy level requirements.
 {
 
-	"pink-top-yellow-bottom": {
-		""
-	}
+	
 	
 }
