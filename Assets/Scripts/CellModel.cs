@@ -8,11 +8,8 @@ public class CellModel
 
 
 	//maybe these?
-	private PieceModel piece;
-	private CellModel cellUp;
-	private CellModel cellRight;
-	private CellModel cellLeft;
-	private CellModel cellDown;
+	private Constants.PieceColor pieceColor;
+	private Constants.PieceType pieceType;
 	private int row;
 	private int col;
 	private CellState state;
@@ -30,7 +27,8 @@ public class CellModel
 
 	public void Consume () 
 	{
-		this.piece = null;
+		this.pieceColor = Constants.PieceColor.NULL;
+		this.pieceType = Constants.PieceType.NULL;
 	}
 
 	public int EvaluateMatch (int multiplier) 
@@ -43,7 +41,7 @@ public class CellModel
 	 */
 	public bool IsDroppable() 
 	{
-		if (piece == null) 
+		if (pieceColor == Constants.PieceColor.NULL) 
 		{
 			return false;
 		}
@@ -55,7 +53,7 @@ public class CellModel
 	 */
 	public bool IsSwappable() 
 	{
-		if (piece == null) 
+		if (pieceColor == Constants.PieceColor.NULL) 
 		{
 			return false;
 		}
@@ -67,7 +65,7 @@ public class CellModel
 	 */
 	public bool IsWanting() 
 	{
-		if (piece != null || state == CellState.NULL) 
+		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL) 
 		{
 			return false;
 		}
@@ -90,15 +88,11 @@ public class CellModel
 	{
 		return this.state;
 	}
-		
-	public PieceModel GetPiece() 
-	{
-		return this.piece;
-	}
 
-	public void SetPiece(PieceModel piece) 
+	public void SetPiece(Constants.PieceColor pieceColor, Constants.PieceType pieceType = Constants.PieceType.NORMAL) 
 	{
-		this.piece = piece;
+		this.pieceColor = pieceColor;
+		this.pieceType = pieceType;
 	}
 
 	/*
@@ -106,11 +100,7 @@ public class CellModel
 	 */
 	public Constants.PieceColor GetPieceColor() 
 	{
-		if (this.piece != null) {
-			return this.piece.GetColor();
-		} else {
-			return Constants.PieceColor.NULL;
-		}
+		return this.pieceColor;
 	}
 
 	/*
@@ -118,11 +108,7 @@ public class CellModel
 	 */
 	public Constants.PieceType GetPieceType() 
 	{
-		if (this.piece != null) {
-			return this.piece.GetPieceType();
-		} else {
-			return Constants.PieceType.NULL;
-		}
+		return this.pieceType;
 	}
 }
 
