@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class PieceView : MonoBehaviour {
 
-	public int row, col;
+
 
 	// Use this for initialization
 	void Start () {

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public static class Constants {
 
+	public static int CellPadding = 2;
+
     public enum SwipeDirection
     {
         UP,
