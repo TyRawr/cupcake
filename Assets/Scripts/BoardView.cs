@@ -48,15 +48,21 @@ public class BoardView : MonoBehaviour {
 	 */
     private IEnumerator AnimateAllPiecesIntoBackgroundPosition()
     {
+		float max = 0f;
         for (int row = 0; row < cells.GetLength(0); row++)
         {
             for (int col = 0; col < cells.GetLength(1); col++)
             {
                 if (cells[row, col].piece != null)
-					StartCoroutine(AnimatePosition(row, col, Constants.DEFAULT_SWAP_ANIMATION_DURATION * 3));
+					StartCoroutine(AnimatePositionConstantSpeed(row, col, (float f)=> {
+						if(f > max) {
+							max = f;
+						}
+					}));
             }
         }
-        yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION * 3);
+		Debug.Log("Max: " + max);
+		yield return new WaitForSeconds(max);
     }
 
 	/*
@@ -84,16 +90,16 @@ public class BoardView : MonoBehaviour {
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
     }
 
-	public IEnumerator AnimatePositionConstantSpeed(int row, int col, float duration, UnityAction callback = null) {
-		float moveSpeed = 1f;
+	public IEnumerator AnimatePositionConstantSpeed(int row, int col, UnityAction<float> callback = null) {
+		float moveSpeed = 4f;
 		GameObject piece = cells[row, col].piece;
 		CellView cellView = cells[row, col];
 		Vector3 startMarker = piece.transform.position;
 		Vector3 toPosition = cellView.transform.position;
 		float dist = Vector3.Distance(startMarker, toPosition);
-		float journeyLength = Vector3.Distance(startMarker, toPosition);
-		for (float i = 0.0f; i < 1.0f; i += (moveSpeed * Time.deltaTime) / dist) {
-			piece.transform.position = Vector3.Lerp(startMarker, toPosition, i);
+		callback(dist/moveSpeed);
+		for (float i = 0.0f; i < dist; i += moveSpeed*Time.deltaTime) {
+			piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed*Time.deltaTime);
 			yield return new WaitForEndOfFrame();
 		}
 	}
