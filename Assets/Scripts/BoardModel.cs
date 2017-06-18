@@ -101,8 +101,8 @@ public class BoardModel
 		Debug.Log(prettyprint);
 	}
 
-	public void PrintListOfCells(List<CellModel> cellModels) {
-		string prettyprint = "";
+	public void PrintRecommendedMatch(List<CellModel> cellModels) {
+		string prettyprint = "Recommended Match:\n";
 
 		foreach (CellModel cell in cellModels) {
 			prettyprint += "(" + cell.GetRow() + "," + cell.GetCol() + ")\t" + cell.GetPieceColor() + "\n";
@@ -256,11 +256,13 @@ public class BoardModel
 		} while (matches.Count > 0);
 
 		List<CellModel> recommendedMatch = GetRecommendedMatch ();
-		if (recommendedMatch == null) {
-			Debug.Log("No match found, should shuffle.");
-		} else {
-			PrintListOfCells(recommendedMatch);
+		while (recommendedMatch == null) {
+			Debug.Log ("No recommended match found. Shuffling...");
+			ShuffleBoard ();
+			recommendedMatch = GetRecommendedMatch ();
 		}
+
+		PrintRecommendedMatch (recommendedMatch);
 
 		return results;
 	}
@@ -269,59 +271,23 @@ public class BoardModel
 	{
 		List<CellModel> potentialMatch = new List<CellModel> ();
 
-		for (int row = 0; row < gameBoard.GetLength (0); row ++) 
+		for (int row = 0; row < gameBoard.GetLength (0); row++) 
 		{
-			for (int col = 0; col < gameBoard.GetLength (1); col ++)
+			for (int col = 0; col < gameBoard.GetLength (1); col++) 
 			{
 				CellModel cell = gameBoard [row, col];
 				CellModel nextCell;
 				CellModel swapCell;
 				Constants.PieceColor pc = cell.GetPieceColor ();
 				if (pc == Constants.PieceColor.NULL) { continue; }
-
-				// Check for XOX in Row
-				if (col < gameBoard.GetLength (1) - 2) 
-				{
-					nextCell = gameBoard [row, col + 2];
-					if (pc == nextCell.GetPieceColor ()) 
-					{
-						if (gameBoard[row, col + 1].IsSwappable()) {
-							// Check above middle for XOX match
-							if (row > 0) 
-							{
-								swapCell = gameBoard [row - 1, col + 1];
-								if (pc == swapCell.GetPieceColor() && swapCell.IsSwappable()) {
-									potentialMatch.Add (cell);
-									potentialMatch.Add (swapCell);
-									potentialMatch.Add (nextCell);
-									potentialMatch.AddRange (CheckDirection(row, col + 3, 0, 1, pc));
-									return potentialMatch;
-								}
-							}
-							// Check below middle for XOX match
-							if (row + 1 < gameBoard.GetLength(0)) 
-							{
-								swapCell = gameBoard [row + 1, col + 1];
-								if (pc == swapCell.GetPieceColor () && swapCell.IsSwappable ()) {
-									potentialMatch.Add (cell);
-									potentialMatch.Add (swapCell);
-									potentialMatch.Add (nextCell);
-									potentialMatch.AddRange (CheckDirection (row, col + 3, 0, 1, pc));
-									return potentialMatch;
-								}
-							}
-						}
-					}
-				}
-
+			
 				// Check for XX in Row
-				if (col < gameBoard.GetLength(1) - 1) 
-				{
+				if (col < gameBoard.GetLength (1) - 1) {
 					nextCell = gameBoard [row, col + 1];
 					if (pc == nextCell.GetPieceColor ()) {
 						// Check above and below and left of left for OXX match
 						if (col > 1) {
-							if (gameBoard[row, col - 1].IsSwappable()) {
+							if (gameBoard [row, col - 1].IsSwappable ()) {
 								if (row > 1) {
 									swapCell = gameBoard [row - 1, col - 1];
 									if (pc == swapCell.GetPieceColor () && swapCell.IsSwappable ()) {
@@ -355,9 +321,9 @@ public class BoardModel
 							}
 						}
 						// Check above and below and right of right for XXO match
-						if (col < gameBoard.GetLength(1) - 2) {
+						if (col < gameBoard.GetLength (1) - 2) {
 							if (gameBoard [row, col + 2].IsSwappable ()) {
-								
+									
 								if (row > 1) {
 									swapCell = gameBoard [row - 1, col + 2];
 									if (pc == swapCell.GetPieceColor () && swapCell.IsSwappable ()) {
@@ -392,43 +358,40 @@ public class BoardModel
 						}
 					}
 				}
-
-				// Check for XOX in Col
-				if (row < gameBoard.GetLength (0) - 2) 
-				{
-					nextCell = gameBoard [row + 2, col];
-					if (pc == nextCell.GetPieceColor ()) 
-					{
-						// Check left of middle for XOX match
-						if (gameBoard [row + 1, col].IsSwappable ()) {
-							if (col > 0) {
-								swapCell = gameBoard [row + 1, col - 1];
+			
+				// Check for XOX in Row
+				if (col < gameBoard.GetLength (1) - 2) {
+					nextCell = gameBoard [row, col + 2];
+					if (pc == nextCell.GetPieceColor ()) {
+						if (gameBoard [row, col + 1].IsSwappable ()) {
+							// Check above middle for XOX match
+							if (row > 0) {
+								swapCell = gameBoard [row - 1, col + 1];
 								if (pc == swapCell.GetPieceColor () && swapCell.IsSwappable ()) {
 									potentialMatch.Add (cell);
 									potentialMatch.Add (swapCell);
 									potentialMatch.Add (nextCell);
-									potentialMatch.AddRange (CheckDirection (row + 3, col, 1, 0, pc));
+									potentialMatch.AddRange (CheckDirection (row, col + 3, 0, 1, pc));
 									return potentialMatch;
 								}
 							}
-							// Check right of middle for XOX match
-							if (col < gameBoard.GetLength (0) - 1) {
+							// Check below middle for XOX match
+							if (row + 1 < gameBoard.GetLength (0)) {
 								swapCell = gameBoard [row + 1, col + 1];
 								if (pc == swapCell.GetPieceColor () && swapCell.IsSwappable ()) {
 									potentialMatch.Add (cell);
 									potentialMatch.Add (swapCell);
 									potentialMatch.Add (nextCell);
-									potentialMatch.AddRange (CheckDirection (row + 3, col, 1, 0, pc));
+									potentialMatch.AddRange (CheckDirection (row, col + 3, 0, 1, pc));
 									return potentialMatch;
 								}
 							}
 						}
 					}
 				}
-
+			
 				// Check for XX in Col
-				if (row < gameBoard.GetLength(0) - 1) 
-				{
+				if (row < gameBoard.GetLength (0) - 1) {
 					nextCell = gameBoard [row + 1, col];
 					if (pc == nextCell.GetPieceColor ()) {
 						// Check left and right and above top for OXX match
@@ -467,7 +430,7 @@ public class BoardModel
 							}
 						}
 						// Check left and right and below bottom for XXO match
-						if (row < gameBoard.GetLength(0) - 2) {
+						if (row < gameBoard.GetLength (0) - 2) {
 							if (gameBoard [row + 2, col].IsSwappable ()) {
 								if (col > 1) {
 									swapCell = gameBoard [row + 2, col - 1];
@@ -503,6 +466,37 @@ public class BoardModel
 						}
 					}
 				}
+			
+				// Check for XOX in Col
+				if (row < gameBoard.GetLength (0) - 2) {
+					nextCell = gameBoard [row + 2, col];
+					if (pc == nextCell.GetPieceColor ()) {
+						// Check left of middle for XOX match
+						if (gameBoard [row + 1, col].IsSwappable ()) {
+							if (col > 0) {
+								swapCell = gameBoard [row + 1, col - 1];
+								if (pc == swapCell.GetPieceColor () && swapCell.IsSwappable ()) {
+									potentialMatch.Add (cell);
+									potentialMatch.Add (swapCell);
+									potentialMatch.Add (nextCell);
+									potentialMatch.AddRange (CheckDirection (row + 3, col, 1, 0, pc));
+									return potentialMatch;
+								}
+							}
+							// Check right of middle for XOX match
+							if (col < gameBoard.GetLength (0) - 1) {
+								swapCell = gameBoard [row + 1, col + 1];
+								if (pc == swapCell.GetPieceColor () && swapCell.IsSwappable ()) {
+									potentialMatch.Add (cell);
+									potentialMatch.Add (swapCell);
+									potentialMatch.Add (nextCell);
+									potentialMatch.AddRange (CheckDirection (row + 3, col, 1, 0, pc));
+									return potentialMatch;
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		return null;
@@ -513,7 +507,7 @@ public class BoardModel
 	 */
 	private List<CellModel> CheckDirection (int targetRow, int targetCol, int rowCheck, int colCheck, Constants.PieceColor pc) {
 		List<CellModel> additionalCells = new List<CellModel> ();
-		while (targetRow > 0 && targetRow < gameBoard.GetLength(0) && targetCol > 0 && targetCol < gameBoard.GetLength(1)) 
+		while (targetRow >= 0 && targetRow < gameBoard.GetLength(0) && targetCol >= 0 && targetCol < gameBoard.GetLength(1)) 
 		{
 			CellModel cell = gameBoard [targetRow, targetCol];
 			if (pc == cell.GetPieceColor ()) {
@@ -525,6 +519,50 @@ public class BoardModel
 			return additionalCells;
 		}
 		return additionalCells;
+	}
+
+	/**
+	 * Redistribute pieces currently on the board
+	 * 
+	 */ 
+	private void ShuffleBoard() {
+
+		// TODO: Decide if we need to maintain origin info
+		List<CellModel> recommendedMatch = null;
+		List<Constants.PieceColor> pieces = new List<Constants.PieceColor> ();
+		// Build list of pieces
+		for (int row = 0; row < gameBoard.GetLength (0); row++) {
+			for (int col = 0; col < gameBoard.GetLength (1); col++) {
+				CellModel cell = gameBoard [row, col];
+				if (cell.GetState () != CellState.NULL) {
+					pieces.Add (gameBoard [row, col].GetPieceColor ());				
+				}
+			}
+		}
+
+		List<Constants.PieceColor> piecesToDistribute = new List<Constants.PieceColor> ();
+		do {
+			Debug.Log("Performing shuffle...");
+			piecesToDistribute.AddRange(pieces);
+
+			// Redistribute list of pieces
+			for (int row = 0; row < gameBoard.GetLength (0); row++) {
+				for (int col = 0; col < gameBoard.GetLength (1); col++) {
+					CellModel cell = gameBoard [row, col];
+					if (cell.GetState () != CellState.NULL) {
+						checkForMatches.Add (cell);  // Add to checkForMatches
+						int index = UnityEngine.Random.Range (0, piecesToDistribute.Count - 1);
+						gameBoard [row, col].SetPiece (piecesToDistribute [index]);
+						piecesToDistribute.RemoveAt (index);
+					}
+				}
+			}
+			matches = new List<MatchModel>();
+			// TODO: Replace this with a call to an optimized function
+			CheckForMatches ();
+			PrintGameBoard();
+		} while (matches.Count > 0);
+
 	}
 
     /**
