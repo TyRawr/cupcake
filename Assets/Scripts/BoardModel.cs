@@ -259,7 +259,7 @@ public class BoardModel
 		if (recommendedMatch == null) {
 			Debug.Log("No match found, should shuffle.");
 		} else {
-			PrintListOfCells(existingMatch);
+			PrintListOfCells(recommendedMatch);
 		}
 
 		return results;
@@ -507,9 +507,11 @@ public class BoardModel
 		}
 		return null;
 	}
-
-	// From the target and moving with row/col check, finds cells matching PieceColor
-	public List<CellModel> CheckDirection (int targetRow, int targetCol, int rowCheck, int colCheck, Constants.PieceColor pc) {
+		
+	/**
+	 * From the target and moving with row/col check, builds list of cells matching PieceColor
+	 */
+	private List<CellModel> CheckDirection (int targetRow, int targetCol, int rowCheck, int colCheck, Constants.PieceColor pc) {
 		List<CellModel> additionalCells = new List<CellModel> ();
 		while (targetRow > 0 && targetRow < gameBoard.GetLength(0) && targetCol > 0 && targetCol < gameBoard.GetLength(1)) 
 		{
