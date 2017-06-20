@@ -9,11 +9,20 @@ public class BoardModel
 
 	private CellModel[,] gameBoard;
 	private int moves;
+	private int maxMoves;
 	private int score;
 	private int multiplier;
 	private List<MatchModel> matches;
 	private HashSet<CellModel> matched;
 	private HashSet<CellModel> checkForMatches;
+
+	public int GetMoves() {
+		return moves;
+	}
+
+	public int GetMaxMoves() {
+		return maxMoves;
+	}
 
 	public int Score {
 		get {
@@ -27,6 +36,7 @@ public class BoardModel
 		string[] grid = levelDescription.grid;
 		this.gameBoard = new CellModel[grid.Length,grid[0].Length];
 		this.score = 0;
+		this.moves = this.maxMoves = levelDescription.number_of_moves;
 		// iterate through the grid
 		for (int row = 0; row < grid.Length; row++)
 		{
@@ -230,7 +240,7 @@ public class BoardModel
 			destinationCell.SetPiece (tempPieceColor, tempPieceType);
 			return SwapResult.FAILURE;
 		}
-		moves++;
+		moves--;
 		return SwapResult.SUCCESS;
 	}
 

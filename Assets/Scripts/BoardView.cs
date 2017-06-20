@@ -449,10 +449,6 @@ public class BoardView : MonoBehaviour {
 
     }
 
-	public void SetCurrentMovesFromLevelDescription() {
-		this.currentMoves = LevelManager.levelDescription.number_of_moves;
-	}
-
 	void SetBackgroundPieceDimensions(CellView cell , float size)
 	{
 		cell.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size);
@@ -597,20 +593,19 @@ public class BoardView : MonoBehaviour {
             // Animate match(s)
             // we have to do the swap on our game objects as well
 			//LevelManager.levelDescription.number_of_moves;
-			currentMoves--;
-			UIManager.UpdateMoveValue(currentMoves,LevelManager.levelDescription.number_of_moves);
-			UpdateUIMoves();
+			//currentMoves--;
             GameObject temp = cells[row, col].piece;
             cells[row, col].piece = cells[nextRow, nextCol].piece;
             cells[nextRow, nextCol].piece = temp;
 			Results results = boardModel.GetResults(); 
 			List<CellResult[,]> cellResults = results.GetCellResults();
-			Debug.Log("Length of Result Sets: " + cellResults.Count);
+			//Debug.Log("Length of Result Sets: " + cellResults.Count);
 
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
 			bool hadToShuffle = results.GetHadToShuffle();
 			StartCoroutine(RunResultsAnimation(cellResults,hadToShuffle));
         }
+		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
         UIManager.UpdateScoreValue(boardModel.Score);
 //		boardModel.PrintGameBoard();
     }
@@ -649,12 +644,8 @@ public class BoardView : MonoBehaviour {
 		}
 	}
 
-	void UpdateUIMoves() {
-		
-	}
-
 	void UpdateViewFromBoardModel(bool createCells = true) {
-
+		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
 		EventManager.StopListening(Constants.SWIPE_UP_EVENT,SwipeUpEventListener);
 		EventManager.StopListening(Constants.SWIPE_RIGHT_EVENT,SwipeRightEventListener);
 		EventManager.StopListening(Constants.SWIPE_DOWN_EVENT,SwipeDownEventListener);

@@ -39,24 +39,9 @@ public class LevelManager : MonoBehaviour {
 		// be sure to destroy all stuff
 		boardModel = new BoardModel(levelDescription);
 		BoardView view = GameObject.Find("Canvas").GetComponent<BoardView>();
-		view.SetCurrentMovesFromLevelDescription();
 		UIManager.UpdateMoveValue(levelDescription.number_of_moves,levelDescription.number_of_moves);	
 		boardModel.PrintGameBoard();
-		//boardModel.SwapPiece(1,2,Direction.DOWN);
-		//boardModel.PrintGameBoard();
-        //ShapesManager.instance.Init(_gridDescription.pieces);
-        //instance.StartCoroutine(instance.ClearShapes(callbackForWhenLevelDoneLoading));
-       
     }
-
-    IEnumerator ClearShapes(UnityAction callback)
-    {
-        Debug.Log("Clear");
-        yield return ShapesManager.instance.DestroyPieces();
-        callback();
-        EventManager.TriggerEvent(Constants.LEVEL_LOAD_END_EVENT);
-    }
-
 
     public static List<LevelDescription> LoadLevels()
     {
@@ -76,11 +61,6 @@ public class LevelManager : MonoBehaviour {
         return levels;
     }
 
-    public static void ClearLevel()
-    {
-
-    }
-
     void Start()
     {
         instance = this;
@@ -88,10 +68,4 @@ public class LevelManager : MonoBehaviour {
         if (DebugLog)
             Debug.Log("LevelManager Start");
     }
-
-    void Update()
-    {
-
-    }
-
 }
