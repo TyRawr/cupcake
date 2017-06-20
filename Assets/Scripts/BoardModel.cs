@@ -238,7 +238,7 @@ public class BoardModel
 	 * Evaluate matches Swap and following matches
 	 * 
 	 */
-	public List<CellResult[,]> GetResults () 
+	public Results GetResults () 
 	{
 		List<CellResult[,]> results = new List<CellResult[,]> ();
 		multiplier = 0;
@@ -256,15 +256,17 @@ public class BoardModel
 		} while (matches.Count > 0);
 
 		List<CellModel> recommendedMatch = GetRecommendedMatch ();
+		bool hadToShuffle = false;
 		while (recommendedMatch == null) {
+			hadToShuffle = true;
 			Debug.Log ("No recommended match found. Shuffling...");
 			ShuffleBoard ();
 			recommendedMatch = GetRecommendedMatch ();
 		}
 
 		PrintRecommendedMatch (recommendedMatch);
-
-		return results;
+		Results res = new Results(results, recommendedMatch, hadToShuffle);
+		return res;
 	}
 		
 	public List<CellModel> GetRecommendedMatch () 

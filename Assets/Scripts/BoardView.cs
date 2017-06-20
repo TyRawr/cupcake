@@ -32,6 +32,7 @@ public class BoardView : MonoBehaviour {
 
 	//parents for pieces and background items
 	GameObject backgroundPiecesParent;
+	GameObject backgroundImagesParent;
 	GameObject piecesParent;
     GameObject pointsParent;
 	GameObject gridParent;
@@ -406,7 +407,7 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
-	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets)
+	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets, bool hadToShuffle)
     {
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
@@ -438,6 +439,10 @@ public class BoardView : MonoBehaviour {
             // move pieces into position
             yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 			yield return new WaitForEndOfFrame();
+			if(hadToShuffle) {
+				Debug.Log("Had To Shuffle");
+				UpdateViewFromBoardModel();
+			}
         }
         inputAllowed = true;
         yield return null;
@@ -544,6 +549,7 @@ public class BoardView : MonoBehaviour {
         boardModel = LevelManager.boardModel;
         EventManager.StartListening(Constants.LEVEL_LOAD_END_EVENT, LevelLoadListener);
         backgroundPiecesParent = GameObject.Find("BackgroundPieces") as GameObject;
+		backgroundImagesParent = GameObject.Find("BackgroundImages") as GameObject;
         piecesParent = GameObject.Find("Pieces");
         pointsParent = GameObject.Find("Points");
         grid = GameObject.Find("Grid");
@@ -597,21 +603,13 @@ public class BoardView : MonoBehaviour {
             GameObject temp = cells[row, col].piece;
             cells[row, col].piece = cells[nextRow, nextCol].piece;
             cells[nextRow, nextCol].piece = temp;
-			List<CellResult[,]> resultSets = boardModel.GetResults(); 
-			Debug.Log("Length of Result Sets: " + resultSets.Count);
-            StartCoroutine(RunResultsAnimation(resultSets));
-//            List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
-//            if (recommendedMatch == null)
-//            {
-//                Debug.Log("Cannot recommend match");
-//            }
-//            else
-//            {
-//                for (int i = 0; i < recommendedMatch.Count; i++)
-//                {
-//                    Debug.Log("recommendedMatch:: row " + recommendedMatch[i].GetRow() + " \tcol " + recommendedMatch[i].GetCol());
-//                }
-//            }
+			Results results = boardModel.GetResults(); 
+			List<CellResult[,]> cellResults = results.GetCellResults();
+			Debug.Log("Length of Result Sets: " + cellResults.Count);
+
+            List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
+			bool hadToShuffle = results.GetHadToShuffle();
+			StartCoroutine(RunResultsAnimation(cellResults,hadToShuffle));
         }
         UIManager.UpdateScoreValue(boardModel.Score);
 //		boardModel.PrintGameBoard();
@@ -668,6 +666,14 @@ public class BoardView : MonoBehaviour {
 		foreach(Transform child in piecesParent.transform) {
 			GameObject.Destroy(child.gameObject);
 		}
+		if(createCells) {
+			foreach(Transform child in backgroundImagesParent.transform) {
+				GameObject.Destroy(child.gameObject);
+			}
+			foreach(Transform child in backgroundPiecesParent.transform) {
+				GameObject.Destroy(child.gameObject);
+			}
+		}
 
 		CellModel[,] gameBoard = boardModel.GetGameBoard();
 
@@ -719,6 +725,14 @@ public class BoardView : MonoBehaviour {
 				CellView cellView;
 
 				if (createCells) {
+					CellView backgroundImage = (CellView)GameObject.Instantiate(cellPrefab, new Vector3(x, y, z), Quaternion.identity);
+					backgroundImage.transform.SetParent(backgroundImagesParent.transform, false);
+					//backgroundPieces[row, col] = background;
+					SetBackgroundPieceDimensions(backgroundImage, maxPieceDimension);
+					if(cell.GetPieceColor() != Constants.PieceColor.NULL) {
+						backgroundImage.GetComponent<Image>().color = new Vector4(1f,1f,1f,1f);
+					}
+
 					cellView = (CellView)GameObject.Instantiate(cellPrefab, new Vector3(x, y, z), Quaternion.identity);
 					cells[row,col] = cellView;
 					cells[row,col].AssignEvent();
