@@ -21,7 +21,6 @@ public class PieceView : MonoBehaviour {
 	{
 		float startTime = Time.time;
 		Vector3 startMarker = this.gameObject.transform.position;
-		float journeyLength = Vector3.Distance(startMarker, toPosition);
 		for(float t = 0.0f; t < duration; t+= Time.deltaTime)
 		{
 			if (transform == null) break;

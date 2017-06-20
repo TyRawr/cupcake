@@ -38,17 +38,7 @@ public class Shape : MonoBehaviour {
     }
 
     public string id;
-    ShapesManager shapesManager;
     
-    private Vector2 swappingWith;
-    bool checkSwap = false;
-    private Constants.SwipeDirection currentSwipeDirection = Constants.SwipeDirection.DOWN;
-
-    void Awake()
-    {
-        shapesManager = GameObject.Find("Manager").GetComponent<ShapesManager>();
-    }
-
 	// Use this for initialization
 	void Start () {
 	
@@ -56,13 +46,13 @@ public class Shape : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		
     }
 
     public IEnumerator AnimatePosition(Vector3 toPosition, float duration, UnityAction callback)
     {
         float startTime = Time.time;
         Vector3 startMarker = this.gameObject.transform.position;
-        float journeyLength = Vector3.Distance(startMarker, toPosition);
         for(float t = 0.0f; t < duration; t+= Time.deltaTime)
         {
             if (transform == null) break;
