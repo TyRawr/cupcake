@@ -46,7 +46,7 @@ public class Shape : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		 
     }
 
     public IEnumerator AnimatePosition(Vector3 toPosition, float duration, UnityAction callback)

@@ -38,9 +38,6 @@ public class LevelManager : MonoBehaviour {
         LevelAsText = levelDescription.grid;
 		// be sure to destroy all stuff
 		boardModel = new BoardModel(levelDescription);
-		BoardView view = GameObject.Find("Canvas").GetComponent<BoardView>();
-		UIManager.UpdateMoveValue(levelDescription.number_of_moves,levelDescription.number_of_moves);	
-		boardModel.PrintGameBoard();
     }
 
     public static List<LevelDescription> LoadLevels()

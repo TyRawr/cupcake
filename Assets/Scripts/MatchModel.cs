@@ -9,6 +9,8 @@ public class MatchModel
 	private int minCol;
 	private int maxCol;
 
+	public MatchModel(){}
+
 	public MatchModel (List<CellModel> cells)
 	{
 		this.cells = cells;

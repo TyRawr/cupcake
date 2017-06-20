@@ -540,7 +540,6 @@ public class BoardModel
 	private void ShuffleBoard() {
 
 		// TODO: Decide if we need to maintain origin info
-		List<CellModel> recommendedMatch = null;
 		List<Constants.PieceColor> pieces = new List<Constants.PieceColor> ();
 		// Build list of pieces
 		for (int row = 0; row < gameBoard.GetLength (0); row++) {
