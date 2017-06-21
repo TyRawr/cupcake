@@ -38,7 +38,7 @@ public class BoardView : MonoBehaviour {
 	GameObject gridParent;
 
     private float maxPieceSize;
-    private bool inputAllowed = false;
+	private bool inputAllowed = true;
 
 	public int currentMoves;
 	/*
@@ -275,7 +275,6 @@ public class BoardView : MonoBehaviour {
 		int fromCol = cell.GetFromCol();
 		Constants.PieceColor color = cell.GetPieceColor();
 		Constants.PieceType type = cell.GetPieceType();
-        Debug.Log("Create");
         for(int i = 0; i < piecePrefabs.Count; i++)
         {
             if(piecePrefabs[i].color == color)
@@ -444,9 +443,8 @@ public class BoardView : MonoBehaviour {
 				UpdateViewFromBoardModel();
 			}
         }
-        inputAllowed = true;
+		inputAllowed = true;
         yield return null;
-
     }
 
 	void SetBackgroundPieceDimensions(CellView cell , float size)
@@ -552,7 +550,8 @@ public class BoardView : MonoBehaviour {
     }
 
 	void SwapPieces(CellView cellView, Direction direction) {
-
+		if(!inputAllowed) return;
+		inputAllowed = false;
 		int row = cellView.row;
 		int col = cellView.col;
 		int nextRow = row;
