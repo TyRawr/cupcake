@@ -406,7 +406,7 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
-	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets, bool hadToShuffle)
+	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets, bool hadToShuffle, int moves)
     {
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
@@ -438,11 +438,17 @@ public class BoardView : MonoBehaviour {
             // move pieces into position
             yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 			yield return new WaitForEndOfFrame();
-			if(hadToShuffle) {
-				Debug.Log("Had To Shuffle");
-				UpdateViewFromBoardModel();
-			}
+
         }
+		if(hadToShuffle) {
+			Debug.Log("Had To Shuffle");
+			UpdateViewFromBoardModel();
+		}
+		if(moves <=0) {
+			//game over
+			yield return new WaitForSeconds(.5f);
+			UIManager.OpenGameOverModal();
+		}
 		inputAllowed = true;
         yield return null;
     }
@@ -602,7 +608,7 @@ public class BoardView : MonoBehaviour {
 
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
 			bool hadToShuffle = results.GetHadToShuffle();
-			StartCoroutine(RunResultsAnimation(cellResults,hadToShuffle));
+			StartCoroutine(RunResultsAnimation(cellResults,hadToShuffle,results.GetMoves()));
         }
 		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
         UIManager.UpdateScoreValue(boardModel.Score);

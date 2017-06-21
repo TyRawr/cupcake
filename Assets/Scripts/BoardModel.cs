@@ -32,7 +32,6 @@ public class BoardModel
 
 	public BoardModel(LevelManager.LevelDescription levelDescription)
 	{
-		Debug.Log("Create Board Model");
 		string[] grid = levelDescription.grid;
 		this.gameBoard = new CellModel[grid.Length,grid[0].Length];
 		this.score = 0;
@@ -275,7 +274,7 @@ public class BoardModel
 		}
 
 		PrintRecommendedMatch (recommendedMatch);
-		Results res = new Results(results, recommendedMatch, hadToShuffle);
+		Results res = new Results(results, recommendedMatch, hadToShuffle,moves);
 		return res;
 	}
 		
