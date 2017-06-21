@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 public static class Constants {
 
-	public static int CellPadding = 2;
-
     public enum SwipeDirection
     {
         UP,
@@ -81,10 +79,10 @@ public static class Constants {
     public static readonly int NORMAL_SHAPE_VALUE = 10;
 
     // Size of images
+	public static readonly int CELL_PADDING_FULL = 4;
+	public static readonly int MAX_NUMBER_OF_GRID_ITEMS = 9; // like candy crush
     public static readonly int MIN_SIZE = 30;
     public static readonly float MAX_SIZE = 50f;
-
-    public static readonly int MAX_NUMBER_OF_GRID_ITEMS = 9; // like candy crush
 
     //Events
     public static readonly string SHAPES_CREATED = "shapes_created";
