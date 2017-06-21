@@ -289,9 +289,9 @@ public class BoardView : MonoBehaviour {
                 piece.transform.SetParent(piecesParent.transform);
                 piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
-				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow/2f + Constants.CellPadding, piece.transform.position.z);
-				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize - (2 * Constants.CellPadding));
-				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize - (2 * Constants.CellPadding));
+				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow/2f + Constants.CELL_PADDING_FULL, piece.transform.position.z);
+				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize - (Constants.CELL_PADDING_FULL));
+				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize - (Constants.CELL_PADDING_FULL));
 
                	
                 //PieceView pieceView = piece.AddComponent<PieceView>();
@@ -458,8 +458,8 @@ public class BoardView : MonoBehaviour {
 	void SetPositionFromBackgroundPiece_SetSize(GameObject piece, CellView cell, float size)
 	{
 		piece.transform.position = cell.transform.position;
-		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size - (2 * Constants.CellPadding));
-		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size - (2 * Constants.CellPadding));
+		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size - Constants.CELL_PADDING_FULL);
+		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size - Constants.CELL_PADDING_FULL);
 	}
 
 	private IEnumerator SpawnPieces(CellResult[,] cellResult)
