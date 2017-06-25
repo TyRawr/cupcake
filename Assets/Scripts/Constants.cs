@@ -80,7 +80,7 @@ public static class Constants {
 
     // Size of images
 	public static readonly int CELL_PADDING_FULL = 4;
-	public static readonly int MAX_NUMBER_OF_GRID_ITEMS = 9; // like candy crush
+	public static readonly int MAX_NUMBER_OF_GRID_ITEMS = 9;
     public static readonly int MIN_SIZE = 30;
     public static readonly float MAX_SIZE = 50f;
 

@@ -286,12 +286,12 @@ public class BoardView : MonoBehaviour {
                 //grab background
 				CellView cellView = cells[0, toCol];
                 piece.transform.SetParent(piecesParent.transform);
-                piece.transform.localScale = Vector3.one;
+//                piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
 				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow/2f + Constants.CELL_PADDING_FULL, piece.transform.position.z);
-				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize - (Constants.CELL_PADDING_FULL));
-				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize - (Constants.CELL_PADDING_FULL));
-
+				piece.transform.localScale = new Vector3 (maxPieceSize, maxPieceSize, 1);
+//				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize - (Constants.CELL_PADDING_FULL));
+//				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize - (Constants.CELL_PADDING_FULL));
                	
                 //PieceView pieceView = piece.AddComponent<PieceView>();
 				//pieceView.row = toRow;
@@ -299,7 +299,7 @@ public class BoardView : MonoBehaviour {
                 //pieceView.AssignEvent();
 
                 // handle random eye attachment
-                HandleEyeAttachment(piece);
+//                HandleEyeAttachment(piece);
                 return piece;
             }
                 
@@ -349,7 +349,6 @@ public class BoardView : MonoBehaviour {
     {
         //EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
         boardModel = (BoardModel)model;
-        Debug.Log("Print board after level level");
         //boardModel.PrintGameBoard();
         UpdateViewFromBoardModel();
         inputAllowed = true;// game will process piece touch input
@@ -462,8 +461,9 @@ public class BoardView : MonoBehaviour {
 	void SetPositionFromBackgroundPiece_SetSize(GameObject piece, CellView cell, float size)
 	{
 		piece.transform.position = cell.transform.position;
-		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size - Constants.CELL_PADDING_FULL);
-		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size - Constants.CELL_PADDING_FULL);
+		piece.transform.localScale = new Vector3 (size,size,1);
+		//		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size - Constants.CELL_PADDING_FULL);
+//		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size - Constants.CELL_PADDING_FULL);
 	}
 
 	private IEnumerator SpawnPieces(CellResult[,] cellResult)
@@ -477,7 +477,7 @@ public class BoardView : MonoBehaviour {
 					int fromRow = cellRes.GetFromRow();
 					int fromCol = cellRes.GetFromCol();
 					if(fromRow < 0) {
-						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
+//						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
 						//TODO lookup spawn position for new pieces, EVEN FOR ONES WITH NEGATIVE INDEX - take into account the cell size.
 						GameObject piece = CreatePieceView(row, col, cellRes);
 						cells[row,col].piece = piece;
@@ -583,11 +583,7 @@ public class BoardView : MonoBehaviour {
 
         if (result == SwapResult.FAILURE)
         {
-            //Animate swap back and forth
-            Debug.Log("Swap back and forth");
 			StartCoroutine(AnimatePieceSwapFailure(row,col,nextRow,nextCol));
-
-
         }
         else if (result == SwapResult.INVALID)
         {
@@ -760,7 +756,7 @@ public class BoardView : MonoBehaviour {
 						go.transform.localScale = Vector3.one;
 						SetPositionFromBackgroundPiece_SetSize(go, cellView, maxPieceDimension);
 						cells[row,col].piece = go;	
-                        HandleEyeAttachment(go);
+//                        HandleEyeAttachment(go);
 						break;
 					}
 				}
