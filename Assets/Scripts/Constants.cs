@@ -116,6 +116,11 @@ public static class Constants {
     public static readonly string PRODUCT_GOLD_250 = "gold_250";
     public static readonly string PRODUCT_GOLD_750 = "gold_750";
 
+    //Settings
+    public static readonly string SETTING_ENABLE_SOUNDS = "enable_sounds";
+    public static readonly string SETTING_ENABLE_MUSIC = "enable_music";
+    public static readonly string SETTING_ENABLE_PUSH_NOTIFICATION = "enable_notifications";
+
 	//Game Events
 	public static readonly string GAME_OVER = "game_over";
 
