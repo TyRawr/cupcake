@@ -38,7 +38,7 @@ public class BoardView : MonoBehaviour {
 	GameObject gridParent;
 
     private float maxPieceSize;
-    private bool inputAllowed = false;
+	private bool inputAllowed = true;
 
 	public int currentMoves;
 	/*
@@ -405,7 +405,7 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
-	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets, bool hadToShuffle)
+	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets, bool hadToShuffle, int moves)
     {
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
@@ -437,14 +437,19 @@ public class BoardView : MonoBehaviour {
             // move pieces into position
             yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 			yield return new WaitForEndOfFrame();
-			if(hadToShuffle) {
-				Debug.Log("Had To Shuffle");
-				UpdateViewFromBoardModel();
-			}
-        }
-        inputAllowed = true;
-        yield return null;
 
+        }
+		if(hadToShuffle) {
+			Debug.Log("Had To Shuffle");
+			UpdateViewFromBoardModel();
+		}
+		if(moves <=0) {
+			//game over
+			yield return new WaitForSeconds(.5f);
+			UIManager.OpenGameOverModal();
+		}
+		inputAllowed = true;
+        yield return null;
     }
 
 	void SetBackgroundPieceDimensions(CellView cell , float size)
@@ -551,7 +556,8 @@ public class BoardView : MonoBehaviour {
     }
 
 	void SwapPieces(CellView cellView, Direction direction) {
-
+		if(!inputAllowed) return;
+		inputAllowed = false;
 		int row = cellView.row;
 		int col = cellView.col;
 		int nextRow = row;
@@ -598,7 +604,7 @@ public class BoardView : MonoBehaviour {
 
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
 			bool hadToShuffle = results.GetHadToShuffle();
-			StartCoroutine(RunResultsAnimation(cellResults,hadToShuffle));
+			StartCoroutine(RunResultsAnimation(cellResults,hadToShuffle,results.GetMoves()));
         }
 		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
         UIManager.UpdateScoreValue(boardModel.Score);

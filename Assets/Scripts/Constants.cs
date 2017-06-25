@@ -116,6 +116,9 @@ public static class Constants {
     public static readonly string PRODUCT_GOLD_250 = "gold_250";
     public static readonly string PRODUCT_GOLD_750 = "gold_750";
 
+	//Game Events
+	public static readonly string GAME_OVER = "game_over";
+
     //Piece ID Mapping
 	public static Dictionary<string, PieceColor> PieceIDMapping = new Dictionary<string, PieceColor>() {
 		{ "b", PieceColor.BLUE },

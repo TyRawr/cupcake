@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public static class UIManager {
 
     static bool init = false;
-    static Transform message_ui, level_ui, settings_ui, store_ui, board_ui;
+    static Transform message_ui, level_ui, settings_ui, store_ui, board_ui,gameover_modal;
 	static Dictionary<string,Transform> uiTransforms = new Dictionary<string, Transform>() {
 		{Constants.UI_Message_Modal,message_ui},
 		{Constants.UI_Board_Modal,board_ui},
@@ -55,6 +55,7 @@ public static class UIManager {
         SetupMapModalButtons();
         SetupLevelButtons();
         SetupBoardUI();
+
 		uiTransforms = new Dictionary<string, Transform>() {
 			{Constants.UI_Message_Modal,message_ui},
 			{Constants.UI_Board_Modal,board_ui},
@@ -62,7 +63,28 @@ public static class UIManager {
 			{Constants.UI_Store_Modal,store_ui},
 			{Constants.UI_Level,level_ui}
 		};
+		Transform canvas = GameObject.Find("Canvas").transform;
+		for(int i = 0; i < canvas.childCount; i++) {
+			Debug.Log("NAME: " + canvas.GetChild(i).name);
+			if(canvas.GetChild(i).name == "GameOver_Modal") {
+				Debug.Log("FOUND");
+				gameover_modal = canvas.GetChild(i);
+				SetupGameOverButtons();
+			}
+		}
     }
+
+	private static void SetupGameOverButtons() {
+		if(gameover_modal) {
+			Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
+			evnt.AddListener(() => { 
+				Toggle("map");
+				gameover_modal.gameObject.SetActive(false);
+			});
+			Transform button = gameover_modal.Find("Button");
+			button.GetComponent<Button>().onClick = evnt;
+		}
+	}
 
     private static void SetupStoreModalButtons()
     {
@@ -239,6 +261,13 @@ public static class UIManager {
 
 
     }
+
+	public static void OpenGameOverModal() {
+		Debug.Log("Toggle game over");
+		if(!gameover_modal) return;
+		Debug.Log("Toggle game over!!@##@@");
+		gameover_modal.gameObject.SetActive(true);
+	}
 
 	public static void TurnModalOff(string ui_id){
 		if (!init) Init();
