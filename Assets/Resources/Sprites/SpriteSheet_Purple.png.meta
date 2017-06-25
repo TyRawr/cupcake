@@ -1,24 +1,24 @@
 fileFormatVersion: 2
-guid: 2631c6c32a7b545399db96df2d3a2e54
-timeCreated: 1498008865
+guid: f8891931b633d42a0833ac9fa7b71a08
+timeCreated: 1498345116
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: SS_Destroy_Purple_0
-    21300002: SS_Destroy_Purple_1
-    21300004: SS_Destroy_Purple_2
-    21300006: SS_Destroy_Purple_3
-    21300008: SS_Destroy_Purple_4
-    21300010: SS_Destroy_Purple_5
-    21300012: SS_Destroy_Purple_6
-    21300014: SS_Destroy_Purple_7
-    21300016: SS_Destroy_Purple_8
-    21300018: SS_Destroy_Purple_9
-    21300020: SS_Destroy_Purple_10
-    21300022: SS_Destroy_Purple_11
-    21300024: SS_Destroy_Purple_12
-    21300026: SS_Destroy_Purple_13
-    21300028: SS_Destroy_Purple_14
+    21300000: SpriteSheet_Purple_0
+    21300002: SpriteSheet_Purple_1
+    21300004: SpriteSheet_Purple_2
+    21300006: SpriteSheet_Purple_3
+    21300008: SpriteSheet_Purple_4
+    21300010: SpriteSheet_Purple_5
+    21300012: SpriteSheet_Purple_6
+    21300014: SpriteSheet_Purple_7
+    21300016: SpriteSheet_Purple_8
+    21300018: SpriteSheet_Purple_9
+    21300020: SpriteSheet_Purple_10
+    21300022: SpriteSheet_Purple_11
+    21300024: SpriteSheet_Purple_12
+    21300026: SpriteSheet_Purple_13
+    21300028: SpriteSheet_Purple_14
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -85,11 +85,11 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SS_Destroy_Purple_0
+      name: SpriteSheet_Purple_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -98,11 +98,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_1
+      name: SpriteSheet_Purple_1
       rect:
         serializedVersion: 2
         x: 75
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -111,11 +111,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_2
+      name: SpriteSheet_Purple_2
       rect:
         serializedVersion: 2
         x: 150
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -124,11 +124,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_3
+      name: SpriteSheet_Purple_3
       rect:
         serializedVersion: 2
         x: 225
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -137,11 +137,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_4
+      name: SpriteSheet_Purple_4
       rect:
         serializedVersion: 2
         x: 300
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -150,11 +150,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_5
+      name: SpriteSheet_Purple_5
       rect:
         serializedVersion: 2
         x: 375
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -163,11 +163,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_6
+      name: SpriteSheet_Purple_6
       rect:
         serializedVersion: 2
         x: 450
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -176,11 +176,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_7
+      name: SpriteSheet_Purple_7
       rect:
         serializedVersion: 2
         x: 525
-        y: 75
+        y: 675
         width: 75
         height: 75
       alignment: 0
@@ -189,11 +189,37 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_8
+      name: SpriteSheet_Purple_8
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 675
+        width: 75
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: SpriteSheet_Purple_9
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 675
+        width: 75
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: SpriteSheet_Purple_10
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 600
         width: 75
         height: 75
       alignment: 0
@@ -202,11 +228,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_9
+      name: SpriteSheet_Purple_11
       rect:
         serializedVersion: 2
         x: 75
-        y: 0
+        y: 600
         width: 75
         height: 75
       alignment: 0
@@ -215,11 +241,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_10
+      name: SpriteSheet_Purple_12
       rect:
         serializedVersion: 2
         x: 150
-        y: 0
+        y: 600
         width: 75
         height: 75
       alignment: 0
@@ -228,11 +254,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_11
+      name: SpriteSheet_Purple_13
       rect:
         serializedVersion: 2
         x: 225
-        y: 0
+        y: 600
         width: 75
         height: 75
       alignment: 0
@@ -241,11 +267,11 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: SS_Destroy_Purple_12
+      name: SpriteSheet_Purple_14
       rect:
         serializedVersion: 2
         x: 300
-        y: 0
+        y: 600
         width: 75
         height: 75
       alignment: 0
@@ -253,155 +279,7 @@ TextureImporter:
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       tessellationDetail: 0
-    - serializedVersion: 2
-      name: SS_Destroy_Purple_13
-      rect:
-        serializedVersion: 2
-        x: 375
-        y: 0
-        width: 75
-        height: 75
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: SS_Destroy_Purple_14
-      rect:
-        serializedVersion: 2
-        x: 450
-        y: 0
-        width: 75
-        height: 75
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    outline:
-    - - {x: -293, y: -7}
-      - {x: -293, y: -50}
-      - {x: -289, y: -66}
-      - {x: -285, y: -68}
-      - {x: -246, y: -68}
-      - {x: -232, y: -55}
-      - {x: -232, y: -12}
-      - {x: -249, y: -7}
-    - - {x: -218, y: -7}
-      - {x: -218, y: -68}
-      - {x: -178, y: -68}
-      - {x: -157, y: -56}
-      - {x: -157, y: -12}
-      - {x: -158, y: -7}
-    - - {x: -135, y: -8}
-      - {x: -139, y: -29}
-      - {x: -139, y: -54}
-      - {x: -128, y: -63}
-      - {x: -106, y: -63}
-      - {x: -84, y: -56}
-      - {x: -84, y: -19}
-      - {x: -111, y: -8}
-    - - {x: -36, y: -10}
-      - {x: -55, y: -10}
-      - {x: -61, y: -28}
-      - {x: -61, y: -53}
-      - {x: -52, y: -60}
-      - {x: -31, y: -60}
-      - {x: -19, y: -57}
-      - {x: -12, y: -45}
-      - {x: -12, y: -29}
-      - {x: -13, y: -24}
-    - - {x: 25, y: -13}
-      - {x: 17, y: -21}
-      - {x: 17, y: -56}
-      - {x: 54, y: -56}
-      - {x: 60, y: -45}
-      - {x: 60, y: -26}
-      - {x: 37, y: -13}
-    - - {x: 114, y: -17}
-      - {x: 98, y: -23}
-      - {x: 95, y: -29}
-      - {x: 95, y: -42}
-      - {x: 101, y: -54}
-      - {x: 123, y: -54}
-      - {x: 130, y: -51}
-      - {x: 130, y: -36}
-      - {x: 122, y: -17}
-    - - {x: 179, y: -24}
-      - {x: 175, y: -29}
-      - {x: 175, y: -46}
-      - {x: 183, y: -51}
-      - {x: 196, y: -51}
-      - {x: 199, y: -50}
-      - {x: 199, y: -24}
-    - - {x: 267, y: 68}
-      - {x: 232, y: 68}
-      - {x: 232, y: 18}
-      - {x: 234, y: 7}
-      - {x: 271, y: 7}
-      - {x: 293, y: 23}
-      - {x: 293, y: 57}
-      - {x: 283, y: 64}
-    - - {x: -60, y: 63}
-      - {x: -63, y: 49}
-      - {x: -63, y: 16}
-      - {x: -54, y: 9}
-      - {x: -33, y: 9}
-      - {x: -11, y: 17}
-      - {x: -11, y: 51}
-      - {x: -32, y: 63}
-    - - {x: 11, y: 63}
-      - {x: 11, y: 16}
-      - {x: 25, y: 9}
-      - {x: 60, y: 9}
-      - {x: 64, y: 17}
-      - {x: 64, y: 57}
-      - {x: 55, y: 63}
-    - - {x: -254, y: 65}
-      - {x: -272, y: 65}
-      - {x: -290, y: 55}
-      - {x: -290, y: 12}
-      - {x: -283, y: 10}
-      - {x: -239, y: 10}
-      - {x: -235, y: 17}
-      - {x: -235, y: 41}
-      - {x: -240, y: 57}
-    - - {x: -207, y: 64}
-      - {x: -214, y: 44}
-      - {x: -214, y: 18}
-      - {x: -202, y: 10}
-      - {x: -165, y: 10}
-      - {x: -160, y: 20}
-      - {x: -160, y: 51}
-      - {x: -181, y: 64}
-    - - {x: -128, y: 64}
-      - {x: -139, y: 43}
-      - {x: -139, y: 23}
-      - {x: -138, y: 20}
-      - {x: -127, y: 10}
-      - {x: -105, y: 10}
-      - {x: -93, y: 11}
-      - {x: -85, y: 22}
-      - {x: -85, y: 45}
-      - {x: -95, y: 64}
-    - - {x: 88, y: 63}
-      - {x: 86, y: 62}
-      - {x: 86, y: 19}
-      - {x: 102, y: 10}
-      - {x: 117, y: 10}
-      - {x: 138, y: 24}
-      - {x: 138, y: 56}
-      - {x: 123, y: 63}
-    - - {x: 163, y: 63}
-      - {x: 162, y: 62}
-      - {x: 162, y: 20}
-      - {x: 170, y: 14}
-      - {x: 185, y: 11}
-      - {x: 196, y: 11}
-      - {x: 213, y: 23}
-      - {x: 213, y: 60}
-      - {x: 201, y: 63}
+    outline: []
   spritePackingTag: 
   userData: 
   assetBundleName: 
