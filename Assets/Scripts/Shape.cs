@@ -1,10 +1,19 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 public class Shape : MonoBehaviour {
-
+    [Serializable]
+    public class AnimationMap
+    {
+        public string id;
+        public string animationStateName;
+    }
+    [SerializeField]
+    private AnimationMap[] mapping;
     public enum ShapeType
     {
         EMPTY,
@@ -38,11 +47,16 @@ public class Shape : MonoBehaviour {
     }
 
     public string id;
-    
+
+    public Dictionary<string, string> animationStateMap = new Dictionary<string, string>();
+
 	// Use this for initialization
 	void Start () {
-	
-	}
+        for(int i = 0; i < mapping.Length; i++)
+        {
+            animationStateMap.Add(mapping[i].id, mapping[i].animationStateName);
+        }
+    }
 	
 	// Update is called once per frame
 	void Update () {

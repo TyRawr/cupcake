@@ -158,24 +158,14 @@ public class BoardView : MonoBehaviour {
 
     public IEnumerator AnimateDisappear(int row, int col, float duration = -1f, UnityAction callback = null)
     {
-        if (duration < 0f)
-        {
-            duration = Constants.DEFAULT_SWAP_ANIMATION_DURATION;
-        }
         GameObject piece = cells[row, col].piece;
-        float startTime = Time.time;
-        Vector3 startMarker = piece.transform.localScale;
-        for (float t = 0.0f; t < duration; t += Time.deltaTime)
-        {
-            piece.transform.localScale = Vector3.Lerp(startMarker, Vector3.zero, t / duration);
-            yield return new WaitForEndOfFrame();
-        }
-        GameObject.Destroy(piece);
-        cells[row, col].piece = null;
-        if (callback != null)
-        {
-            callback();
-        }
+        Animator anim = piece.GetComponent<Animator>();
+        string animationName = piece.GetComponent<Shape>().animationStateMap["Destroy"];
+        anim.Play(animationName);
+        yield return new WaitForFixedUpdate();
+        yield return new WaitForEndOfFrame();
+        AnimatorClipInfo[] aci = anim.GetCurrentAnimatorClipInfo(0);
+        Destroy(piece, aci[0].clip.length);
     }
 
 	public IEnumerator AnimatePieceSwapFailure(int row, int col, int nextRow, int nextCol, float duration = .3f) {
