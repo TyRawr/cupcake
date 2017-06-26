@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 public class BoardView : MonoBehaviour {
+    public static BoardView instance;
 
 	[System.Serializable]
 	public struct PieceMapping
@@ -88,6 +89,7 @@ public class BoardView : MonoBehaviour {
                 }
             }
         }
+        SoundManager.PlaySound("simple_click");
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
     }
 
@@ -297,6 +299,14 @@ public class BoardView : MonoBehaviour {
         return null;
     }
 
+    public void ClearPieces()
+    {
+        foreach (Transform child in piecesParent.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+    }
+
     GameObject CreatePointsText(int row, int col, int points)
     {
         GameObject piece = GameObject.Instantiate(pointsPrefab);
@@ -436,7 +446,8 @@ public class BoardView : MonoBehaviour {
 		if(moves <=0) {
 			//game over
 			yield return new WaitForSeconds(.5f);
-			UIManager.OpenGameOverModal();
+            ClearPieces();
+            UIManager.OpenGameOverModal();
 		}
 		inputAllowed = true;
         yield return null;
@@ -534,8 +545,10 @@ public class BoardView : MonoBehaviour {
 
     void Start()
     {
+        instance = this;
         StoreManager.Init();
         UIManager.Init();
+        SoundManager.Init();
         boardModel = LevelManager.boardModel;
         EventManager.StartListening(Constants.LEVEL_LOAD_END_EVENT, LevelLoadListener);
         backgroundPiecesParent = GameObject.Find("BackgroundPieces") as GameObject;
@@ -645,9 +658,7 @@ public class BoardView : MonoBehaviour {
 		// turn off level select
 		UIManager.TurnModalOff(Constants.UI_Board_Modal); // could be better/ is this needed?
 
-		foreach(Transform child in piecesParent.transform) {
-			GameObject.Destroy(child.gameObject);
-		}
+        ClearPieces();
 		if(createCells) {
 			foreach(Transform child in backgroundImagesParent.transform) {
 				GameObject.Destroy(child.gameObject);

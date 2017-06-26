@@ -24,8 +24,7 @@ public static class UIManager {
 
     // store
     private static Button storeCloseButton;
-
-    private static Button settingsCloseButton;
+    
 
     public static void Init()
     {
@@ -44,7 +43,7 @@ public static class UIManager {
                 store_ui = t as Transform;
             } else if(t.gameObject.name == Constants.UI_Settings_Modal)
             {
-
+                settings_ui = t as Transform;
             } else if (t.gameObject.name == Constants.UI_Board_Modal)
             {
                 board_ui = t as Transform;
@@ -184,13 +183,68 @@ public static class UIManager {
 
     private static void SetupSettingsModalButtons()
     {
-        if (message_ui)
+        Debug.Log("heyho");
+        if (level_ui)
         {
-            Transform settings = message_ui.Find("Settings_Modal");
-            settingsCloseButton = settings.Find("Button").gameObject.GetComponent<Button>();
+            Debug.Log("heyho1 " + level_ui.Find("Settings").name);
+            Transform settings = level_ui.Find("Settings");
+            Button settingsButton = settings.gameObject.GetComponent<Button>();
             Button.ButtonClickedEvent evnt = new Button.ButtonClickedEvent();
-            evnt.AddListener(() => { Toggle("settings"); });
+            evnt.AddListener(() => {
+                Toggle("settings");
+            });
+            settingsButton.onClick = evnt;
+
+            // setting modal close button
+            Button settingsCloseButton = settings_ui.Find("Settings_Modal").Find("Button").GetComponent<Button>();
             settingsCloseButton.onClick = evnt;
+
+            Button soundPrefToggle = settings_ui.Find("Settings_Modal").Find("Settings").Find("Toggle_Sound").Find("Setting_Button").GetComponent<Button>();
+            Button.ButtonClickedEvent soundPrefToggleEvnt = new Button.ButtonClickedEvent();
+            soundPrefToggleEvnt.AddListener(() => {
+                Debug.Log("UI Manager toggle sound");
+                bool enabled = Settings.ToggleSound();
+                SettingButtonTextHandler(soundPrefToggle, Settings.GetBool(Constants.SETTING_ENABLE_SOUNDS));
+            });
+            soundPrefToggle.onClick = soundPrefToggleEvnt;
+            
+            Button musicPrefToggle = settings_ui.Find("Settings_Modal").Find("Settings").Find("Toggle_Music").Find("Setting_Button").GetComponent<Button>();
+            Button.ButtonClickedEvent musicPrefToggleEvent = new Button.ButtonClickedEvent();
+            musicPrefToggleEvent.AddListener(() => {
+                Debug.Log("UI Manager toggle music");
+                bool enabled = Settings.ToggleMusic();
+                SettingButtonTextHandler(musicPrefToggle, Settings.GetBool(Constants.SETTING_ENABLE_MUSIC));
+            });
+            musicPrefToggle.onClick = musicPrefToggleEvent;
+
+            Button notificationsPrefToggle = settings_ui.Find("Settings_Modal").Find("Settings").Find("Toggle_Notifications").Find("Setting_Button").GetComponent<Button>();
+            Button.ButtonClickedEvent notificationsPrefToggleEvent = new Button.ButtonClickedEvent();
+            notificationsPrefToggleEvent.AddListener(() => {
+                Debug.Log("UI Manager notification");
+                Settings.ToggleNotifications();
+                SettingButtonTextHandler(notificationsPrefToggle, Settings.GetBool(Constants.SETTING_ENABLE_PUSH_NOTIFICATION));
+            });
+            notificationsPrefToggle.onClick = notificationsPrefToggleEvent;
+
+            bool soundEnabled = Settings.GetBool(Constants.SETTING_ENABLE_SOUNDS);
+            bool musicEnabled = Settings.GetBool(Constants.SETTING_ENABLE_MUSIC);
+            bool notificationsEnabled = Settings.GetBool(Constants.SETTING_ENABLE_PUSH_NOTIFICATION);
+            SettingButtonTextHandler(soundPrefToggle, soundEnabled);
+            SettingButtonTextHandler(musicPrefToggle, musicEnabled);
+            SettingButtonTextHandler(notificationsPrefToggle, notificationsEnabled);
+        }
+    }
+
+    private static void SettingButtonTextHandler(Button btn,bool enabled)
+    {
+        Debug.Log("Setting Button Text Handler " + btn.name + "  " + enabled);
+        if (enabled)
+        {
+            btn.transform.Find("Text").GetComponent<Text>().text = "On";
+        }
+        else
+        {
+            btn.transform.Find("Text").GetComponent<Text>().text = "Off";
         }
     }
 
@@ -207,16 +261,6 @@ public static class UIManager {
             });
             closeButton.onClick = evnt;
         }
-    }
-
-    private static void SetupStoreModal()
-    {
-
-    }
-
-    private static void SetupSettingsModal()
-    {
-
     }
 
 
@@ -240,7 +284,7 @@ public static class UIManager {
 
             levelScoreButton.onClick = scoreEvent;
             levelStoreButton.onClick = storeEvent;
-            levelSettingsButton.onClick = settingsEvent;
+            //levelSettingsButton.onClick = settingsEvent;
         }
     }
 
@@ -304,6 +348,7 @@ public static class UIManager {
         {
             board_ui.gameObject.SetActive(true);
             board_ui.Find("Board_Modal").gameObject.SetActive(true);
+            BoardView.instance.ClearPieces();
         }
     }
 }
