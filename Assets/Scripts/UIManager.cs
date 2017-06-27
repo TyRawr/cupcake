@@ -280,7 +280,8 @@ public static class UIManager {
             storeEvent.AddListener(() => { Toggle("general_store"); });
 
             Button.ButtonClickedEvent settingsEvent = new Button.ButtonClickedEvent();
-            settingsEvent.AddListener(() => { Toggle("settings"); });
+            settingsEvent.AddListener(() => {
+                Toggle("settings"); });
 
             levelScoreButton.onClick = scoreEvent;
             levelStoreButton.onClick = storeEvent;
@@ -335,11 +336,30 @@ public static class UIManager {
         {
             // handle settings
             settings_ui.gameObject.SetActive(shown);
+            if (settings_ui.transform.gameObject.activeInHierarchy)
+            {
+                BoardView.instance.ClearPieces();
+                
+            }
+            else
+            {
+                BoardView.instance.UpdateViewFromBoardModel();
+            }
         } else if(ui_id == "general_store")
         {
             // open the store
             store_ui.gameObject.SetActive(shown);
+            if(store_ui.transform.gameObject.activeInHierarchy)
+            {
+                BoardView.instance.ClearPieces();
+                
+            } else
+            {
+                BoardView.instance.UpdateViewFromBoardModel();
+            }
             StoreManager.OpenStore(store_ui.Find("General_Store_Modal"));
+            
+            
         } else if(ui_id == "board")
         {
             //board_ui.gameObject.SetActive(shown);
@@ -348,7 +368,15 @@ public static class UIManager {
         {
             board_ui.gameObject.SetActive(true);
             board_ui.Find("Board_Modal").gameObject.SetActive(true);
-            BoardView.instance.ClearPieces();
+            if (board_ui.transform.gameObject.activeInHierarchy)
+            {
+                BoardView.instance.ClearPieces();
+                
+            }
+            else
+            {
+                BoardView.instance.UpdateViewFromBoardModel();
+            };
         }
     }
 }
