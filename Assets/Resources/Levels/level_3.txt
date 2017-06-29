@@ -1,12 +1,12 @@
 {
 	"grid":
 	[
-	"xppox",
-	"ggpoo",
-	"opggb",
-	"xggbx"
+	"gbpoo",
+	"gpogb",
+	"pggpb",
+	"gbbob"
 	],
-	"pieces":["b","g","o"],
+	"pieces":["b","g","o","p"],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],
@@ -15,5 +15,6 @@
 	"level_name":"Level 3",
 	"level_id":"level_3",
 	"level_number":3,
-	"level_color_hex":"9DD5C0"
+	"level_color_hex":"9DD5C0",
+	"number_of_moves": 100
 }

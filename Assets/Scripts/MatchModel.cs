@@ -90,5 +90,13 @@ public class MatchModel
 	{
 		return maxCol;
 	}
+
+	public bool IsVertical() {
+		return maxCol - minCol == 0;
+	}
+
+	public bool IsHorizontal() {
+		return maxRow - minRow ==0;
+	}
 }
 
