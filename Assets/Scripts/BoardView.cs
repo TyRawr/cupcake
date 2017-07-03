@@ -160,6 +160,25 @@ public class BoardView : MonoBehaviour {
 
     public IEnumerator AnimateDisappear(int row, int col, float duration = -1f, UnityAction callback = null)
     {
+        if (duration < 0f)
+        {
+            duration = Constants.DEFAULT_SWAP_ANIMATION_DURATION;
+        }
+        GameObject piece = cells[row, col].piece;
+        float startTime = Time.time;
+        Vector3 startMarker = piece.transform.localScale;
+        for (float t = 0.0f; t < duration; t += Time.deltaTime)
+        {
+            piece.transform.localScale = Vector3.Lerp(startMarker, Vector3.zero, t / duration);
+            yield return new WaitForEndOfFrame();
+        }
+        GameObject.Destroy(piece);
+        cells[row, col].piece = null;
+        if (callback != null)
+        {
+            callback();
+        }
+        /*
         GameObject piece = cells[row, col].piece;
         Animator anim = piece.GetComponent<Animator>();
         string animationName = piece.GetComponent<Shape>().animationStateMap["Destroy"];
@@ -168,6 +187,7 @@ public class BoardView : MonoBehaviour {
         yield return new WaitForEndOfFrame();
         AnimatorClipInfo[] aci = anim.GetCurrentAnimatorClipInfo(0);
         Destroy(piece, aci[0].clip.length);
+        */
     }
 
 	public IEnumerator AnimatePieceSwapFailure(int row, int col, int nextRow, int nextCol, float duration = .3f) {
@@ -280,7 +300,7 @@ public class BoardView : MonoBehaviour {
                 piece.transform.SetParent(piecesParent.transform);
 //                piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
-				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow/2f + Constants.CELL_PADDING_FULL, piece.transform.position.z);
+				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
 				piece.transform.localScale = new Vector3 (maxPieceSize, maxPieceSize, 1);
 //				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize - (Constants.CELL_PADDING_FULL));
 //				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize - (Constants.CELL_PADDING_FULL));
