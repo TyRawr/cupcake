@@ -2,9 +2,9 @@
 	"grid":
 	[
 	"ggbbg",
+	"goxog",
+	"pgogp",
 	"pgxog",
-	"gxxxp",
-	"pbxog",
 	"gbgbg"
 	],
 	"pieces":["b","g","o","p"],

@@ -27,7 +27,7 @@ public class BoardView : MonoBehaviour {
 
 
     // View reads from model
-    private BoardModel boardModel;
+    public BoardModel boardModel;
 	private GameObject grid;
 	private CellView[,] cells;
 

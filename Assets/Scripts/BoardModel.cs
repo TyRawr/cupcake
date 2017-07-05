@@ -603,13 +603,13 @@ public class BoardModel
 					Debug.Log("Vertical Match Swapped Cell index: " + row + "," + col);
 					for(int c = 0; c < gameBoard.GetLength(1);c++) {
 						Debug.Log("also add index: " + row + "," + c);
-						AddPointsFromCellModel(gameBoard[row,c],results,matched);
-					}
+                        AddPointsFromCellModel(gameBoard[row, c], results, matched);
+                    }
 				} else {
 					Debug.Log("Horizontal Match Swapped Cell index: " + row + "," + col);
 					for(int r = 0; r < gameBoard.GetLength(0);r++) {
 						Debug.Log("also add index: " + r + "," + col);
-						AddPointsFromCellModel(gameBoard[r,col],results,matched);
+                        AddPointsFromCellModel(gameBoard[r, col], results, matched);
 					}
 				}
 			} else if(match.Count == 5) {
@@ -667,6 +667,7 @@ public class BoardModel
 	private void AddPointsFromCellModel(CellModel cell, CellResult[,] results, HashSet<CellModel> matched) {
 		int row = cell.GetRow();
 		int col = cell.GetCol();
+        if (LevelManager.levelDescription.grid[row][col] == 'x') return;
 		int points = cell.EvaluateMatch (multiplier);
 		score += points;
 		//			cell.AddSpecialPiece (match.Count);
