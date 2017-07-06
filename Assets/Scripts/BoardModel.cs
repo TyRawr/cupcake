@@ -46,11 +46,11 @@ public class BoardModel
 				string pieceColorID = grid[row][col].ToString();
 				if (pieceColorID.Equals ("x")) 
 				{
-					CellModel cellModel = new CellModel(row, col, CellState.NULL);
+					CellModel cellModel = new CellModel(row, col, gameBoard.GetLength(0), gameBoard.GetLength(1), CellState.NULL);
 					gameBoard[row,col] = cellModel;
 					cellModel.SetPiece (Constants.PieceColor.NULL);
 				} else {
-					CellModel cellModel = new CellModel(row, col);
+					CellModel cellModel = new CellModel(row, col,gameBoard.GetLength(0), gameBoard.GetLength(1));
 					gameBoard[row,col] = cellModel;
 
 					//PieceModel pieceModel = new PieceModel(pieceColorID);
@@ -595,7 +595,6 @@ public class BoardModel
 			if(match.Count == 4) {
 				int row = cell.GetRow();
 				int col = cell.GetCol();
-				Debug.LogError("Matched Count 4: " + match.Count);
 				//figure out what way the direction goes, is this a row explosion or a column explosion?
 				if (foundMatches[index].IsVertical()) {
 					//results[row,col];
@@ -613,7 +612,6 @@ public class BoardModel
 					}
 				}
 			} else if(match.Count == 5) {
-				Debug.LogError("Matched Count 5: " + match.Count);
 				//find all cells with piece of same color. aka loop
 				Constants.PieceColor colorOfSwappedCell = cell.GetPieceColor();
 				for(int row = 0; row < gameBoard.GetLength(0); row++) {
@@ -667,8 +665,9 @@ public class BoardModel
 	private void AddPointsFromCellModel(CellModel cell, CellResult[,] results, HashSet<CellModel> matched) {
 		int row = cell.GetRow();
 		int col = cell.GetCol();
-        if (LevelManager.levelDescription.grid[row][col] == 'x') return;
+        //if (LevelManager.levelDescription.grid[row][col] == 'x') return;
 		int points = cell.EvaluateMatch (multiplier);
+		if (points <= 0) { return; }
 		score += points;
 		//			cell.AddSpecialPiece (match.Count);
 		if(results[row,col] == null) {
@@ -684,7 +683,7 @@ public class BoardModel
 		// Destroy Pieces
 		foreach (CellModel cell in matched) 
 		{
-			cell.Consume();
+			cell.Consume(true);
 		}
 		matched = new HashSet<CellModel>();
 	}
@@ -725,7 +724,7 @@ public class BoardModel
 							}
 							cellResult.Set(reachedCell);
 							cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
-							reachedCell.Consume ();
+							reachedCell.Consume (false);
 							spawnPiece = false;
 							break;
 						}

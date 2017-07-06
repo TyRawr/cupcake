@@ -1,11 +1,11 @@
 {
 	"grid":
 	[
-	"ggbbg",
-	"goxog",
-	"pgogp",
-	"pgxog",
-	"gbgbg"
+	"bgbbg",
+	"gpxxg",
+	"ggogp",
+	"pgxop",
+	"gbgbo"
 	],
 	"pieces":["b","g","o","p"],
 	"margin": "center",
