@@ -49,7 +49,12 @@ public class BoardModel
 					CellModel cellModel = new CellModel(row, col, gameBoard.GetLength(0), gameBoard.GetLength(1), CellState.NULL);
 					gameBoard[row,col] = cellModel;
 					cellModel.SetPiece (Constants.PieceColor.NULL);
-				} else {
+				} else if (pieceColorID.Equals("f")) // handle frosting, the EXACT same as a normal piece but Piece Type is frosting, will make it not fall down.
+                {
+                    CellModel cellModel = new CellModel(row, col, gameBoard.GetLength(0), gameBoard.GetLength(1));
+                    gameBoard[row, col] = cellModel;
+                    cellModel.SetPiece(Constants.PieceIDMapping[pieceColorID],Constants.PieceType.FROSTING);
+                } else {
 					CellModel cellModel = new CellModel(row, col,gameBoard.GetLength(0), gameBoard.GetLength(1));
 					gameBoard[row,col] = cellModel;
 
@@ -237,17 +242,19 @@ public class BoardModel
 		return SwapResult.SUCCESS;
 	}
 
-	/**
+    /**
 	 * Evaluate matches Swap and following matches
 	 * 
 	 */
-	public Results GetResults () 
+    public CellResult[,] cellResult;
+
+    public Results GetResults () 
 	{
 		List<CellResult[,]> results = new List<CellResult[,]> ();
 		multiplier = 0;
 
 		do {
-			CellResult[,] cellResult = EvaluateMatches();
+			cellResult = EvaluateMatches();
 			DestroyPieces();
 			//run special events
 			foundMatches = new List<MatchModel>();
@@ -541,7 +548,7 @@ public class BoardModel
 		for (int row = 0; row < gameBoard.GetLength (0); row++) {
 			for (int col = 0; col < gameBoard.GetLength (1); col++) {
 				CellModel cell = gameBoard [row, col];
-				if (cell.GetState () != CellState.NULL) {
+				if (cell.GetState () != CellState.NULL && cell.GetPieceType() != Constants.PieceType.FROSTING) {
 					pieces.Add (gameBoard [row, col].GetPieceColor ());				
 				}
 			}
@@ -556,7 +563,7 @@ public class BoardModel
 			for (int row = 0; row < gameBoard.GetLength (0); row++) {
 				for (int col = 0; col < gameBoard.GetLength (1); col++) {
 					CellModel cell = gameBoard [row, col];
-					if (cell.GetState () != CellState.NULL) {
+					if (cell.GetState () != CellState.NULL && cell.GetPieceType() != Constants.PieceType.FROSTING) {
 						checkForMatches.Add (cell);  // Add to checkForMatches
 						int index = UnityEngine.Random.Range (0, piecesToDistribute.Count - 1);
 						gameBoard [row, col].SetPiece (piecesToDistribute [index]);
@@ -579,15 +586,20 @@ public class BoardModel
 	private CellResult[,] EvaluateMatches () {
 
 		// Init ResultSet elements: CellResult [] and List<PieceModel> []
-		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];	
-
+		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];
+        cellResult = results;
 		// List for each match
 		for (int index = 0; index < foundMatches.Count; index++) 
 		{
 			List<CellModel> match = foundMatches[index].GetCells();
-
-			// Handle First Cell
-			CellModel cell = match [0];
+            foreach (CellModel cm in match)
+            {
+                Vector2 v = new Vector2(cm.GetRow(), cm.GetCol());
+            
+                EventManager.TriggerEvent("CellConsumed" + cm.GetRow() + "" + cm.GetCol(), v);
+            }
+            // Handle First Cell
+            CellModel cell = match [0];
 			bool isElbow = matched.Contains(cell);
 			AddPointsFromCellModel(cell,results,matched);
 
@@ -662,6 +674,26 @@ public class BoardModel
 		return results;
 	}
 
+    public void AddPointsFromCellModel(CellModel cell)
+    {
+        int row = cell.GetRow();
+        int col = cell.GetCol();
+        //if (LevelManager.levelDescription.grid[row][col] == 'x') return;
+        int points = cell.EvaluateMatch(multiplier);
+        if (points <= 0) { return; }
+        score += points;
+        //			cell.AddSpecialPiece (match.Count);
+        if (cellResult[row, col] == null)
+        {
+            //					Debug.Log("Found null CellResult location");
+            cellResult[row, col] = new CellResult(points);
+        }
+        else
+        {
+            cellResult[row, col].AddPoints(points);
+        }
+    }
+
 	private void AddPointsFromCellModel(CellModel cell, CellResult[,] results, HashSet<CellModel> matched) {
 		int row = cell.GetRow();
 		int col = cell.GetCol();
@@ -680,11 +712,13 @@ public class BoardModel
 	}
 
 	private void DestroyPieces() {
-		// Destroy Pieces
+        // Destroy Pieces
+        Debug.LogWarning("Drop piece begin");
 		foreach (CellModel cell in matched) 
 		{
 			cell.Consume(true);
 		}
+        Debug.Log("Drop pieces end");
 		matched = new HashSet<CellModel>();
 	}
 

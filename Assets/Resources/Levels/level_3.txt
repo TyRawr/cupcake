@@ -1,12 +1,12 @@
 {
 	"grid":
 	[
-	"gbpoo",
-	"gpogb",
-	"pggpb",
-	"gbbob"
+	"fbioo",
+	"fpbib",
+	"fbgpb",
+	"bbopo"
 	],
-	"pieces":["b","g","o","p"],
+	"pieces":["i","b","g","o","p"],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],

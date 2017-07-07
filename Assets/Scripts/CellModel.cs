@@ -51,9 +51,40 @@ public class CellModel
 		this.state = CellState.NORMAL;
 		foreach (string eventName in eventListeners) {
 			EventManager.StopListening(eventName, HandleCellDestroyedEvent);
-
+            //destroy piece
+            LevelManager.boardModel.AddPointsFromCellModel(this);
 		}
 	}
+
+    void SetupFrostingEvents()
+    {
+        int numRows = LevelManager.levelDescription.grid.GetLength(0);
+        int numCols = LevelManager.levelDescription.grid[0].Length;
+        string eventName = "CellConsumed" + (row - 1) + "" + col;
+        if (row > 0)
+        {
+            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
+            eventListeners.Add(eventName);
+        }
+        if (col > 0)
+        {
+            eventName = "CellConsumed" + row + "" + (col - 1);
+            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
+            eventListeners.Add(eventName);
+        }
+        if (row < numRows - 1)
+        {
+            eventName = "CellConsumed" + (row + 1) + "" + col;
+            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
+            eventListeners.Add(eventName);
+        }
+        if (col < numCols - 1)
+        {
+            eventName = "CellConsumed" + row + "" + (col + 1);
+            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
+            eventListeners.Add(eventName);
+        }
+    }
 
 	public void Consume (Boolean match) 
 	{
@@ -63,7 +94,7 @@ public class CellModel
 		//object o = new object() {row,col};
 		if (match) {
 			Vector2 v = new Vector2(row,col);
-			EventManager.TriggerEvent("CellConsumed" + row + "" + col, v);
+			//EventManager.TriggerEvent("CellConsumed" + row + "" + col, v);
 		}
 	}
 
@@ -80,7 +111,7 @@ public class CellModel
 	 */
 	public bool IsDroppable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL) 
+		if (pieceColor == Constants.PieceColor.NULL || pieceColor == Constants.PieceColor.FROSTING)
 		{
 			return false;
 		}
@@ -92,7 +123,7 @@ public class CellModel
 	 */
 	public bool IsSwappable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL) 
+		if (pieceColor == Constants.PieceColor.NULL || pieceColor == Constants.PieceColor.FROSTING) 
 		{
 			return false;
 		}
@@ -104,7 +135,7 @@ public class CellModel
 	 */
 	public bool IsWanting() 
 	{
-		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL) 
+		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL || pieceType == Constants.PieceType.FROSTING) 
 		{
 			return false;
 		}
@@ -132,6 +163,9 @@ public class CellModel
 	{
 		this.pieceColor = pieceColor;
 		this.pieceType = pieceType;
+        if (pieceType == Constants.PieceType.FROSTING) {
+            SetupFrostingEvents();
+        }
 	}
 
 	/*
