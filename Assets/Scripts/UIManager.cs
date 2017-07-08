@@ -379,4 +379,20 @@ public static class UIManager {
             };
         }
     }
+
+    public static void UpdateOrderUI(int bluePieceCount, int totalBlueForMatch, int greenPieceCount, int totalGreenForMatch, int pinkPieceCount, int totalPinkForMatch, int orangePieceCount, int totalOrangeForMatch, int purplePieceCount, int totalPurpleForMatch)
+    {
+        //if they have 0 in total, turn off gameobject else turn on
+        BoardView.instance.orderBlue.SetActive(totalBlueForMatch != 0);
+        BoardView.instance.orderGreen.SetActive(totalGreenForMatch != 0);
+        BoardView.instance.orderPink.SetActive(totalPinkForMatch != 0);
+        BoardView.instance.orderOrange.SetActive(totalOrangeForMatch != 0);
+        BoardView.instance.orderPurple.SetActive(totalPurpleForMatch != 0);
+        //Update Text Values
+        BoardView.instance.orderBlue.GetComponentInChildren<Text>().text = Mathf.Max(bluePieceCount,0) + "/" + totalBlueForMatch;
+        BoardView.instance.orderGreen.GetComponentInChildren<Text>().text = Mathf.Max(greenPieceCount, 0) + "/" + totalGreenForMatch;
+        BoardView.instance.orderPink.GetComponentInChildren<Text>().text = Mathf.Max(pinkPieceCount, 0) + "/" + totalPinkForMatch;
+        BoardView.instance.orderOrange.GetComponentInChildren<Text>().text = Mathf.Max(orangePieceCount, 0) + "/" + totalOrangeForMatch;
+        BoardView.instance.orderPurple.GetComponentInChildren<Text>().text = Mathf.Max(purplePieceCount, 0) + "/" + totalPurpleForMatch;
+    }
 }

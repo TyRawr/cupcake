@@ -56,7 +56,8 @@ public class CellModel
         {
             //cm.HandleCellConsumeEvent(this);
             matched.Add(cm);
-            cm.Consume(false);
+            //results[cm.GetRow(), cm.GetCol()].SetColorWasDestroyed(cm.GetPieceColor());
+            cm.Consume(false,results);
         }
     }
 
@@ -104,11 +105,19 @@ public class CellModel
         }
     }
 
-	public void Consume (Boolean match) 
+	public void Consume (Boolean match, CellResult[,] results) 
 	{
-		this.pieceColor = Constants.PieceColor.NULL;
+        if(results != null && results[row,col] != null)
+        {
+            results[row, col].SetColorWasDestroyed(pieceColor);
+        }
+
+        
+
+        this.pieceColor = Constants.PieceColor.NULL;
 		this.pieceType = Constants.PieceType.NULL;
         this.state = CellState.NORMAL;
+        
 	}
 
 	public int EvaluateMatch (int multiplier) 
@@ -133,7 +142,7 @@ public class CellModel
 	 */
 	public bool IsDroppable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL || state == CellState.SPECIAL)
+		if (pieceColor == Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.FROSTING)
 		{
 			return false;
 		}
@@ -145,7 +154,7 @@ public class CellModel
 	 */
 	public bool IsSwappable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL || state == CellState.SPECIAL) 
+		if (pieceColor == Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.FROSTING) 
 		{
 			return false;
 		}
@@ -157,7 +166,7 @@ public class CellModel
 	 */
 	public bool IsWanting() 
 	{
-		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.SPECIAL) 
+		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.FROSTING) 
 		{
 			return false;
 		}
@@ -209,5 +218,5 @@ public class CellModel
 public enum CellState {
 	NORMAL,
 	NULL,
-	SPECIAL
+	FROSTING
 }

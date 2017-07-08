@@ -13,7 +13,7 @@ public static class SoundManager {
         // Set initial volume params from settings?
         musicSource = GameObject.Find("Main Camera").GetComponent<AudioSource>();
         if(Settings.GetBool(Constants.SETTING_ENABLE_MUSIC) == true)
-            PlayMusic("Cupcake Draft 1");
+            PlayMusic("Cupcake Draft 3");
         SetMusicLoop(true);
     }
 
@@ -79,7 +79,7 @@ public static class SoundManager {
         } else
         {
             //musicSource.Play();
-            PlayMusic("Cupcake Draft 1");
+            PlayMusic("Cupcake Draft 3");
         }
     }
 

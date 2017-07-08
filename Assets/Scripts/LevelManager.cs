@@ -5,20 +5,25 @@ using System.Collections.Generic;
 using System.IO;
 
 public class LevelManager : MonoBehaviour {
-
+    
     public class LevelDescription
     {
         public string[] grid;
         public string margin;
         public int[] top_spawn_points;
         public int points_to_win;
-        public string order_to_fill;
         public string level_name;
         public string level_id;
         public int level_number;
         public string level_color_hex;
         public string[] pieces;
         public int number_of_moves;
+        public int order_score;
+        public int order_b;
+        public int order_i;
+        public int order_g;
+        public int order_o;
+        public int order_p;
     }
 
     public bool DebugLog = false;
@@ -38,6 +43,7 @@ public class LevelManager : MonoBehaviour {
         LevelAsText = levelDescription.grid;
 		// be sure to destroy all stuff
 		boardModel = new BoardModel(levelDescription);
+        //Debug.Log("LevelScore: " + LevelManager.levelDescription.order.score);
     }
 
     public static List<LevelDescription> LoadLevels()

@@ -7,7 +7,7 @@
 	"ooppoo",
 	"ooppoo"
 	],
-	"pieces":["p","o","b","g"],
+	"pieces":["p","o","b","i"],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],
@@ -15,5 +15,11 @@
 	"level_name":"Level 2",
 	"level_id":"level_2",
 	"level_number":2,
-	"number_of_moves": 10
+	"number_of_moves": 10,
+	"order_score":500,
+	"order_b":0,
+	"order_i":12,
+	"order_g":0,
+	"order_o":0,
+	"order_p":12
 }

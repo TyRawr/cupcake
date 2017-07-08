@@ -5,8 +5,10 @@ public class CellResult {
 	private int points;
 	private int fromRow;
 	private int fromCol;
-	private Constants.PieceColor pieceColor;
+	private Constants.PieceColor pieceColor; // this is a new pieceColor?
 	private Constants.PieceType pieceType;
+    //The color of the piece that was destroyed;
+    private Constants.PieceColor colorOfPieceThatWasDestroyed = Constants.PieceColor.NULL;
     private CellState state;
     private bool destroyIndex;
     private bool isApartOfMatch;
@@ -66,6 +68,15 @@ public class CellResult {
     public void SetState(CellState newState)
     {
         this.state = newState;
+    }
+
+    public void SetColorWasDestroyed(Constants.PieceColor colorThatWasDestroyed)
+    {
+        colorOfPieceThatWasDestroyed = colorThatWasDestroyed;
+    }
+    public Constants.PieceColor GetColorThatWasDestroyed()
+    {
+        return colorOfPieceThatWasDestroyed;
     }
 
 	public void SetPiece(Constants.PieceColor pieceColor, Constants.PieceType pieceType = Constants.PieceType.NORMAL) {

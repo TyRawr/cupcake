@@ -51,7 +51,7 @@ public class BoardModel
 					cellModel.SetPiece (Constants.PieceColor.NULL);
 				} else if (pieceColorID.Equals("f")) // handle frosting, the EXACT same as a normal piece but Piece Type is frosting, will make it not fall down.
                 {
-                    CellModel cellModel = new CellModel(row, col, gameBoard.GetLength(0), gameBoard.GetLength(1),CellState.SPECIAL);
+                    CellModel cellModel = new CellModel(row, col, gameBoard.GetLength(0), gameBoard.GetLength(1), CellState.FROSTING);
                     gameBoard[row, col] = cellModel;
                     cellModel.SetPiece(Constants.PieceIDMapping[pieceColorID],Constants.PieceType.FROSTING);
                 } else {
@@ -65,7 +65,7 @@ public class BoardModel
 //				Debug.Log("pieceID:: " + pieceColorID);
 			}
 		}
-        RegisterOrResetCellModelEventListeners();
+        //RegisterOrResetCellModelEventListeners();
 
 		foundMatches = new List<MatchModel>();
 		matched = new HashSet<CellModel>();
@@ -258,7 +258,7 @@ public class BoardModel
             {
                 CellModel cm = gameBoard[row, col];
                 //Debug.Log("SFE " + cm.GetRow() + " " + cm.GetCol());
-                if(cm.GetState() == CellState.SPECIAL) //special currently only means is not "droppable" as in it does not move.
+                if(cm.GetState() == CellState.FROSTING) //special currently only means is not "droppable" as in it does not move.
                 {
                     Debug.Log("SetupFrostingEvents " + cm.GetRow() + " " + cm.GetCol());
                     cm.SetupFrostingEvents(gameBoard);
@@ -289,12 +289,14 @@ public class BoardModel
             foreach (CellModel cell in originalMatch)
             {
                 cell.FireConsumeEvent(alsoMatched,cellResult);
+                //cellResult[cell.GetRow(), cell.GetCol()].SetColorWasDestroyed(cell.GetPieceColor());
             }
             foreach(CellModel cm in alsoMatched)
             {
                 //resul
                 cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
                 cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
+                //cellResult[cm.GetRow(), cm.GetCol()].SetColorWasDestroyed(cm.GetPieceColor());
                 matched.Add(cm);
             }
 
@@ -612,7 +614,7 @@ public class BoardModel
 		for (int row = 0; row < gameBoard.GetLength (0); row++) {
 			for (int col = 0; col < gameBoard.GetLength (1); col++) {
 				CellModel cell = gameBoard [row, col];
-				if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.SPECIAL) {
+				if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.FROSTING) {
 					pieces.Add (gameBoard [row, col].GetPieceColor ());				
 				}
 			}
@@ -627,7 +629,7 @@ public class BoardModel
 			for (int row = 0; row < gameBoard.GetLength (0); row++) {
 				for (int col = 0; col < gameBoard.GetLength (1); col++) {
 					CellModel cell = gameBoard [row, col];
-					if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.SPECIAL) {
+					if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.FROSTING) {
 						checkForMatches.Add (cell);  // Add to checkForMatches
 						int index = UnityEngine.Random.Range (0, piecesToDistribute.Count - 1);
 						gameBoard [row, col].SetPiece (piecesToDistribute [index]);
@@ -780,7 +782,7 @@ public class BoardModel
         Debug.LogWarning("Drop piece begin");
 		foreach (CellModel cell in matched) 
 		{
-			cell.Consume(true);
+			cell.Consume(true,cellResult);
 		}
         Debug.Log("Drop pieces end");
 		matched = new HashSet<CellModel>();
@@ -823,7 +825,7 @@ public class BoardModel
 							}
 							cellResult.Set(reachedCell);
 							cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
-							reachedCell.Consume (false);
+							reachedCell.Consume (false, null);
 							spawnPiece = false;
 							break;
 						}

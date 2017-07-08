@@ -1,14 +1,14 @@
 {
 	"grid":
 	[
-		"pbop",
-		"ppbo",
-		"bopo"
+		"pbip",
+		"ppbi",
+		"bipi"
 	],
 	"margin": "center",
 	"points_to_win": 120,
 	"top_spawn_points":[0],
-	"pieces":["p","b","o"],
+	"pieces":["p","b","i"],
 	"order_to_fill": [
 		"1-pink-top"
 	],
@@ -16,5 +16,11 @@
 	"level_id":"level_1",
 	"level_number":1,
 	"level_color_hex":"9DD5C0",
-	"number_of_moves": 3
+	"number_of_moves": 10,
+	"order_score":500,
+	"order_b":12,
+	"order_i":0,
+	"order_g":0,
+	"order_o":0,
+	"order_p":0
 }

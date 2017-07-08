@@ -1,11 +1,11 @@
 {
 	"grid":
 	[
-	"bgbbg",
-	"gpxxg",
-	"ggogp",
-	"pgxop",
-	"gbgbo"
+	"fgbbf",
+	"fpxxf",
+	"fgogf",
+	"fgxof",
+	"fbgbf"
 	],
 	"pieces":["b","g","o","p"],
 	"margin": "center",
@@ -16,5 +16,11 @@
 	"level_name":"Level 4",
 	"level_id":"level_4",
 	"level_number":4,
-	"number_of_moves": 10
+	"number_of_moves": 10,
+	"order_score":500,
+	"order_b":12,
+	"order_i":12,
+	"order_g":0,
+	"order_o":12,
+	"order_p":0
 }

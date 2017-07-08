@@ -19,11 +19,13 @@ public class BoardView : MonoBehaviour {
 	public List<PieceMapping> piecePrefabs;
 	public CellView cellPrefab;
     public GameObject pointsPrefab;
-    // this used to be a public array populated from the Inspector
-    public Sprite eyesDown;
-    public Sprite eyesFlat;
-    public Sprite eyesTilt;
-    public Sprite eyesUp;
+
+    public GameObject orderBlue;
+    public GameObject orderGreen;
+    public GameObject orderPink;
+    public GameObject orderOrange;
+    public GameObject orderPurple;
+    
 
 
     // View reads from model
@@ -86,7 +88,27 @@ public class BoardView : MonoBehaviour {
                 {
 					// start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));
-                    //TODO: do points?
+                    Constants.PieceColor color = cellRes.GetColorThatWasDestroyed(); 
+                    if (color == Constants.PieceColor.BLUE)
+                    {
+                        bluePieceCount++;
+                    }
+                    if (color == Constants.PieceColor.GREEN)
+                    {
+                        greenPieceCount++;
+                    }
+                    if (color == Constants.PieceColor.PINK)
+                    {
+                        pinkPieceCount++;
+                    }
+                    if (color == Constants.PieceColor.ORANGE)
+                    {
+                        orangePieceCount++;
+                    }
+                    if (color == Constants.PieceColor.PURPLE)
+                    {
+                        purplePieceCount++;
+                    }
                 }
             }
         }
@@ -341,6 +363,7 @@ public class BoardView : MonoBehaviour {
         return piece;
     }
 
+    /*
     // handle random eye attachment
     void HandleEyeAttachment(GameObject piece)
     {
@@ -365,7 +388,7 @@ public class BoardView : MonoBehaviour {
             eyes.GetComponent<Image>().sprite = eyesFlat;
         }
     }
-		
+		*/
     private void LevelLoadListener(object model)
     {
         //EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
@@ -433,10 +456,12 @@ public class BoardView : MonoBehaviour {
 		foreach (CellResult[,] resultSet in resultSets)
         {
 			CellResult[,] cellsMatches = resultSet;
-			yield return new WaitForEndOfFrame();
+            
+            yield return new WaitForEndOfFrame();
             yield return StartCoroutine(AnimateDestroyPieces(resultSet));
 			yield return new WaitForEndOfFrame();
-			/*
+            UpdateOrder(cellsMatches);
+            /*
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
 
 			// Delete the points objects
@@ -451,7 +476,7 @@ public class BoardView : MonoBehaviour {
             // move pieces into position
             //yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
             // spawn and animate the new pieces
-			yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
             yield return StartCoroutine(SpawnPieces(resultSet));
 			yield return new WaitForEndOfFrame();
 			//MovePiecesToBottom(cellsMatches);
@@ -607,10 +632,15 @@ public class BoardView : MonoBehaviour {
 
         if (result == SwapResult.FAILURE)
         {
+            Debug.Log("SwapResult.FAILURE");
 			StartCoroutine(AnimatePieceSwapFailure(row,col,nextRow,nextCol));
+            SoundManager.PlaySound("button-29");
         }
         else if (result == SwapResult.INVALID)
         {
+            Debug.Log("SwapResult.INVALID");
+            inputAllowed = true;
+            SoundManager.PlaySound("button-29");
             // Do nothing
         }
         else if (result == SwapResult.SUCCESS)
@@ -785,12 +815,90 @@ public class BoardView : MonoBehaviour {
 
 			}
 		}
+        ResetPieceCounts();
+        if(createCells)
+        {
+            UpdateOrder(null);
+        }
+        
 		// run initial animations for each piece
 		EventManager.StartListening(Constants.SWIPE_UP_EVENT,SwipeUpEventListener);
 		EventManager.StartListening(Constants.SWIPE_RIGHT_EVENT,SwipeRightEventListener);
 		EventManager.StartListening(Constants.SWIPE_DOWN_EVENT,SwipeDownEventListener);
 		EventManager.StartListening(Constants.SWIPE_LEFT_EVENT,SwipeLeftEventListener);
 	}
+
+    private int bluePieceCount = 0;
+    private int pinkPieceCount = 0;
+    private int greenPieceCount = 0;
+    private int orangePieceCount = 0;
+    private int purplePieceCount = 0;
+
+    public void ResetPieceCounts()
+    {
+        bluePieceCount = 0;
+        pinkPieceCount = 0;
+        greenPieceCount = 0;
+        orangePieceCount = 0;
+        purplePieceCount = 0;
+    }
+
+    public void UpdateOrder(CellResult[,] result)
+    {
+
+        int totalBlueForMatch = LevelManager.levelDescription.order_b;
+        int totalGreenForMatch = LevelManager.levelDescription.order_g;
+        int totalPinkForMatch = LevelManager.levelDescription.order_i;
+        int totalOrangeForMatch = LevelManager.levelDescription.order_o;
+        int totalPurpleForMatch = LevelManager.levelDescription.order_p;
+
+        if (result == null)
+        {
+            //setup initial with everything at max (e.g. 9/9);
+            UIManager.UpdateOrderUI(totalBlueForMatch, totalBlueForMatch,totalGreenForMatch,totalGreenForMatch,totalPinkForMatch,totalPinkForMatch,totalOrangeForMatch,totalOrangeForMatch,totalPurpleForMatch,totalPurpleForMatch);
+            return;
+        }
+        /*
+        foreach(CellResult cr in result)
+        {
+            if(cr != null)
+            {
+                Constants.PieceColor color = cr.GetPieceColor();
+                if(color == Constants.PieceColor.BLUE)
+                {
+                    bluePieceCount++;
+                }
+                if (color == Constants.PieceColor.GREEN)
+                {
+                    greenPieceCount++;
+                }
+                if (color == Constants.PieceColor.PINK)
+                {
+                    pinkPieceCount++;
+                }
+                if (color == Constants.PieceColor.ORANGE)
+                {
+                    orangePieceCount++;
+                }
+                if (color == Constants.PieceColor.PURPLE)
+                {
+                    purplePieceCount++;
+                }
+            }
+        }
+        */
+        //Loop through all the cell results and count up each piece color; Minus it from the total (accumulating).
+        //TODO UPDATE UIMANAGER WITH VALUES;
+        UIManager.UpdateOrderUI(totalBlueForMatch - bluePieceCount, totalBlueForMatch,
+                    totalGreenForMatch - greenPieceCount, totalGreenForMatch,
+                    totalPinkForMatch - pinkPieceCount, totalPinkForMatch,
+                    totalOrangeForMatch - orangePieceCount, totalOrangeForMatch,
+                    totalPurpleForMatch - purplePieceCount, totalPurpleForMatch);
+
+
+
+
+    }
 	
     private IEnumerator WaitForTime_FireEvent(float time, string eventName)
     {
