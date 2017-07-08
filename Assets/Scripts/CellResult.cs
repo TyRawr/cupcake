@@ -7,14 +7,28 @@ public class CellResult {
 	private int fromCol;
 	private Constants.PieceColor pieceColor;
 	private Constants.PieceType pieceType;
+    private CellState state;
+    private bool destroyIndex;
+    private bool isApartOfMatch;
 
-	public CellResult (int point) {
+
+    public CellResult (int point) {
 		this.points = point;
-	}
+    }
 
 	public int GetPoints() {
 		return points;
 	}
+
+    public void SetDestroy(bool toDestroy)
+    {
+        destroyIndex = toDestroy;
+    }
+
+    public bool GetDestroy()
+    {
+        return destroyIndex;
+    }
 
 	public void AddPoints(int pointsToAdd) {
 		this.points += pointsToAdd;
@@ -44,6 +58,16 @@ public class CellResult {
 		return this.pieceType;
 	}
 
+    public CellState GetState()
+    {
+        return state;
+    }
+
+    public void SetState(CellState newState)
+    {
+        this.state = newState;
+    }
+
 	public void SetPiece(Constants.PieceColor pieceColor, Constants.PieceType pieceType = Constants.PieceType.NORMAL) {
 		this.pieceColor = pieceColor;
 		this.pieceType = pieceType;
@@ -54,6 +78,7 @@ public class CellResult {
 		this.fromRow = cell.GetRow();
 		this.pieceColor = cell.GetPieceColor();
 		this.pieceType = cell.GetPieceType();
+        this.state = cell.GetState();
 	}
 }
 

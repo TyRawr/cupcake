@@ -51,7 +51,7 @@ public class BoardModel
 					cellModel.SetPiece (Constants.PieceColor.NULL);
 				} else if (pieceColorID.Equals("f")) // handle frosting, the EXACT same as a normal piece but Piece Type is frosting, will make it not fall down.
                 {
-                    CellModel cellModel = new CellModel(row, col, gameBoard.GetLength(0), gameBoard.GetLength(1));
+                    CellModel cellModel = new CellModel(row, col, gameBoard.GetLength(0), gameBoard.GetLength(1),CellState.SPECIAL);
                     gameBoard[row, col] = cellModel;
                     cellModel.SetPiece(Constants.PieceIDMapping[pieceColorID],Constants.PieceType.FROSTING);
                 } else {
@@ -65,6 +65,7 @@ public class BoardModel
 //				Debug.Log("pieceID:: " + pieceColorID);
 			}
 		}
+        RegisterOrResetCellModelEventListeners();
 
 		foundMatches = new List<MatchModel>();
 		matched = new HashSet<CellModel>();
@@ -99,8 +100,11 @@ public class BoardModel
 				if(result != null) {
 					s = result.GetPoints().ToString();
 					if (s.Equals("0")) {
-						s= result.GetPieceColor().ToString();
-					}
+						s = result.GetPieceColor().ToString();
+					} else
+                    {
+                        s += result.GetPieceColor().ToString();
+                    }
 				}
 				prettyprint += s + "\t";
 			}
@@ -117,6 +121,11 @@ public class BoardModel
 		}
 		Debug.Log(prettyprint);
 	}
+
+    public void RegisterCellModelStateInCellResults(int row, int col)
+    {
+        cellResult[row, col].SetState(gameBoard[row, col].GetState());
+    }
 
 	public void CheckMatch(CellModel cellModel)
 	{
@@ -242,6 +251,23 @@ public class BoardModel
 		return SwapResult.SUCCESS;
 	}
 
+    private void RegisterOrResetCellModelEventListeners() {
+        for(int row = 0; row < gameBoard.GetLength(0); row++ )
+        {
+            for(int col = 0; col < gameBoard.GetLength(1); col++)
+            {
+                CellModel cm = gameBoard[row, col];
+                //Debug.Log("SFE " + cm.GetRow() + " " + cm.GetCol());
+                if(cm.GetState() == CellState.SPECIAL) //special currently only means is not "droppable" as in it does not move.
+                {
+                    Debug.Log("SetupFrostingEvents " + cm.GetRow() + " " + cm.GetCol());
+                    cm.SetupFrostingEvents(gameBoard);
+                }
+                
+            }
+        }
+    }
+
     /**
 	 * Evaluate matches Swap and following matches
 	 * 
@@ -254,13 +280,37 @@ public class BoardModel
 		multiplier = 0;
 
 		do {
-			cellResult = EvaluateMatches();
-			DestroyPieces();
-			//run special events
+            HashSet<CellModel> originalMatch = new HashSet<CellModel>();
+            cellResult = EvaluateMatches(originalMatch);
+
+            //
+            RegisterOrResetCellModelEventListeners();
+            HashSet<CellModel> alsoMatched = new HashSet<CellModel>();
+            foreach (CellModel cell in originalMatch)
+            {
+                cell.FireConsumeEvent(alsoMatched,cellResult);
+            }
+            foreach(CellModel cm in alsoMatched)
+            {
+                //resul
+                cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
+                cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
+                matched.Add(cm);
+            }
+
+
+            //clear the notify cells section.
+            ClearAllNotifyCells();
+
+            DestroyPieces();
+			
 			foundMatches = new List<MatchModel>();
 			DropPieces(cellResult);
 			CheckForMatches();
 
+            
+            //blow up any special(frosting pieces)
+            
 
 			results.Add(cellResult);
 			PrintGameBoard();
@@ -282,6 +332,20 @@ public class BoardModel
 		return res;
 	}
 		
+    void ClearAllNotifyCells()
+    {
+        for (int row = 0; row < gameBoard.GetLength(0); row++)
+        {
+            for (int col = 0; col < gameBoard.GetLength(1); col++)
+            {
+                CellModel cm = gameBoard[row, col];
+                //Debug.Log("SFE " + cm.GetRow() + " " + cm.GetCol());
+                cm.EmptyNotifyCells();
+
+            }
+        }
+    }
+
 	public List<CellModel> GetRecommendedMatch () 
 	{
 		List<CellModel> potentialMatch = new List<CellModel> ();
@@ -548,7 +612,7 @@ public class BoardModel
 		for (int row = 0; row < gameBoard.GetLength (0); row++) {
 			for (int col = 0; col < gameBoard.GetLength (1); col++) {
 				CellModel cell = gameBoard [row, col];
-				if (cell.GetState () != CellState.NULL && cell.GetPieceType() != Constants.PieceType.FROSTING) {
+				if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.SPECIAL) {
 					pieces.Add (gameBoard [row, col].GetPieceColor ());				
 				}
 			}
@@ -563,7 +627,7 @@ public class BoardModel
 			for (int row = 0; row < gameBoard.GetLength (0); row++) {
 				for (int col = 0; col < gameBoard.GetLength (1); col++) {
 					CellModel cell = gameBoard [row, col];
-					if (cell.GetState () != CellState.NULL && cell.GetPieceType() != Constants.PieceType.FROSTING) {
+					if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.SPECIAL) {
 						checkForMatches.Add (cell);  // Add to checkForMatches
 						int index = UnityEngine.Random.Range (0, piecesToDistribute.Count - 1);
 						gameBoard [row, col].SetPiece (piecesToDistribute [index]);
@@ -583,7 +647,7 @@ public class BoardModel
 	 * 	Iterate calculated matches (from swap or evaluation)
 	 * 
 	 */
-	private CellResult[,] EvaluateMatches () {
+	private CellResult[,] EvaluateMatches (HashSet<CellModel> originalMatch) {
 
 		// Init ResultSet elements: CellResult [] and List<PieceModel> []
 		CellResult[,] results = new CellResult[gameBoard.GetLength(0),gameBoard.GetLength(1)];
@@ -592,12 +656,12 @@ public class BoardModel
 		for (int index = 0; index < foundMatches.Count; index++) 
 		{
 			List<CellModel> match = foundMatches[index].GetCells();
-            foreach (CellModel cm in match)
+
+            foreach(CellModel cm in match)
             {
-                Vector2 v = new Vector2(cm.GetRow(), cm.GetCol());
-            
-                EventManager.TriggerEvent("CellConsumed" + cm.GetRow() + "" + cm.GetCol(), v);
+                originalMatch.Add(cm);
             }
+
             // Handle First Cell
             CellModel cell = match [0];
 			bool isElbow = matched.Contains(cell);
@@ -621,7 +685,7 @@ public class BoardModel
 					for(int r = 0; r < gameBoard.GetLength(0);r++) {
 						Debug.Log("also add index: " + r + "," + col);
                         AddPointsFromCellModel(gameBoard[r, col], results, matched);
-					}
+                    }
 				}
 			} else if(match.Count == 5) {
 				//find all cells with piece of same color. aka loop
@@ -629,8 +693,8 @@ public class BoardModel
 				for(int row = 0; row < gameBoard.GetLength(0); row++) {
 					for(int col = 0 ; col < gameBoard.GetLength(1); col++) {
 						if(gameBoard[row,col].GetPieceColor() == colorOfSwappedCell) {
-							AddPointsFromCellModel(gameBoard[row,col], results, matched);
-						}
+                            AddPointsFromCellModel(gameBoard[row, col], results, matched);
+                        }
 					}
 				}
 			}
@@ -736,10 +800,11 @@ public class BoardModel
 			{
 				CellModel cell = gameBoard[rows - row - 1, col];
 
-				// TODO: MAKE SURE ONLY VALID CELL TYPES DO THIS
-				// If empty, find a piece
-				if (cell.IsWanting())
+                // TODO: MAKE SURE ONLY VALID CELL TYPES DO THIS
+                // If empty, find a piece
+                if (cell.IsWanting())
 				{
+                    
 					int reach = 1;
 					bool spawnPiece = true;
 

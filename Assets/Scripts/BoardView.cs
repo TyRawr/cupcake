@@ -81,7 +81,8 @@ public class BoardView : MonoBehaviour {
             for (int col = 0; col < cellsMatches.GetLength(1); col++)
             {
                 CellResult cellRes = cellsMatches[row, col];
-				if (cellRes != null && cellRes.GetPoints() > 0)
+				if (    (cellRes != null && cellRes.GetPoints() > 0) 
+                    || (cellRes != null && cellRes.GetDestroy()))
                 {
 					// start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));

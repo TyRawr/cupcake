@@ -14,6 +14,7 @@ public class CellModel
 	private int col;
 	private CellState state;
 	private HashSet<string> eventListeners;
+    private HashSet<CellModel> notifyCells;
 
 	public CellModel (int row, int col, int numRows, int numCols, CellState state = CellState.NORMAL)
 	{
@@ -21,6 +22,8 @@ public class CellModel
 		this.col = col;
 		this.state = state;
 		this.eventListeners = new HashSet<string>();
+        this.notifyCells = new HashSet<CellModel>();
+        /*
 		if(state == CellState.SPECIAL || (row ==0 && col == 0)) {
 			string eventName = "CellConsumed" + (row - 1) + "" + col;
 			if (row > 0) {
@@ -43,46 +46,61 @@ public class CellModel
 				eventListeners.Add(eventName);
 			}
 		}
+        */
 	}
 
-	public void HandleCellDestroyedEvent (object obj) {
-		Vector2 v = (Vector2) obj;
-		Debug.Log("HandleCellDestroyedEvent " + v.x + " " + v.y);
-		this.state = CellState.NORMAL;
-		foreach (string eventName in eventListeners) {
-			EventManager.StopListening(eventName, HandleCellDestroyedEvent);
-            //destroy piece
-            LevelManager.boardModel.AddPointsFromCellModel(this);
-		}
-	}
-
-    void SetupFrostingEvents()
+    //add self to list of matched.
+    public void FireConsumeEvent(HashSet<CellModel> matched,CellResult[,] results)
     {
-        int numRows = LevelManager.levelDescription.grid.GetLength(0);
-        int numCols = LevelManager.levelDescription.grid[0].Length;
-        string eventName = "CellConsumed" + (row - 1) + "" + col;
+        foreach(CellModel cm in notifyCells)
+        {
+            //cm.HandleCellConsumeEvent(this);
+            matched.Add(cm);
+            cm.Consume(false);
+        }
+    }
+
+    public void SetupFrostingEvents(CellModel[,] gameBoard)
+    {
+        int numRows = gameBoard.GetLength(0);
+        int numCols = gameBoard.GetLength(1);
         if (row > 0)
         {
-            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-            eventListeners.Add(eventName);
+            int r = row - 1;
+            int c = col;
+            if(gameBoard[r,c].GetState() == CellState.NORMAL)
+            {
+                gameBoard[r, c].NotifyCellModelOnConsume(this); // notify me
+            }
+
+
         }
         if (col > 0)
         {
-            eventName = "CellConsumed" + row + "" + (col - 1);
-            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-            eventListeners.Add(eventName);
+            int r = row;
+            int c = col - 1;
+            if (gameBoard[r, c].GetState() == CellState.NORMAL)
+            {
+                gameBoard[r, c].NotifyCellModelOnConsume(this); // notify me
+            }
         }
         if (row < numRows - 1)
         {
-            eventName = "CellConsumed" + (row + 1) + "" + col;
-            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-            eventListeners.Add(eventName);
+            int r = row + 1;
+            int c = col;
+            if (gameBoard[r, c].GetState() == CellState.NORMAL)
+            {
+                gameBoard[r, c].NotifyCellModelOnConsume(this); // notify me
+            }
         }
         if (col < numCols - 1)
         {
-            eventName = "CellConsumed" + row + "" + (col + 1);
-            EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-            eventListeners.Add(eventName);
+            int r = row;
+            int c = col + 1;
+            if (gameBoard[r, c].GetState() == CellState.NORMAL)
+            {
+                gameBoard[r, c].NotifyCellModelOnConsume(this); // notify me
+            }
         }
     }
 
@@ -90,12 +108,7 @@ public class CellModel
 	{
 		this.pieceColor = Constants.PieceColor.NULL;
 		this.pieceType = Constants.PieceType.NULL;
-		//say what index was destroyed, do stuff.
-		//object o = new object() {row,col};
-		if (match) {
-			Vector2 v = new Vector2(row,col);
-			//EventManager.TriggerEvent("CellConsumed" + row + "" + col, v);
-		}
+        this.state = CellState.NORMAL;
 	}
 
 	public int EvaluateMatch (int multiplier) 
@@ -106,12 +119,21 @@ public class CellModel
 		return 10 + (10 * multiplier);
 	}
 
+    public void NotifyCellModelOnConsume(CellModel cm)
+    {
+        notifyCells.Add(cm);
+    }
+
+    public void EmptyNotifyCells()
+    {
+        notifyCells.Clear();
+    }
 	/**
 	 * Is this a cell with a piece we can drop?
 	 */
 	public bool IsDroppable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL || pieceColor == Constants.PieceColor.FROSTING)
+		if (pieceColor == Constants.PieceColor.NULL || state == CellState.SPECIAL)
 		{
 			return false;
 		}
@@ -123,7 +145,7 @@ public class CellModel
 	 */
 	public bool IsSwappable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL || pieceColor == Constants.PieceColor.FROSTING) 
+		if (pieceColor == Constants.PieceColor.NULL || state == CellState.SPECIAL) 
 		{
 			return false;
 		}
@@ -135,7 +157,7 @@ public class CellModel
 	 */
 	public bool IsWanting() 
 	{
-		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL || pieceType == Constants.PieceType.FROSTING) 
+		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.SPECIAL) 
 		{
 			return false;
 		}
@@ -163,9 +185,6 @@ public class CellModel
 	{
 		this.pieceColor = pieceColor;
 		this.pieceType = pieceType;
-        if (pieceType == Constants.PieceType.FROSTING) {
-            SetupFrostingEvents();
-        }
 	}
 
 	/*

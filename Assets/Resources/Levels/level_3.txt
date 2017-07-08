@@ -1,10 +1,10 @@
 {
 	"grid":
 	[
-	"fbioo",
-	"fpbib",
-	"fbgpb",
-	"bbopo"
+	"fpboi",
+	"poppb",
+	"oobpb",
+	"fpopo"
 	],
 	"pieces":["i","b","g","o","p"],
 	"margin": "center",
