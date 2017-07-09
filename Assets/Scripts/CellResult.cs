@@ -11,7 +11,6 @@ public class CellResult {
     private Constants.PieceColor colorOfPieceThatWasDestroyed = Constants.PieceColor.NULL;
     private CellState state;
     private bool destroyIndex;
-    private bool isApartOfMatch;
 
 
     public CellResult (int point) {

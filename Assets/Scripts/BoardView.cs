@@ -449,18 +449,18 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
-	IEnumerator RunResultsAnimation(List<CellResult[,]> resultSets, bool hadToShuffle, int moves)
+	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle, int moves)
     {
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
-		foreach (CellResult[,] resultSet in resultSets)
+		foreach (Result result in resultSets.GetCellResults())
         {
-			CellResult[,] cellsMatches = resultSet;
+			CellResult[,] cellsMatches = result.GetCellResult();
             
             yield return new WaitForEndOfFrame();
-            yield return StartCoroutine(AnimateDestroyPieces(resultSet));
+            yield return StartCoroutine(AnimateDestroyPieces(cellsMatches));
 			yield return new WaitForEndOfFrame();
-            UpdateOrder(cellsMatches);
+            UpdateOrder(cellsMatches); //view
             /*
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
 
@@ -477,7 +477,7 @@ public class BoardView : MonoBehaviour {
             //yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
             // spawn and animate the new pieces
             yield return new WaitForEndOfFrame();
-            yield return StartCoroutine(SpawnPieces(resultSet));
+            yield return StartCoroutine(SpawnPieces(cellsMatches));
 			yield return new WaitForEndOfFrame();
 			//MovePiecesToBottom(cellsMatches);
             // move pieces into position
@@ -652,13 +652,11 @@ public class BoardView : MonoBehaviour {
             GameObject temp = cells[row, col].piece;
             cells[row, col].piece = cells[nextRow, nextCol].piece;
             cells[nextRow, nextCol].piece = temp;
-			Results results = boardModel.GetResults(); 
-			List<CellResult[,]> cellResults = results.GetCellResults();
-			//Debug.Log("Length of Result Sets: " + cellResults.Count);
+			Results results = boardModel.GetResults();
 
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
 			bool hadToShuffle = results.GetHadToShuffle();
-			StartCoroutine(RunResultsAnimation(cellResults,hadToShuffle,results.GetMoves()));
+			StartCoroutine(RunResultsAnimation(results, hadToShuffle,results.GetMoves()));
         }
 		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
         UIManager.UpdateScoreValue(boardModel.Score);

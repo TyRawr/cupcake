@@ -276,7 +276,8 @@ public class BoardModel
 
     public Results GetResults () 
 	{
-		List<CellResult[,]> results = new List<CellResult[,]> ();
+        List<Result> results = new List<Result>();
+		//List<CellResult[,]> listOfCellResults = new List<CellResult[,]> ();
 		multiplier = 0;
 
 		do {
@@ -314,7 +315,7 @@ public class BoardModel
             //blow up any special(frosting pieces)
             
 
-			results.Add(cellResult);
+			results.Add( new Result(cellResult, new Order()));
 			PrintGameBoard();
 			//PrintGameBoard();
 			multiplier ++;
