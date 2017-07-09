@@ -140,7 +140,7 @@ public class BoardView : MonoBehaviour {
         float journeyLength = Vector3.Distance(startMarker, toPosition);
         for (float t = 0.0f; t < duration; t += Time.deltaTime)
         {
-            if (piece != null && piece.transform == null) break;
+            if (piece != null && piece.transform == null) yield break;
             piece.transform.position = Vector3.Lerp(startMarker, toPosition, t / duration);
             yield return new WaitForEndOfFrame();
         }
@@ -152,6 +152,25 @@ public class BoardView : MonoBehaviour {
         if (callback != null)
         {
             callback();
+        }
+    }
+
+    public IEnumerator AnimateRecommendedMatchPiece(int row, int col)
+    {
+        yield return new WaitForSeconds(2f);
+        GameObject piece = cells[row, col].piece;
+        Vector3 startScale = piece.transform.localScale;
+        Vector3 endScale = 1.25f * startScale;
+        float t = 0f;
+        while (true)
+        {
+            yield return new WaitForEndOfFrame();
+            t += Time.deltaTime/1f;
+            if (t >= 1f) t = 0;
+
+            //Debug.Log("t: " + t + " t%1 " + t % 1);
+            if (piece == null) yield break;
+            piece.transform.localScale = Vector3.Lerp(startScale, endScale, t);
         }
     }
 
@@ -449,18 +468,22 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
-	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle, int moves)
+	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle,List<CellModel> recMatch)
     {
+        
+        int moves = resultSets.GetMoves();
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
 		foreach (Result result in resultSets.GetCellResults())
         {
 			CellResult[,] cellsMatches = result.GetCellResult();
+            Order updatedOrder = result.GetOrder();
+            //do something with order.
             
             yield return new WaitForEndOfFrame();
             yield return StartCoroutine(AnimateDestroyPieces(cellsMatches));
 			yield return new WaitForEndOfFrame();
-            UpdateOrder(cellsMatches); //view
+            UpdateOrder(updatedOrder); //view
             /*
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
 
@@ -494,8 +517,20 @@ public class BoardView : MonoBehaviour {
 			yield return new WaitForSeconds(.5f);
             ClearPieces();
             UIManager.OpenGameOverModal();
+            inputAllowed = true;
+            yield break;
 		}
 		inputAllowed = true;
+
+
+
+
+        // start a timer, if X seconds goes by, animate recommendedMatch cells (transform scale up and down)
+        foreach(CellModel cm in recMatch)
+        {
+            StartCoroutine(AnimateRecommendedMatchPiece(cm.GetRow(), cm.GetCol()));
+        }
+        //StartCoroutine(AnimateRecommendedMatchPiece(recMatch[0].GetRow(), recMatch[0].GetCol()));
         yield return null;
     }
 
@@ -627,7 +662,7 @@ public class BoardView : MonoBehaviour {
 			nextCol -= 1;
 			break;
 		}
-
+        StopAllCoroutines();
         SwapResult result = boardModel.SwapPiece(row, col, direction);
 
         if (result == SwapResult.FAILURE)
@@ -656,7 +691,7 @@ public class BoardView : MonoBehaviour {
 
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
 			bool hadToShuffle = results.GetHadToShuffle();
-			StartCoroutine(RunResultsAnimation(results, hadToShuffle,results.GetMoves()));
+			StartCoroutine(RunResultsAnimation(results, hadToShuffle,recommendedMatch));
         }
 		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
         UIManager.UpdateScoreValue(boardModel.Score);
@@ -816,7 +851,7 @@ public class BoardView : MonoBehaviour {
         ResetPieceCounts();
         if(createCells)
         {
-            UpdateOrder(null);
+            //UpdateOrder(null);
         }
         
 		// run initial animations for each piece
@@ -841,19 +876,18 @@ public class BoardView : MonoBehaviour {
         purplePieceCount = 0;
     }
 
-    public void UpdateOrder(CellResult[,] result)
+    public void UpdateOrder(Order order)
     {
 
-        int totalBlueForMatch = LevelManager.levelDescription.order_b;
-        int totalGreenForMatch = LevelManager.levelDescription.order_g;
-        int totalPinkForMatch = LevelManager.levelDescription.order_i;
-        int totalOrangeForMatch = LevelManager.levelDescription.order_o;
-        int totalPurpleForMatch = LevelManager.levelDescription.order_p;
-
-        if (result == null)
+        if (order == null)
         {
             //setup initial with everything at max (e.g. 9/9);
-            UIManager.UpdateOrderUI(totalBlueForMatch, totalBlueForMatch,totalGreenForMatch,totalGreenForMatch,totalPinkForMatch,totalPinkForMatch,totalOrangeForMatch,totalOrangeForMatch,totalPurpleForMatch,totalPurpleForMatch);
+            UIManager.UpdateOrderUI(order.GetAmountFromColor(Constants.PieceColor.BLUE), order.GetTotalNeededFromColor(Constants.PieceColor.BLUE),
+                order.GetAmountFromColor(Constants.PieceColor.GREEN) ,order.GetTotalNeededFromColor(Constants.PieceColor.GREEN),
+                order.GetAmountFromColor(Constants.PieceColor.PINK) ,order.GetTotalNeededFromColor(Constants.PieceColor.PINK),
+                order.GetAmountFromColor(Constants.PieceColor.ORANGE) ,order.GetTotalNeededFromColor(Constants.PieceColor.ORANGE),
+                order.GetAmountFromColor(Constants.PieceColor.PURPLE) ,order.GetTotalNeededFromColor(Constants.PieceColor.PURPLE)
+                );
             return;
         }
         /*
@@ -887,11 +921,12 @@ public class BoardView : MonoBehaviour {
         */
         //Loop through all the cell results and count up each piece color; Minus it from the total (accumulating).
         //TODO UPDATE UIMANAGER WITH VALUES;
-        UIManager.UpdateOrderUI(totalBlueForMatch - bluePieceCount, totalBlueForMatch,
-                    totalGreenForMatch - greenPieceCount, totalGreenForMatch,
-                    totalPinkForMatch - pinkPieceCount, totalPinkForMatch,
-                    totalOrangeForMatch - orangePieceCount, totalOrangeForMatch,
-                    totalPurpleForMatch - purplePieceCount, totalPurpleForMatch);
+        UIManager.UpdateOrderUI(order.GetAmountFromColor(Constants.PieceColor.BLUE), order.GetTotalNeededFromColor(Constants.PieceColor.BLUE),
+                order.GetAmountFromColor(Constants.PieceColor.GREEN), order.GetTotalNeededFromColor(Constants.PieceColor.GREEN),
+                order.GetAmountFromColor(Constants.PieceColor.PINK), order.GetTotalNeededFromColor(Constants.PieceColor.PINK),
+                order.GetAmountFromColor(Constants.PieceColor.ORANGE), order.GetTotalNeededFromColor(Constants.PieceColor.ORANGE),
+                order.GetAmountFromColor(Constants.PieceColor.PURPLE), order.GetTotalNeededFromColor(Constants.PieceColor.PURPLE)
+                );
 
 
 

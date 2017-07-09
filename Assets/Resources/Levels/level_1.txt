@@ -1,8 +1,8 @@
 {
 	"grid":
 	[
-		"pbip",
-		"ppbi",
+		"ffip",
+		"fpbi",
 		"bipi"
 	],
 	"margin": "center",

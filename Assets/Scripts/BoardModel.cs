@@ -30,6 +30,8 @@ public class BoardModel
 		}
 	}
 
+    Order order;
+
 	public BoardModel(LevelManager.LevelDescription levelDescription)
 	{
 		string[] grid = levelDescription.grid;
@@ -67,6 +69,16 @@ public class BoardModel
 		}
         //RegisterOrResetCellModelEventListeners();
 
+        //Setup Order
+        int totalBlueForMatch = LevelManager.levelDescription.order_b;
+        int totalGreenForMatch = LevelManager.levelDescription.order_g;
+        int totalPinkForMatch = LevelManager.levelDescription.order_i;
+        int totalOrangeForMatch = LevelManager.levelDescription.order_o;
+        int totalPurpleForMatch = LevelManager.levelDescription.order_p;
+        int totalYellowForMatch = 0;
+        int totalFrostingForMatch = 0;
+
+        order = new Order(totalBlueForMatch,totalPinkForMatch,totalYellowForMatch,totalGreenForMatch,totalPurpleForMatch,totalOrangeForMatch, totalFrostingForMatch);
 		foundMatches = new List<MatchModel>();
 		matched = new HashSet<CellModel>();
 		checkForMatches = new HashSet<CellModel>();
@@ -289,7 +301,7 @@ public class BoardModel
             HashSet<CellModel> alsoMatched = new HashSet<CellModel>();
             foreach (CellModel cell in originalMatch)
             {
-                cell.FireConsumeEvent(alsoMatched,cellResult);
+                cell.FireConsumeEvent(alsoMatched,cellResult,order);
                 //cellResult[cell.GetRow(), cell.GetCol()].SetColorWasDestroyed(cell.GetPieceColor());
             }
             foreach(CellModel cm in alsoMatched)
@@ -305,9 +317,11 @@ public class BoardModel
             //clear the notify cells section.
             ClearAllNotifyCells();
 
-            DestroyPieces();
-			
-			foundMatches = new List<MatchModel>();
+            //Order updatedOrder = new Order();
+            DestroyPieces(order);
+            
+
+            foundMatches = new List<MatchModel>();
 			DropPieces(cellResult);
 			CheckForMatches();
 
@@ -315,7 +329,7 @@ public class BoardModel
             //blow up any special(frosting pieces)
             
 
-			results.Add( new Result(cellResult, new Order()));
+			results.Add( new Result(cellResult, (Order)order.Clone(), score));
 			PrintGameBoard();
 			//PrintGameBoard();
 			multiplier ++;
@@ -331,7 +345,7 @@ public class BoardModel
 		}
 
 		PrintRecommendedMatch (recommendedMatch);
-		Results res = new Results(results, recommendedMatch, hadToShuffle,moves);
+		Results res = new Results(results, recommendedMatch, hadToShuffle,moves,moves <= 0);
 		return res;
 	}
 		
@@ -778,12 +792,16 @@ public class BoardModel
 		matched.Add(cell);
 	}
 
-	private void DestroyPieces() {
+    /*
+     *  When destroying a piece add its color to the order fulfillment 
+     */
+	private void DestroyPieces(Order updatedOrder) {
         // Destroy Pieces
         Debug.LogWarning("Drop piece begin");
 		foreach (CellModel cell in matched) 
 		{
-			cell.Consume(true,cellResult);
+
+			cell.Consume(true,cellResult, updatedOrder);
 		}
         Debug.Log("Drop pieces end");
 		matched = new HashSet<CellModel>();
@@ -826,7 +844,7 @@ public class BoardModel
 							}
 							cellResult.Set(reachedCell);
 							cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
-							reachedCell.Consume (false, null);
+							reachedCell.Consume (false, null,order);
 							spawnPiece = false;
 							break;
 						}

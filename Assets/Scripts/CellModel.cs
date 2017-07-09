@@ -50,14 +50,14 @@ public class CellModel
 	}
 
     //add self to list of matched.
-    public void FireConsumeEvent(HashSet<CellModel> matched,CellResult[,] results)
+    public void FireConsumeEvent(HashSet<CellModel> matched,CellResult[,] results,Order order)
     {
         foreach(CellModel cm in notifyCells)
         {
             //cm.HandleCellConsumeEvent(this);
             matched.Add(cm);
             //results[cm.GetRow(), cm.GetCol()].SetColorWasDestroyed(cm.GetPieceColor());
-            cm.Consume(false,results);
+            cm.Consume(false,results,order);
         }
     }
 
@@ -105,19 +105,17 @@ public class CellModel
         }
     }
 
-	public void Consume (Boolean match, CellResult[,] results) 
+	public void Consume (Boolean match, CellResult[,] results,Order order) 
 	{
         if(results != null && results[row,col] != null)
         {
             results[row, col].SetColorWasDestroyed(pieceColor);
+            order.AddColorToOrder(pieceColor);
         }
-
         
-
         this.pieceColor = Constants.PieceColor.NULL;
 		this.pieceType = Constants.PieceType.NULL;
-        this.state = CellState.NORMAL;
-        
+        this.state = CellState.NORMAL; 
 	}
 
 	public int EvaluateMatch (int multiplier) 

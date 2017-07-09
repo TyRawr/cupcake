@@ -141,6 +141,7 @@ public static class Constants {
 		GREEN,
 		PURPLE,
 		BLUE,
+        YELLOW,
         FROSTING,
 		NULL
 	}
