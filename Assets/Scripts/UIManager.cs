@@ -307,11 +307,25 @@ public static class UIManager {
 
     }
 
-	public static void OpenGameOverModal() {
+	public static void OpenGameOverModal(GAMEOVERSTATE gameOverState) {
 		Debug.Log("Toggle game over");
 		if(!gameover_modal) return;
 		Debug.Log("Toggle game over!!@##@@");
+
+
 		gameover_modal.gameObject.SetActive(true);
+        Text text = gameover_modal.gameObject.GetComponentInChildren < Text>();
+        if(text!=null)
+        {
+            if (gameOverState == GAMEOVERSTATE.FAILURE_OUT_OF_MOVES)
+            {
+                text.text = "You Ran Out Of Moves :(\n\n" +
+                    "Play Again";
+            }
+            else if (gameOverState == GAMEOVERSTATE.SUCCESS_ORDER_MET) {
+                text.text = "You Win!\n\nGood Job!\n\nPlay The Next Level!";
+            }
+        }
 	}
 
 	public static void TurnModalOff(string ui_id){

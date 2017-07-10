@@ -16,10 +16,10 @@
 	"level_id":"level_1",
 	"level_number":1,
 	"level_color_hex":"9DD5C0",
-	"number_of_moves": 10,
+	"number_of_moves": 5,
 	"order_score":500,
-	"order_b":12,
-	"order_i":0,
+	"order_b":6,
+	"order_i":6,
 	"order_g":0,
 	"order_o":0,
 	"order_p":0

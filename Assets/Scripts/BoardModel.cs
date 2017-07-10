@@ -325,11 +325,12 @@ public class BoardModel
 			DropPieces(cellResult);
 			CheckForMatches();
 
-            
-            //blow up any special(frosting pieces)
-            
 
-			results.Add( new Result(cellResult, (Order)order.Clone(), score));
+            //blow up any special(frosting pieces)
+
+            order = (Order)order.Clone();
+
+            results.Add( new Result(cellResult, order, score));
 			PrintGameBoard();
 			//PrintGameBoard();
 			multiplier ++;
@@ -345,7 +346,19 @@ public class BoardModel
 		}
 
 		PrintRecommendedMatch (recommendedMatch);
-		Results res = new Results(results, recommendedMatch, hadToShuffle,moves,moves <= 0);
+
+        //determine gameendstate
+        GAMEOVERSTATE gameOverState = GAMEOVERSTATE.NULL;
+        if(order.IsComplete())
+        {
+            gameOverState = GAMEOVERSTATE.SUCCESS_ORDER_MET;
+        } else if (moves <=0)
+        {
+            gameOverState = GAMEOVERSTATE.FAILURE_OUT_OF_MOVES;
+        }
+        
+
+        Results res = new Results(results, recommendedMatch, hadToShuffle,moves, gameOverState);
 		return res;
 	}
 		
@@ -800,7 +813,6 @@ public class BoardModel
         Debug.LogWarning("Drop piece begin");
 		foreach (CellModel cell in matched) 
 		{
-
 			cell.Consume(true,cellResult, updatedOrder);
 		}
         Debug.Log("Drop pieces end");

@@ -19,8 +19,8 @@
 	"number_of_moves": 10,
 	"order_score":500,
 	"order_b":12,
-	"order_i":12,
-	"order_g":0,
+	"order_i":0,
+	"order_g":36,
 	"order_o":12,
 	"order_p":0
 }

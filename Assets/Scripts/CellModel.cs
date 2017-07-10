@@ -107,6 +107,10 @@ public class CellModel
 
 	public void Consume (Boolean match, CellResult[,] results,Order order) 
 	{
+        if(order == null)
+        {
+            Debug.LogError("Order is null");
+        }
         if(results != null && results[row,col] != null)
         {
             results[row, col].SetColorWasDestroyed(pieceColor);

@@ -512,11 +512,13 @@ public class BoardView : MonoBehaviour {
 			Debug.Log("Had To Shuffle");
 			UpdateViewFromBoardModel();
 		}
-		if(moves <=0) {
+        GAMEOVERSTATE gameOverState = resultSets.GetGameOver();
+
+        if (gameOverState != GAMEOVERSTATE.NULL) {
 			//game over
 			yield return new WaitForSeconds(.5f);
             ClearPieces();
-            UIManager.OpenGameOverModal();
+            UIManager.OpenGameOverModal(gameOverState);
             inputAllowed = true;
             yield break;
 		}

@@ -15,11 +15,11 @@
 	"level_id":"level_3",
 	"level_number":3,
 	"level_color_hex":"9DD5C0",
-	"number_of_moves": 100,
-	"order_score":500,
-	"order_b":12,
-	"order_i":12,
+	"number_of_moves": 10,
+	"order_score":10,
+	"order_b":24,
+	"order_i":24,
 	"order_g":0,
-	"order_o":12,
-	"order_p":0
+	"order_o":0,
+	"order_p":24
 }
