@@ -88,27 +88,6 @@ public class BoardView : MonoBehaviour {
                 {
 					// start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));
-                    Constants.PieceColor color = cellRes.GetColorThatWasDestroyed(); 
-                    if (color == Constants.PieceColor.BLUE)
-                    {
-                        bluePieceCount++;
-                    }
-                    if (color == Constants.PieceColor.GREEN)
-                    {
-                        greenPieceCount++;
-                    }
-                    if (color == Constants.PieceColor.PINK)
-                    {
-                        pinkPieceCount++;
-                    }
-                    if (color == Constants.PieceColor.ORANGE)
-                    {
-                        orangePieceCount++;
-                    }
-                    if (color == Constants.PieceColor.PURPLE)
-                    {
-                        purplePieceCount++;
-                    }
                 }
             }
         }
@@ -155,9 +134,9 @@ public class BoardView : MonoBehaviour {
         }
     }
 
-    public IEnumerator AnimateRecommendedMatchPiece(int row, int col)
+    public IEnumerator AnimateRecommendedMatchPiece(int row, int col , float waitFor = 3f)
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(waitFor);
         GameObject piece = cells[row, col].piece;
         Vector3 startScale = piece.transform.localScale;
         Vector3 endScale = 1.25f * startScale;
@@ -167,7 +146,6 @@ public class BoardView : MonoBehaviour {
             yield return new WaitForEndOfFrame();
             t += Time.deltaTime/1f;
             if (t >= 1f) t = 0;
-
             //Debug.Log("t: " + t + " t%1 " + t % 1);
             if (piece == null) yield break;
             piece.transform.localScale = Vector3.Lerp(startScale, endScale, t);
@@ -415,6 +393,15 @@ public class BoardView : MonoBehaviour {
         //boardModel.PrintGameBoard();
         UpdateViewFromBoardModel();
         inputAllowed = true;// game will process piece touch input
+        List<CellModel> recMatch = boardModel.GetRecommendedMatch();
+        StopAllCoroutines();
+        if(recMatch != null)
+        {
+            foreach (CellModel cm in recMatch)
+            {
+                StartCoroutine(AnimateRecommendedMatchPiece(cm.GetRow(), cm.GetCol()));
+            }
+        }
     }
 
     //this should probably be held by the model.
@@ -483,6 +470,7 @@ public class BoardView : MonoBehaviour {
             yield return new WaitForEndOfFrame();
             yield return StartCoroutine(AnimateDestroyPieces(cellsMatches));
 			yield return new WaitForEndOfFrame();
+            UIManager.UpdateScoreValue(result.GetScore());
             UpdateOrder(updatedOrder); //view
             /*
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
@@ -520,6 +508,7 @@ public class BoardView : MonoBehaviour {
             ClearPieces();
             UIManager.OpenGameOverModal(gameOverState);
             inputAllowed = true;
+            StopAllCoroutines();
             yield break;
 		}
 		inputAllowed = true;
@@ -696,7 +685,7 @@ public class BoardView : MonoBehaviour {
 			StartCoroutine(RunResultsAnimation(results, hadToShuffle,recommendedMatch));
         }
 		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
-        UIManager.UpdateScoreValue(boardModel.Score);
+        //UIManager.UpdateScoreValue(boardModel.Score);
 //		boardModel.PrintGameBoard();
     }
 
@@ -850,7 +839,6 @@ public class BoardView : MonoBehaviour {
 
 			}
 		}
-        ResetPieceCounts();
         if(createCells)
         {
             //UpdateOrder(null);
@@ -862,21 +850,6 @@ public class BoardView : MonoBehaviour {
 		EventManager.StartListening(Constants.SWIPE_DOWN_EVENT,SwipeDownEventListener);
 		EventManager.StartListening(Constants.SWIPE_LEFT_EVENT,SwipeLeftEventListener);
 	}
-
-    private int bluePieceCount = 0;
-    private int pinkPieceCount = 0;
-    private int greenPieceCount = 0;
-    private int orangePieceCount = 0;
-    private int purplePieceCount = 0;
-
-    public void ResetPieceCounts()
-    {
-        bluePieceCount = 0;
-        pinkPieceCount = 0;
-        greenPieceCount = 0;
-        orangePieceCount = 0;
-        purplePieceCount = 0;
-    }
 
     public void UpdateOrder(Order order)
     {
@@ -892,37 +865,9 @@ public class BoardView : MonoBehaviour {
                 );
             return;
         }
-        /*
-        foreach(CellResult cr in result)
-        {
-            if(cr != null)
-            {
-                Constants.PieceColor color = cr.GetPieceColor();
-                if(color == Constants.PieceColor.BLUE)
-                {
-                    bluePieceCount++;
-                }
-                if (color == Constants.PieceColor.GREEN)
-                {
-                    greenPieceCount++;
-                }
-                if (color == Constants.PieceColor.PINK)
-                {
-                    pinkPieceCount++;
-                }
-                if (color == Constants.PieceColor.ORANGE)
-                {
-                    orangePieceCount++;
-                }
-                if (color == Constants.PieceColor.PURPLE)
-                {
-                    purplePieceCount++;
-                }
-            }
-        }
-        */
         //Loop through all the cell results and count up each piece color; Minus it from the total (accumulating).
         //TODO UPDATE UIMANAGER WITH VALUES;
+        Debug.Log("View Blue Update:: " + order.GetAmountFromColor(Constants.PieceColor.BLUE));
         UIManager.UpdateOrderUI(order.GetAmountFromColor(Constants.PieceColor.BLUE), order.GetTotalNeededFromColor(Constants.PieceColor.BLUE),
                 order.GetAmountFromColor(Constants.PieceColor.GREEN), order.GetTotalNeededFromColor(Constants.PieceColor.GREEN),
                 order.GetAmountFromColor(Constants.PieceColor.PINK), order.GetTotalNeededFromColor(Constants.PieceColor.PINK),

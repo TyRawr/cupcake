@@ -384,8 +384,8 @@ public static class UIManager {
             board_ui.Find("Board_Modal").gameObject.SetActive(true);
             if (board_ui.transform.gameObject.activeInHierarchy)
             {
+                BoardView.instance.StopAllCoroutines();
                 BoardView.instance.ClearPieces();
-                
             }
             else
             {

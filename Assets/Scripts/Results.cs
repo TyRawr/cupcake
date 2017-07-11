@@ -40,12 +40,14 @@ public class Result
 {
     private CellResult[,] cellResult;
     private Order updatedOrder;
+    private int score;
     //TODO also represent any updated special move (if they got any items during the frame)
 
     public Result(CellResult[,] _cellResults,Order _updatedOrder,int score)
     {
         this.cellResult = _cellResults;
         this.updatedOrder = _updatedOrder;
+        this.score = score;
     }
 
     public CellResult[,] GetCellResult()
@@ -58,6 +60,10 @@ public class Result
         return updatedOrder;
     }
      
+    public int GetScore()
+    {
+        return this.score;
+    }
 }
 
 public class Order : System.ICloneable
@@ -68,6 +74,48 @@ public class Order : System.ICloneable
     //initially only have 6 colors for the game. Need holiday update pieces as well.
     private int totalBlueForOrder, totalPinkForOrder, totalYellowForOrder, totalGreenForOrder, totalPurpleForOrder, totalOrangeForOrder, totalFrostingForOrder;
     private int matchedBlue, matchedPink, matchedYellow, matchedGreen, matchedPurple, matchedOrange,matchedFrosting;
+
+    //Add to an old order, some weird memory thing Tyler doesnt under stand is the cause of this overload constructor. Also, tried IClonable->Close() which didnt work :(
+    public Order(Order orderToAddTo)
+    {
+        this.totalBlueForOrder      = orderToAddTo.totalBlueForOrder;
+        this.totalPinkForOrder      = orderToAddTo.totalPinkForOrder;
+        this.totalYellowForOrder    = orderToAddTo.totalYellowForOrder;
+        this.totalGreenForOrder     = orderToAddTo.totalGreenForOrder;
+        this.totalPurpleForOrder    = orderToAddTo.totalPurpleForOrder;
+        this.totalOrangeForOrder    = orderToAddTo.totalOrangeForOrder;
+        this.totalFrostingForOrder  = orderToAddTo.totalFrostingForOrder;
+
+        this.matchedBlue      = orderToAddTo.GetAmountFromColor(Constants.PieceColor.BLUE);
+        this.matchedPink      = orderToAddTo.GetAmountFromColor(Constants.PieceColor.PINK);
+        this.matchedYellow    = orderToAddTo.GetAmountFromColor(Constants.PieceColor.YELLOW);
+        this.matchedGreen     = orderToAddTo.GetAmountFromColor(Constants.PieceColor.GREEN);
+        this.matchedPurple    = orderToAddTo.GetAmountFromColor(Constants.PieceColor.PURPLE);
+        this.matchedOrange    = orderToAddTo.GetAmountFromColor(Constants.PieceColor.ORANGE);
+        this.matchedFrosting  = orderToAddTo.GetAmountFromColor(Constants.PieceColor.FROSTING);
+
+        // setup the needed order with the totals
+        this.neededOrder = new Dictionary<Constants.PieceColor, int>();
+        this.neededOrder.Add(Constants.PieceColor.BLUE, totalBlueForOrder);
+        this.neededOrder.Add(Constants.PieceColor.PINK, totalPinkForOrder);
+        this.neededOrder.Add(Constants.PieceColor.YELLOW, totalYellowForOrder);
+        this.neededOrder.Add(Constants.PieceColor.GREEN, totalGreenForOrder);
+        this.neededOrder.Add(Constants.PieceColor.PURPLE, totalPurpleForOrder);
+        this.neededOrder.Add(Constants.PieceColor.ORANGE, totalOrangeForOrder);
+        this.neededOrder.Add(Constants.PieceColor.FROSTING, totalFrostingForOrder);
+        this.neededOrder.Add(Constants.PieceColor.NULL, 0);
+
+        //setup the current order with nothing in em
+        this.currentOrder = new Dictionary<Constants.PieceColor, int>();
+        this.currentOrder.Add(Constants.PieceColor.BLUE, matchedBlue);
+        this.currentOrder.Add(Constants.PieceColor.PINK, matchedPink);
+        this.currentOrder.Add(Constants.PieceColor.YELLOW, matchedYellow);
+        this.currentOrder.Add(Constants.PieceColor.GREEN, matchedGreen);
+        this.currentOrder.Add(Constants.PieceColor.PURPLE, matchedPurple);
+        this.currentOrder.Add(Constants.PieceColor.ORANGE, matchedOrange);
+        this.currentOrder.Add(Constants.PieceColor.FROSTING, matchedFrosting);
+        this.currentOrder.Add(Constants.PieceColor.NULL, 0);
+    }
     //Setup the initial order for the level
     public Order(int totalBlueForOrder, int totalPinkForOrder, int totalYellowForOrder, int totalGreenForOrder, int totalPurpleForOrder, int totalOrangeForOrder,int totalFrostingForOrder) {
         this.totalBlueForOrder = totalBlueForOrder;
