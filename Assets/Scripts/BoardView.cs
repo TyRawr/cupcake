@@ -530,7 +530,7 @@ public class BoardView : MonoBehaviour {
 			yield return new WaitForEndOfFrame();
             UIManager.UpdateScoreValue(result.GetScore());
             UpdateOrder(updatedOrder); //view
-            /*
+            yield return new WaitForEndOfFrame();
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
 
 			// Delete the points objects
@@ -539,7 +539,7 @@ public class BoardView : MonoBehaviour {
                 Transform child = pointsParent.transform.GetChild(i);
                 GameObject.Destroy(child.gameObject);
             }
-            */
+            
             //move the pieces down, logically - have to find out where they belong - probably not the best - can be added to model?
             //MovePiecesToBottom(cellsMatches);
             // move pieces into position
@@ -670,7 +670,7 @@ public class BoardView : MonoBehaviour {
             }
         }
         
-        yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+        yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION*2);
     }
 
     void Start()
