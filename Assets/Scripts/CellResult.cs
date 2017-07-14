@@ -11,10 +11,22 @@ public class CellResult {
     private Constants.PieceColor colorOfPieceThatWasDestroyed = Constants.PieceColor.NULL;
     private CellState state;
     private bool destroyIndex;
+    private MATCHTYPE matchType;
 
 
-    public CellResult (int point) {
+    public CellResult (int point,MATCHTYPE matchTypeForViewToSpawn = MATCHTYPE.NORMAL) {
 		this.points = point;
+        this.matchType = matchTypeForViewToSpawn;
+    }
+
+    public MATCHTYPE GetMatchType()
+    {
+        return matchType;
+    }
+
+    public void SetMatchType(MATCHTYPE matchType)
+    {
+        this.matchType = matchType;
     }
 
 	public int GetPoints() {

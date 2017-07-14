@@ -13,6 +13,7 @@ public class BoardModel
 	private int score;
 	private int multiplier;
 	private List<MatchModel> foundMatches;
+    private MATCHTYPE tempMatchType;
 	private HashSet<CellModel> matched;
 	private HashSet<CellModel> checkForMatches;
 
@@ -294,6 +295,7 @@ public class BoardModel
 		multiplier = 0;
 
 		do {
+            tempMatchType = MATCHTYPE.NORMAL;
             HashSet<CellModel> originalMatch = new HashSet<CellModel>();
             cellResult = EvaluateMatches(originalMatch);
             
@@ -332,7 +334,7 @@ public class BoardModel
             Order o = new Order(order);
             orders.Add(o);
             Debug.Log("new order blue: " + order.GetAmountFromColor(Constants.PieceColor.BLUE));
-            results.Add( new Result(cellResult,  o, score));
+            results.Add( new Result(cellResult,  o, score,tempMatchType));
 			PrintGameBoard();
 			//PrintGameBoard();
 			multiplier ++;
@@ -358,8 +360,8 @@ public class BoardModel
         {
             gameOverState = GAMEOVERSTATE.FAILURE_OUT_OF_MOVES;
         }
-        
 
+        Debug.Log(foundMatches.Count);
         Results res = new Results(results, recommendedMatch, hadToShuffle,moves, gameOverState);
 		return res;
 	}
@@ -697,35 +699,54 @@ public class BoardModel
             // Handle First Cell
             CellModel cell = match [0];
 			bool isElbow = matched.Contains(cell);
-			AddPointsFromCellModel(cell,results,matched);
+            MATCHTYPE matchType = MATCHTYPE.NORMAL;
+			
 
 
 			if(match.Count == 4) {
-				int row = cell.GetRow();
+                
+                
+                int row = cell.GetRow();
 				int col = cell.GetCol();
 				//figure out what way the direction goes, is this a row explosion or a column explosion?
 				if (foundMatches[index].IsVertical()) {
-					//results[row,col];
-					//blow up ROW from the location of the 'swapped' cell.
-					//Debug.Log("Vertical Match Swapped Cell index: " + row + "," + col);
-					for(int c = 0; c < gameBoard.GetLength(1);c++) {
-						//Debug.Log("also add index: " + row + "," + c);
-                        AddPointsFromCellModel(gameBoard[row, c], results, matched);
+                    tempMatchType = MATCHTYPE.ROW;
+                    //mark cell as origin for row
+                    //results[row,col];
+                    //blow up ROW from the location of the 'swapped' cell.
+                    //Debug.Log("Vertical Match Swapped Cell index: " + row + "," + col);
+                    for (int c = 0; c < gameBoard.GetLength(1);c++) {
+                        //Debug.Log("also add index: " + row + "," + c);
+                        CellModel cm = gameBoard[row, c];
+                        if(cm == cell)
+                            AddPointsFromCellModel(gameBoard[row, c], results, matched, MATCHTYPE.ROW);
+                        else
+                            AddPointsFromCellModel(gameBoard[row, c], results, matched, MATCHTYPE.NORMAL);
                     }
 				} else {
-					//Debug.Log("Horizontal Match Swapped Cell index: " + row + "," + col);
-					for(int r = 0; r < gameBoard.GetLength(0);r++) {
-						//Debug.Log("also add index: " + r + "," + col);
-                        AddPointsFromCellModel(gameBoard[r, col], results, matched);
+                    //mark cell as origin for col
+                    tempMatchType = MATCHTYPE.COL;
+                    //Debug.Log("Horizontal Match Swapped Cell index: " + row + "," + col);
+                    for (int r = 0; r < gameBoard.GetLength(0);r++) {
+                        CellModel cm = gameBoard[r, col];
+                        if (cm == cell)
+                            //Debug.Log("also add index: " + r + "," + col);
+                            AddPointsFromCellModel(gameBoard[r, col], results, matched,MATCHTYPE.COL);
+                        else
+                            AddPointsFromCellModel(gameBoard[r, col], results, matched, MATCHTYPE.NORMAL);
                     }
 				}
 			} else if(match.Count == 5) {
-				//find all cells with piece of same color. aka loop
-				Constants.PieceColor colorOfSwappedCell = cell.GetPieceColor();
+                tempMatchType = MATCHTYPE.ALL_OF;
+                //find all cells with piece of same color. aka loop
+                Constants.PieceColor colorOfSwappedCell = cell.GetPieceColor();
 				for(int row = 0; row < gameBoard.GetLength(0); row++) {
 					for(int col = 0 ; col < gameBoard.GetLength(1); col++) {
 						if(gameBoard[row,col].GetPieceColor() == colorOfSwappedCell) {
-                            AddPointsFromCellModel(gameBoard[row, col], results, matched);
+                            if(gameBoard[row,col] == cell)
+                                AddPointsFromCellModel(gameBoard[row, col], results, matched,MATCHTYPE.ALL_OF);
+                            else
+                                AddPointsFromCellModel(gameBoard[row, col], results, matched);
                         }
 					}
 				}
@@ -737,18 +758,20 @@ public class BoardModel
 			}
 
 			if(isElbow) {
-				Debug.LogError("Elbow found " + cell.GetRow() + " " + cell.GetCol());
+                results[cell.GetRow(), cell.GetCol()].SetMatchType(MATCHTYPE.BOMB);
+                matchType = MATCHTYPE.BOMB;
+                Debug.LogError("Elbow found " + cell.GetRow() + " " + cell.GetCol());
 				int row = cell.GetRow();
 				int col = cell.GetCol();
-                
-				for(int i = -1; i <= 1; i++) {
+                AddPointsFromCellModel(cell, results, matched, MATCHTYPE.BOMB);
+                for (int i = -1; i <= 1; i++) {
 					for(int j = -1; j <= 1; j++) {
 						int rowIndex = row + i;
 						int colIndex = col + j;
 						Debug.LogWarning("Index: " + rowIndex + " " + colIndex);
 						if(rowIndex == row && colIndex ==0) {
 							Debug.Log("0 0");
-							continue;
+                            continue;
 						}
 						if(rowIndex < 0 || rowIndex > gameBoard.GetLength(0) - 1) {
 							Debug.Log("row Index " + rowIndex);
@@ -761,17 +784,21 @@ public class BoardModel
 						CellModel cm = gameBoard[rowIndex,colIndex];
 						if(matched.Contains(cm)) continue;
 						Debug.Log("Add: " + rowIndex + " " + colIndex);
-						AddPointsFromCellModel(cm,results,matched);
-						
-					}
+                        if(cm == cell)
+						    AddPointsFromCellModel(cm,results,matched,MATCHTYPE.BOMB);
+                        else
+                            AddPointsFromCellModel(cm, results, matched);
+
+                    }
 				}
 			}
+            AddPointsFromCellModel(cell, results, matched,matchType);
 
-		}
+        }
 		return results;
 	}
 
-    public void AddPointsFromCellModel(CellModel cell)
+    public void AddPointsFromCellModel(CellModel cell, MATCHTYPE matchTypeForViewToSpawn = MATCHTYPE.NORMAL)
     {
         int row = cell.GetRow();
         int col = cell.GetCol();
@@ -783,7 +810,7 @@ public class BoardModel
         if (cellResult[row, col] == null)
         {
             //					Debug.Log("Found null CellResult location");
-            cellResult[row, col] = new CellResult(points);
+            cellResult[row, col] = new CellResult(points, matchTypeForViewToSpawn);
         }
         else
         {
@@ -791,7 +818,7 @@ public class BoardModel
         }
     }
 
-	private void AddPointsFromCellModel(CellModel cell, CellResult[,] results, HashSet<CellModel> matched) {
+	private void AddPointsFromCellModel(CellModel cell, CellResult[,] results, HashSet<CellModel> matched, MATCHTYPE matchTypeForViewToSpawn = MATCHTYPE.NORMAL) {
 		int row = cell.GetRow();
 		int col = cell.GetCol();
         //if (LevelManager.levelDescription.grid[row][col] == 'x') return;
@@ -801,7 +828,7 @@ public class BoardModel
 		//			cell.AddSpecialPiece (match.Count);
 		if(results[row,col] == null) {
 			//					Debug.Log("Found null CellResult location");
-			results[row,col] = new CellResult(points);
+			results[row,col] = new CellResult(points,matchTypeForViewToSpawn);
 		} else {
 			results[row,col].AddPoints(points);
 		}

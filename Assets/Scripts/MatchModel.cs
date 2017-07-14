@@ -8,13 +8,17 @@ public class MatchModel
 	private int maxRow;
 	private int minCol;
 	private int maxCol;
+    private MATCHTYPE matchType
+    {
+        get; set;
+    }
 
 	public MatchModel(){}
 
-	public MatchModel (List<CellModel> cells)
+	public MatchModel (List<CellModel> cells , MATCHTYPE type = MATCHTYPE.NORMAL)
 	{
 		this.cells = cells;
-	
+        this.matchType = type;
 		CellModel cell = cells [0];
 		int row = cell.GetRow ();
 		int col = cell.GetCol ();
@@ -98,5 +102,10 @@ public class MatchModel
 	public bool IsHorizontal() {
 		return maxRow - minRow ==0;
 	}
+
+    public MATCHTYPE GetMatchType()
+    {
+        return matchType;
+    }
 }
 

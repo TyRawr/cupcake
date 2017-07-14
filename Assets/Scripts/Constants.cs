@@ -99,6 +99,10 @@ public static class Constants {
     public static readonly string LEVEL_START_EVENT = "level_start_event";
     public static readonly string LEVEL_END_EVENT = "level_end_event";
 
+    public static readonly string SWAP_RESULT_FAILURE = "swipe_result_failure";
+    public static readonly string SWAP_RESULT_SUCCESS = "swipe_result_success";
+
+
     //Device Rotation Event
     public static readonly string ON_RECT_TRANSFORM_DIMENSIONS_CHANGE = "OnRectTransformDimensionsChange";
 
@@ -124,8 +128,15 @@ public static class Constants {
 	//Game Events
 	public static readonly string GAME_OVER = "game_over";
 
+    //Match Sound File Names
+    public static readonly string MATCH_NORMAL = "match_normal";
+    public static readonly string MATCH_ALL = "match_all";
+    public static readonly string MATCH_ROW = "match_row_or_col";
+    public static readonly string MATCH_COL = "match_row_or_col";
+    public static readonly string MATCH_BOMB = "match_bomb";
+
     //Piece ID Mapping
-	public static Dictionary<string, PieceColor> PieceIDMapping = new Dictionary<string, PieceColor>() {
+    public static Dictionary<string, PieceColor> PieceIDMapping = new Dictionary<string, PieceColor>() {
 		{ "b", PieceColor.BLUE },
 		{ "g", PieceColor.GREEN },
 		{ "o", PieceColor.ORANGE },
