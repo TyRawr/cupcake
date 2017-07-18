@@ -1,9 +1,15 @@
 fileFormatVersion: 2
-guid: b23d0fe3481d4fa4cb1300f0c681d246
-timeCreated: 1499641589
+guid: 5ca7cbf9743df29488fb4cb22ebbe99c
+timeCreated: 1500004198
 licenseType: Free
 TextureImporter:
-  fileIDToRecycleName: {}
+  fileIDToRecycleName:
+    21300000: lightning_sprite_0
+    21300002: lightning_sprite_1
+    21300004: lightning_sprite_2
+    21300006: lightning_sprite_3
+    21300008: lightning_sprite_4
+    21300010: lightning_sprite_5
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -27,14 +33,14 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
-    filterMode: 0
+    filterMode: -1
     aniso: -1
     mipBias: -1
     wrapMode: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -100,7 +106,85 @@ TextureImporter:
     overridden: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: lightning_sprite_0
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 264
+        width: 210
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: lightning_sprite_1
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 214
+        width: 210
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: lightning_sprite_2
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 164
+        width: 210
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: lightning_sprite_3
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 114
+        width: 210
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: lightning_sprite_4
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 64
+        width: 210
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: lightning_sprite_5
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 14
+        width: 210
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
     outline: []
   spritePackingTag: 
   userData: 

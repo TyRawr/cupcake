@@ -41,10 +41,12 @@ public class Result
     private CellResult[,] cellResult;
     private Order updatedOrder;
     private int score;
+    private MATCHTYPE matchType;
     //TODO also represent any updated special move (if they got any items during the frame)
 
-    public Result(CellResult[,] _cellResults,Order _updatedOrder,int score)
+    public Result(CellResult[,] _cellResults,Order _updatedOrder,int score,MATCHTYPE matchT = MATCHTYPE.NORMAL)
     {
+        this.matchType = matchT;
         this.cellResult = _cellResults;
         this.updatedOrder = _updatedOrder;
         this.score = score;
@@ -63,6 +65,10 @@ public class Result
     public int GetScore()
     {
         return this.score;
+    }
+    public MATCHTYPE GetMatchType()
+    {
+        return matchType;
     }
 }
 
@@ -189,4 +195,13 @@ public enum GAMEOVERSTATE
     NULL,
     FAILURE_OUT_OF_MOVES,
     SUCCESS_ORDER_MET
+}
+
+public enum MATCHTYPE
+{
+    NORMAL,
+    ROW,
+    COL,
+    BOMB,
+    ALL_OF
 }

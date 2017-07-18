@@ -19,6 +19,8 @@ public class BoardView : MonoBehaviour {
 	public List<PieceMapping> piecePrefabs;
 	public CellView cellPrefab;
     public GameObject pointsPrefab;
+    public GameObject explosion;
+    public GameObject lightning;
 
     public GameObject orderBlue;
     public GameObject orderGreen;
@@ -82,17 +84,72 @@ public class BoardView : MonoBehaviour {
         {
             for (int col = 0; col < cellsMatches.GetLength(1); col++)
             {
-                CellResult cellRes = cellsMatches[row, col];
+                CellResult cellRes = cellsMatches[row, col];   
 				if (    (cellRes != null && cellRes.GetPoints() > 0) 
                     || (cellRes != null && cellRes.GetDestroy()))
                 {
-					// start the actual animation for the given piece at the location.
+                    StartCoroutine( AnimatePieceSpecialDestroy(cellRes.GetMatchType(), row, col));
+
+                    // start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));
                 }
             }
         }
-        SoundManager.PlaySound("simple_click");
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+    }
+
+    public IEnumerator AnimatePieceSpecialDestroy(MATCHTYPE matchType,int row, int col)
+    {
+        GameObject piece = null;
+        if (matchType != MATCHTYPE.NORMAL)
+        {
+            SoundManager.StopSound();
+            if (matchType == MATCHTYPE.BOMB)
+            {
+                SoundManager.PlaySound(Constants.MATCH_BOMB);
+                piece = GameObject.Instantiate(explosion);
+
+                //grab background
+                CellView cellView = cells[row, col];
+                piece.transform.SetParent(pointsParent.transform);
+                piece.transform.localScale = new Vector3(180f, 180f, 180f);
+                piece.transform.position = cellView.transform.position;
+            }
+            else if (matchType == MATCHTYPE.COL)
+            {
+                SoundManager.PlaySound(Constants.MATCH_ROW);
+                piece = GameObject.Instantiate(lightning);
+
+                //grab background
+                CellView cellView = cells[row, col];
+                piece.transform.SetParent(pointsParent.transform);
+                piece.transform.localScale = new Vector3(120f, 120f, 120f);
+                piece.transform.Rotate(new Vector3(0f, 0f, 1f), 90);
+                piece.transform.position = cellView.transform.position;
+            }
+            else if (matchType == MATCHTYPE.ROW)
+            {
+                SoundManager.PlaySound(Constants.MATCH_COL);
+                piece = GameObject.Instantiate(lightning);
+                
+
+                //grab background
+                CellView cellView = cells[row, col];
+                piece.transform.SetParent(pointsParent.transform);
+                piece.transform.localScale = new Vector3(120f, 120f, 120f);
+                piece.transform.position = cellView.transform.position;
+            } else if (matchType == MATCHTYPE.ALL_OF)
+            {
+                SoundManager.PlaySound(Constants.MATCH_ALL);
+            }
+
+        }
+        if(piece!= null)
+        {
+            yield return new WaitForSeconds(piece.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).length);
+            Destroy(piece);
+        }
+        yield return null;
     }
 
 	public IEnumerator AnimatePositionConstantSpeed(int row, int col, UnityAction<float> callback = null) {
@@ -468,11 +525,12 @@ public class BoardView : MonoBehaviour {
             //do something with order.
             
             yield return new WaitForEndOfFrame();
+            SoundManager.PlaySound(result.GetMatchType());
             yield return StartCoroutine(AnimateDestroyPieces(cellsMatches));
 			yield return new WaitForEndOfFrame();
             UIManager.UpdateScoreValue(result.GetScore());
             UpdateOrder(updatedOrder); //view
-            /*
+            yield return new WaitForEndOfFrame();
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
 
 			// Delete the points objects
@@ -481,7 +539,7 @@ public class BoardView : MonoBehaviour {
                 Transform child = pointsParent.transform.GetChild(i);
                 GameObject.Destroy(child.gameObject);
             }
-            */
+            
             //move the pieces down, logically - have to find out where they belong - probably not the best - can be added to model?
             //MovePiecesToBottom(cellsMatches);
             // move pieces into position
@@ -597,7 +655,11 @@ public class BoardView : MonoBehaviour {
                 if(cellModel != null)
                 {
                     int points = cellModel.GetPoints();
-                    GameObject pointsText = CreatePointsText(row, col, points);
+                    if(points > 0)
+                    {
+                        GameObject pointsText = CreatePointsText(row, col, points);
+                    }
+                    
                 }
                 
                 /*
@@ -612,7 +674,7 @@ public class BoardView : MonoBehaviour {
             }
         }
         
-        yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+        yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION*2);
     }
 
     void Start()

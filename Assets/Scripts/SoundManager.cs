@@ -48,6 +48,11 @@ public static class SoundManager {
             soundEffectSource.Play();
         }
     }
+
+    public static void StopSound()
+    {
+        soundEffectSource.Stop();
+    }
     
     public static void SetSFXLevel(double level)
     {
@@ -93,5 +98,37 @@ public static class SoundManager {
         {
             soundEffectSource.Play();
         }
+    }
+
+    public static void PlaySound(MATCHTYPE matchType)
+    {
+        switch (matchType)
+        {
+            case MATCHTYPE.BOMB:
+               PlaySound(Constants.MATCH_BOMB);
+                break;
+            case MATCHTYPE.ROW:
+                PlaySound(Constants.MATCH_ROW);
+                break;
+            case MATCHTYPE.COL:
+                PlaySound(Constants.MATCH_COL);
+                break;
+            case MATCHTYPE.ALL_OF:
+                PlaySound(Constants.MATCH_ALL);
+                break;
+            default:
+                PlaySound(Constants.MATCH_NORMAL);
+                break;
+        }
+    }
+
+    public static string ConcatWav(string filename)
+    {
+        return filename + ".wav";
+    }
+
+    public static string ConcatMP3(string filename)
+    {
+        return filename + ".mp3";
     }
 }
