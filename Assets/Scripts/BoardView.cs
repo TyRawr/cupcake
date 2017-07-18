@@ -655,7 +655,11 @@ public class BoardView : MonoBehaviour {
                 if(cellModel != null)
                 {
                     int points = cellModel.GetPoints();
-                    GameObject pointsText = CreatePointsText(row, col, points);
+                    if(points > 0)
+                    {
+                        GameObject pointsText = CreatePointsText(row, col, points);
+                    }
+                    
                 }
                 
                 /*
