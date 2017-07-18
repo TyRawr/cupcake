@@ -786,8 +786,14 @@ public class BoardView : MonoBehaviour {
 	}
 
 	public void UpdateViewFromBoardModel(bool createCells = true) {
-		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
-		EventManager.StopListening(Constants.SWIPE_UP_EVENT,SwipeUpEventListener);
+        if(boardModel != null)
+        {
+            UIManager.UpdateMoveValue(boardModel.GetMoves(), boardModel.GetMaxMoves());
+        } else
+        {
+            return;
+        }
+        EventManager.StopListening(Constants.SWIPE_UP_EVENT,SwipeUpEventListener);
 		EventManager.StopListening(Constants.SWIPE_RIGHT_EVENT,SwipeRightEventListener);
 		EventManager.StopListening(Constants.SWIPE_DOWN_EVENT,SwipeDownEventListener);
 		EventManager.StopListening(Constants.SWIPE_LEFT_EVENT,SwipeLeftEventListener);

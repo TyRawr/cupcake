@@ -6,9 +6,8 @@ using UnityEngine.UI;
 public static class UIManager {
 
     static bool init = false;
-    static Transform message_ui, level_ui, settings_ui, store_ui, board_ui,gameover_modal;
+    static Transform level_ui, settings_ui, store_ui, board_ui,gameover_modal;
 	static Dictionary<string,Transform> uiTransforms = new Dictionary<string, Transform>() {
-		{Constants.UI_Message_Modal,message_ui},
 		{Constants.UI_Board_Modal,board_ui},
 		{Constants.UI_Settings_Modal,settings_ui},
 		{Constants.UI_Store_Modal,store_ui},
@@ -32,10 +31,7 @@ public static class UIManager {
         Transform[] trans = GameObject.Find("Canvas").GetComponentsInChildren<Transform>(true);
         foreach(Transform t in trans)
         {
-            if(t.gameObject.name == Constants.UI_Message_Modal)
-            {
-                message_ui = t as Transform;
-            } else if(t.gameObject.name == Constants.UI_Level)
+            if(t.gameObject.name == Constants.UI_Level)
             {
                 level_ui = t as Transform;
             } else if(t.gameObject.name == Constants.UI_Store_Modal)
@@ -56,7 +52,6 @@ public static class UIManager {
         SetupBoardUI();
 
 		uiTransforms = new Dictionary<string, Transform>() {
-			{Constants.UI_Message_Modal,message_ui},
 			{Constants.UI_Board_Modal,board_ui},
 			{Constants.UI_Settings_Modal,settings_ui},
 			{Constants.UI_Store_Modal,store_ui},
@@ -169,7 +164,6 @@ public static class UIManager {
                     LevelManager.ImportLevel(level_id, () => {
                         bool isShown = board_ui.gameObject.activeInHierarchy;
                         board_ui.gameObject.SetActive(!isShown);
-                        message_ui.gameObject.SetActive(false);
                         
                     });
                     //Toggle("board");
@@ -345,7 +339,6 @@ public static class UIManager {
         Debug.Log("Togggle modal");
         if (!init) Init();
         shown = !shown;
-        message_ui.gameObject.SetActive(shown);
         if(ui_id == "settings")
         {
             // handle settings
