@@ -777,13 +777,19 @@ public class BoardView : MonoBehaviour {
 
     void Update()
     {
-		if(Input.GetKeyDown(KeyCode.A)) {
-			UpdateViewFromBoardModel( false );
-		}
-		if(Input.GetKeyDown(KeyCode.S)) {
-			boardModel.PrintGameBoard();
-		}
-	}
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            UpdateViewFromBoardModel(false);
+        }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            boardModel.PrintGameBoard();
+        }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            StartListeningForAbility1();
+        }
+    }
 
 	public void UpdateViewFromBoardModel(bool createCells = true) {
         if(boardModel != null)
@@ -960,5 +966,47 @@ public class BoardView : MonoBehaviour {
         yield return new WaitForEndOfFrame();
         yield return new WaitForSeconds(time);
         action();
+    }
+
+
+    //Ability 1
+    public void StartListeningForAbility1()
+    {
+        Debug.Log("StartListeningForAbility1");
+        EventManager.StartListening(Constants.ABILITY1, HandleAbility1);
+        // all cells (Game Objects) should start listening for who gets tapped next
+        for (int row = 0; row < cells.GetLength(0);row++)
+        {
+            for(int col = 0; col < cells.GetLength(1);col++)
+            {
+                cells[row, col].AssignAbility1Event();
+            }
+        }
+        
+    }
+
+    public void StopListeningForAbility1()
+    {
+        for (int row = 0; row < cells.GetLength(0); row++)
+        {
+            for (int col = 0; col < cells.GetLength(1); col++)
+            {
+                cells[row, col].UnsubscribeFromAbility1();
+            }
+        }
+    }
+    public void HandleAbility1(object cellVObj)
+    {
+        StopListeningForAbility1();
+        CellView cellView = (CellView)cellVObj;
+        Debug.Log("Handle ABility 1 " + cellView.row + " " + cellView.col);
+        EventManager.StopListening(Constants.ABILITY1, HandleAbility1);
+        boardModel.RemovePiece(cellView.row, cellView.col);
+        Results results = boardModel.GetResults();
+        List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
+        bool hadToShuffle = results.GetHadToShuffle();
+        StartCoroutine(RunResultsAnimation(results, hadToShuffle, recommendedMatch));
+        UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
+
     }
 }

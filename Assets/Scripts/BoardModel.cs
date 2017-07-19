@@ -17,6 +17,12 @@ public class BoardModel
 	private HashSet<CellModel> matched;
 	private HashSet<CellModel> checkForMatches;
 
+    public void RemovePiece(int row, int col)
+    {
+        //gameBoard[row, col].Consume(true, cellResult, order);
+        matched.Add(gameBoard[row, col]);
+    }
+
 	public int GetMoves() {
 		return moves;
 	}
@@ -294,11 +300,19 @@ public class BoardModel
 		//List<CellResult[,]> listOfCellResults = new List<CellResult[,]> ();
 		multiplier = 0;
 
+
 		do {
             tempMatchType = MATCHTYPE.NORMAL;
             HashSet<CellModel> originalMatch = new HashSet<CellModel>();
             cellResult = EvaluateMatches(originalMatch);
-            
+            foreach (CellModel cm in matched)
+            {
+                if (cellResult[cm.GetRow(), cm.GetCol()] == null) {
+                    cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
+                }
+                cm.Consume(true, cellResult, order);
+                cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
+            }
             RegisterOrResetCellModelEventListeners();
             HashSet<CellModel> alsoMatched = new HashSet<CellModel>();
             foreach (CellModel cell in originalMatch)
@@ -844,6 +858,7 @@ public class BoardModel
 		foreach (CellModel cell in matched) 
 		{
 			cell.Consume(true,cellResult, updatedOrder);
+            //cellResult[cell.GetRow(), cell.GetCol()].SetDestroy(true);
 		}
         Debug.Log("Drop pieces end");
 		matched = new HashSet<CellModel>();

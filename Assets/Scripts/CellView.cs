@@ -54,4 +54,28 @@ public class CellView : MonoBehaviour {
 		eventTrigger.triggers.Add(entry);
 	}
 
+    EventTrigger.Entry ability1Entry;
+    public void AssignAbility1Event()
+    {
+        EventTrigger eventTrigger = this.GetComponentInChildren<EventTrigger>();
+        ability1Entry = new EventTrigger.Entry();
+        ability1Entry.eventID = EventTriggerType.PointerDown;
+        ability1Entry.callback.AddListener(HandleAbility1);
+        eventTrigger.triggers.Add(ability1Entry);
+        
+    }
+    private void HandleAbility1(BaseEventData eventData)
+    {
+        PointerEventData ped = eventData as PointerEventData;
+        EventTrigger eventTrigger = this.GetComponentInChildren<EventTrigger>();
+        eventTrigger.triggers.Clear();
+        EventManager.TriggerEvent(Constants.ABILITY1, this);
+    }
+    public void UnsubscribeFromAbility1()
+    {
+        EventTrigger eventTrigger = this.GetComponentInChildren<EventTrigger>();
+        eventTrigger.triggers.Remove(ability1Entry);
+        eventTrigger.triggers.Clear();
+        this.AssignEvent();
+    }
 }
