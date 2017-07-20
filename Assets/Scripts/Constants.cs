@@ -102,6 +102,8 @@ public static class Constants {
     public static readonly string SWAP_RESULT_FAILURE = "swipe_result_failure";
     public static readonly string SWAP_RESULT_SUCCESS = "swipe_result_success";
 
+    public static readonly string ABILITY1 = "ability1";
+    public static readonly string UNSUBSCRIBE_ALL_PIECES_FROM_ABILITY_1 = "unsub_pieces_from_ability_1";
 
     //Device Rotation Event
     public static readonly string ON_RECT_TRANSFORM_DIMENSIONS_CHANGE = "OnRectTransformDimensionsChange";
