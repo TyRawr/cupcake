@@ -162,9 +162,9 @@ public static class Constants {
 	public enum PieceType 
 	{
 		NORMAL,
-		STRIPED,
-		DOTTED,
-		CANDLE,
+		STRIPED_ROW,
+        STRIPED_COL,
+        BOMB,
         FROSTING,
 		NULL
 	}	

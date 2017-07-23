@@ -320,12 +320,6 @@ public class BoardModel
 
             }
 
-            
-            foreach (CellModel cell in originalMatch)
-            {
-                cell.FireConsumeEvent(alsoMatched,cellResult,order);
-                //cellResult[cell.GetRow(), cell.GetCol()].SetColorWasDestroyed(cell.GetPieceColor());
-            }
             foreach(CellModel cm in alsoMatched)
             {
                 //resul
@@ -722,10 +716,8 @@ public class BoardModel
             MATCHTYPE matchType = MATCHTYPE.NORMAL;
 			
 
-
+            /*
 			if(match.Count == 4) {
-                
-                
                 int row = cell.GetRow();
 				int col = cell.GetCol();
 				//figure out what way the direction goes, is this a row explosion or a column explosion?
@@ -771,12 +763,14 @@ public class BoardModel
 					}
 				}
 			}
+            */
 			// Iterate over other cells
 			for (int jndex = 1; jndex < match.Count; jndex ++) 
 			{
 				AddPointsFromCellModel(match[jndex],results,matched);
 			}
 
+            /*
 			if(isElbow) {
                 results[cell.GetRow(), cell.GetCol()].SetMatchType(MATCHTYPE.BOMB);
                 matchType = MATCHTYPE.BOMB;
@@ -812,6 +806,7 @@ public class BoardModel
                     }
 				}
 			}
+            */
             AddPointsFromCellModel(cell, results, matched,matchType);
 
         }
