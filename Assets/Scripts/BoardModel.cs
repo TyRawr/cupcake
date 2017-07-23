@@ -305,16 +305,22 @@ public class BoardModel
             tempMatchType = MATCHTYPE.NORMAL;
             HashSet<CellModel> originalMatch = new HashSet<CellModel>();
             cellResult = EvaluateMatches(originalMatch);
-            foreach (CellModel cm in matched)
-            {
-                if (cellResult[cm.GetRow(), cm.GetCol()] == null) {
-                    cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
-                }
-                cm.Consume(true, cellResult, order);
-                cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
-            }
+
             RegisterOrResetCellModelEventListeners();
             HashSet<CellModel> alsoMatched = new HashSet<CellModel>();
+            foreach (CellModel cm in matched)
+            {
+                if (cellResult[cm.GetRow(), cm.GetCol()] == null)
+                {
+                    cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
+                }
+                cm.FireConsumeEvent(alsoMatched, cellResult, order);
+                cm.Consume(true, cellResult, order);
+                cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
+
+            }
+
+            
             foreach (CellModel cell in originalMatch)
             {
                 cell.FireConsumeEvent(alsoMatched,cellResult,order);
