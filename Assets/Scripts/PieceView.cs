@@ -5,10 +5,14 @@ using UnityEngine.EventSystems;
 
 public class PieceView : MonoBehaviour {
 
+    public Sprite normal;
+    public Sprite column;
+    public Sprite row;
+    public Sprite bomb;
+    public Sprite all;
 
-
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 	
 	}
 	

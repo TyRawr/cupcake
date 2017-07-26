@@ -105,7 +105,17 @@ public class BoardModel
 			prettyprint += "\n";
 		}
 		Debug.Log(prettyprint);
-	}
+        prettyprint = "";
+        for (int row = 0; row < gameBoard.GetLength(0); row++)
+        {
+            for (int col = 0; col < gameBoard.GetLength(1); col++)
+            {
+                prettyprint += gameBoard[row, col].GetPieceType() + "\t";
+            }
+            prettyprint += "\n";
+        }
+        Debug.Log(prettyprint);
+    }
 
 	public void PrintCellResults(CellResult[,] cellResult) {
 		string prettyprint = "";
@@ -291,6 +301,7 @@ public class BoardModel
 	 * 
 	 */
     public CellResult[,] cellResult;
+    private List<SpecialPieceModel> newSpecialPieces = new List<SpecialPieceModel>();
     //public List<Order> orders = new List<Order>();
     public Results GetResults () 
 	{
@@ -299,8 +310,7 @@ public class BoardModel
         List<Result> results = new List<Result>();
 		//List<CellResult[,]> listOfCellResults = new List<CellResult[,]> ();
 		multiplier = 0;
-
-
+        
 		do {
             tempMatchType = MATCHTYPE.NORMAL;
             HashSet<CellModel> originalMatch = new HashSet<CellModel>();
@@ -310,6 +320,7 @@ public class BoardModel
             HashSet<CellModel> alsoMatched = new HashSet<CellModel>();
             foreach (CellModel cm in matched)
             {
+                
                 if (cellResult[cm.GetRow(), cm.GetCol()] == null)
                 {
                     cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
@@ -317,7 +328,6 @@ public class BoardModel
                 cm.FireConsumeEvent(alsoMatched, cellResult, order);
                 cm.Consume(true, cellResult, order);
                 cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
-
             }
 
             foreach(CellModel cm in alsoMatched)
@@ -333,10 +343,20 @@ public class BoardModel
             //clear the notify cells section.
             ClearAllNotifyCells();
 
+
             //Order updatedOrder = new Order();
             DestroyPieces(order);
-            
 
+            foreach (var spm in newSpecialPieces)
+            {
+                int specialRow = spm.point.row;
+                int specialCol = spm.point.col;
+                Constants.PieceColor color = spm.color;
+                Constants.PieceType type = spm.type;
+                gameBoard[specialRow, specialCol].SetPiece(color, type);
+                cellResult[specialRow, specialCol].SetPiece(color, type);
+            }
+            newSpecialPieces = new List<SpecialPieceModel>();
             foundMatches = new List<MatchModel>();
 			DropPieces(cellResult);
 			CheckForMatches();
@@ -714,8 +734,33 @@ public class BoardModel
             CellModel cell = match [0];
 			bool isElbow = matched.Contains(cell);
             MATCHTYPE matchType = MATCHTYPE.NORMAL;
-			
 
+            MatchModel matchModel = foundMatches[index];
+            int maxCol = matchModel.GetMaxCol();
+            int minCol = matchModel.GetMinCol();
+            int maxRow = matchModel.GetMaxRow();
+            int minRow = matchModel.GetMinRow();
+            if (matchModel.GetMaxCol() - matchModel.GetMinCol() == 3) //remember, this is 0 indexed and inclusive 3 - 0 =3, but there are 4 pieces in match.
+            {
+                Debug.LogError("MATCH COL");
+                newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.STRIPED_COL, cell.GetPieceColor() ));
+            }
+            if ( matchModel.GetMaxRow() - matchModel.GetMinRow() == 3)
+            {
+                Debug.LogError("MATCH ROW");
+                newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.STRIPED_ROW, cell.GetPieceColor()));
+            }
+            if (matchModel.GetMatchType() == MATCHTYPE.BOMB) //TODO
+            {
+                Debug.LogError("MATCH BOMB");
+                newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.BOMB, cell.GetPieceColor()));
+            }
+            if (matchModel.GetMaxCol() - matchModel.GetMinCol() == 4
+                || matchModel.GetMaxRow() - matchModel.GetMinRow() == 4) //TODO
+            {
+                Debug.LogError("MATCH ALL_OF");
+                newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.ALL, cell.GetPieceColor())); //todo make, all type
+            }
             /*
 			if(match.Count == 4) {
                 int row = cell.GetRow();
@@ -764,8 +809,8 @@ public class BoardModel
 				}
 			}
             */
-			// Iterate over other cells
-			for (int jndex = 1; jndex < match.Count; jndex ++) 
+            // Iterate over other cells
+            for (int jndex = 1; jndex < match.Count; jndex ++) 
 			{
 				AddPointsFromCellModel(match[jndex],results,matched);
 			}

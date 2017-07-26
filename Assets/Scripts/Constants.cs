@@ -147,7 +147,15 @@ public static class Constants {
         { "f", PieceColor.FROSTING }
     };
 
-	public enum PieceColor 
+    public static Dictionary<MATCHTYPE, PieceType> MatchTypeToPieceType = new Dictionary<MATCHTYPE, PieceType>() {
+        { MATCHTYPE.ROW, PieceType.STRIPED_ROW },
+        { MATCHTYPE.COL, PieceType.STRIPED_COL },
+        { MATCHTYPE.BOMB, PieceType.BOMB },
+        { MATCHTYPE.ALL_OF, PieceType.NULL }, //todo add this
+        { MATCHTYPE.NORMAL, PieceType.NORMAL }
+    };
+
+    public enum PieceColor 
 	{
 		PINK,
 		ORANGE,
@@ -166,7 +174,33 @@ public static class Constants {
         STRIPED_COL,
         BOMB,
         FROSTING,
+        ALL,
 		NULL
 	}	
     
+}
+
+public class Point
+{
+    public int row, col;
+    public Point(int r, int c)
+    {
+        row = r;
+        col = c;
+    }
+}
+
+//a container class to represent the spawning of a special piece
+public class SpecialPieceModel
+{
+    public Point point;
+    public Constants.PieceType type;
+    public Constants.PieceColor color;
+
+    public SpecialPieceModel(Point p, Constants.PieceType t, Constants.PieceColor c)
+    {
+        this.point = p;
+        this.type = t;
+        this.color = c;
+    }
 }

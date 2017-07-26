@@ -372,8 +372,25 @@ public class BoardView : MonoBehaviour {
                 piece = GameObject.Instantiate(piecePrefabs[i].prefab);
 				cells[toRow, toCol].piece = piece;
 
+                // determine piece type
+                PieceView pv = piece.GetComponent<PieceView>();
+                SpriteRenderer sp = piece.GetComponentInChildren<SpriteRenderer>();
+                if(type == Constants.PieceType.STRIPED_ROW)
+                {
+                    sp.sprite = pv.row;
+                }
+                if (type == Constants.PieceType.STRIPED_COL)
+                {
+                    sp.sprite = pv.column;
+                }
+                if (type == Constants.PieceType.BOMB)
+                {
+                    sp.sprite = pv.bomb;
+                }
+                // end determine piece type
+
                 //grab background
-				CellView cellView = cells[0, toCol];
+                CellView cellView = cells[0, toCol];
                 piece.transform.SetParent(piecesParent.transform);
 //                piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
@@ -461,34 +478,6 @@ public class BoardView : MonoBehaviour {
         }
     }
 
-    //this should probably be held by the model.
-    private void MovePiecesToBottom(CellResult[,] cellsMatches)
-    {
-        //Logically Move Pieces To Bottom - Can this be put into the model?
-        for (int col = cellsMatches.GetLength(1) - 1; col >= 0; col--)
-        {
-            for (int row = cellsMatches.GetLength(0) - 1; row >= 0; row--)
-            {
-				if (cells[row, col] == null)
-                {
-                    for (int r = row; r >= 0; r--)
-                    {
-						if (cells[r, col] != null)
-                        {
-							cells[row, col] = cells[r, col];
-							cells[r, col] = null;
-							PieceView pieceView = cells[row, col].GetComponent<PieceView>();
-                            //pieceView.row = row;
-                            //pieceView.col = col;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        //End Logically Move Pieces To Bottom
-    }
-
     public void PrintPieces()
     {
         //print pieces
@@ -520,7 +509,7 @@ public class BoardView : MonoBehaviour {
 
 		foreach (Result result in resultSets.GetCellResults())
         {
-			CellResult[,] cellsMatches = result.GetCellResult();
+            CellResult[,] cellsMatches = result.GetCellResult();
             Order updatedOrder = result.GetOrder();
             //do something with order.
             
@@ -559,7 +548,7 @@ public class BoardView : MonoBehaviour {
 			UpdateViewFromBoardModel();
 		}
         GAMEOVERSTATE gameOverState = resultSets.GetGameOver();
-
+        yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
         if (gameOverState != GAMEOVERSTATE.NULL) {
 			//game over
 			yield return new WaitForSeconds(.5f);
@@ -607,7 +596,7 @@ public class BoardView : MonoBehaviour {
 				if(cellRes != null) {
 					int fromRow = cellRes.GetFromRow();
 					int fromCol = cellRes.GetFromCol();
-					if(fromRow < 0) {
+					if(fromRow < 0 || (cellRes.GetPieceType() != Constants.PieceType.NORMAL && cellRes.GetPieceType() != Constants.PieceType.FROSTING)) {
 //						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
 						//TODO lookup spawn position for new pieces, EVEN FOR ONES WITH NEGATIVE INDEX - take into account the cell size.
 						GameObject piece = CreatePieceView(row, col, cellRes);
