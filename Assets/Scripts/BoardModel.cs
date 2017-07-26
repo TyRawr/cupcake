@@ -296,6 +296,24 @@ public class BoardModel
         }
     }
 
+    private void HandleSpecialPiece(CellModel cm, HashSet<CellModel> alsoMatched)
+    {
+        if(cm.GetPieceType() == Constants.PieceType.STRIPED_COL)
+        {
+
+        }
+        if (cm.GetPieceType() == Constants.PieceType.STRIPED_ROW)
+        {
+            cellResult[cm.GetRow(), cm.GetCol()].SetMatchType(MATCHTYPE.ROW);
+            for (int col = 0; col < gameBoard.GetLength(1); col++) { // itr over cols
+                if (col == cm.GetCol()) continue;
+                CellModel cm1 = gameBoard[cm.GetRow(), col];
+                AddPointsFromCellModel(cm1, cellResult, alsoMatched, MATCHTYPE.NORMAL);
+                alsoMatched.Add(cm1);
+            }
+        }
+    }
+
     /**
 	 * Evaluate matches Swap and following matches
 	 * 
@@ -326,14 +344,21 @@ public class BoardModel
                     cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
                 }
                 cm.FireConsumeEvent(alsoMatched, cellResult, order);
-                cm.Consume(true, cellResult, order);
                 cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
+                if (cm.GetPieceType() != Constants.PieceType.NULL && cm.GetPieceType() != Constants.PieceType.FROSTING && cm.GetPieceType() != Constants.PieceType.NORMAL)
+                {
+                    HandleSpecialPiece(cm, alsoMatched);
+                }
+                cm.Consume(true, cellResult, order);   
             }
 
             foreach(CellModel cm in alsoMatched)
             {
                 //resul
-                cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
+                if (cellResult[cm.GetRow(), cm.GetCol()] == null)
+                {
+                    cellResult[cm.GetRow(), cm.GetCol()] = new CellResult(0);
+                }
                 cellResult[cm.GetRow(), cm.GetCol()].SetDestroy(true);
                 //cellResult[cm.GetRow(), cm.GetCol()].SetColorWasDestroyed(cm.GetPieceColor());
                 matched.Add(cm);
@@ -675,18 +700,18 @@ public class BoardModel
 	private void ShuffleBoard() {
 
 		// TODO: Decide if we need to maintain origin info
-		List<Constants.PieceColor> pieces = new List<Constants.PieceColor> ();
+		List<SpecialPieceModel> pieces = new List<SpecialPieceModel> ();
 		// Build list of pieces
 		for (int row = 0; row < gameBoard.GetLength (0); row++) {
 			for (int col = 0; col < gameBoard.GetLength (1); col++) {
 				CellModel cell = gameBoard [row, col];
 				if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.FROSTING) {
-					pieces.Add (gameBoard [row, col].GetPieceColor ());				
+					pieces.Add (new SpecialPieceModel(new Point(row,col), gameBoard[row,col].GetPieceType(), gameBoard [row, col].GetPieceColor ()));				
 				}
 			}
 		}
 
-		List<Constants.PieceColor> piecesToDistribute = new List<Constants.PieceColor> ();
+		List<SpecialPieceModel> piecesToDistribute = new List<SpecialPieceModel> ();
 		do {
 			Debug.Log("Performing shuffle...");
 			piecesToDistribute.AddRange(pieces);
@@ -698,7 +723,7 @@ public class BoardModel
 					if (cell.GetState () != CellState.NULL && cell.GetState() != CellState.FROSTING) {
 						checkForMatches.Add (cell);  // Add to checkForMatches
 						int index = UnityEngine.Random.Range (0, piecesToDistribute.Count - 1);
-						gameBoard [row, col].SetPiece (piecesToDistribute [index]);
+						gameBoard [row, col].SetPiece (piecesToDistribute [index].color, piecesToDistribute[index].type);
 						piecesToDistribute.RemoveAt (index);
 					}
 				}
@@ -892,7 +917,7 @@ public class BoardModel
 		} else {
 			results[row,col].AddPoints(points);
 		}
-		matched.Add(cell);
+        matched.Add(cell);
 	}
 
     /*

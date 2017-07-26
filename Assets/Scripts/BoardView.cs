@@ -358,6 +358,25 @@ public class BoardView : MonoBehaviour {
 		eventTrigger.triggers.Add(entry);
 	}
 
+    private void SetPieceViewSpriteFromPieceType(GameObject piece,Constants.PieceType type)
+    {
+        PieceView pv = piece.GetComponent<PieceView>();
+        SpriteRenderer sp = piece.GetComponentInChildren<SpriteRenderer>();
+        if (type == Constants.PieceType.STRIPED_ROW)
+        {
+            sp.sprite = pv.row;
+        }
+        if (type == Constants.PieceType.STRIPED_COL)
+        {
+            sp.sprite = pv.column;
+        }
+        if (type == Constants.PieceType.BOMB)
+        {
+            sp.sprite = pv.bomb;
+        }
+
+    }
+
 	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
     {
 		int fromRow = cell.GetFromRow();
@@ -373,6 +392,8 @@ public class BoardView : MonoBehaviour {
 				cells[toRow, toCol].piece = piece;
 
                 // determine piece type
+                SetPieceViewSpriteFromPieceType(piece,type);
+                /*
                 PieceView pv = piece.GetComponent<PieceView>();
                 SpriteRenderer sp = piece.GetComponentInChildren<SpriteRenderer>();
                 if(type == Constants.PieceType.STRIPED_ROW)
@@ -387,6 +408,7 @@ public class BoardView : MonoBehaviour {
                 {
                     sp.sprite = pv.bomb;
                 }
+                */
                 // end determine piece type
 
                 //grab background
@@ -889,14 +911,15 @@ public class BoardView : MonoBehaviour {
 
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
 					PieceMapping pieceMapping = piecePrefabs[i]; // could be replaced with something else, just a map
-					if(pieceMapping.color == cell.GetPieceColor() && pieceMapping.type == cell.GetPieceType() ) {
+					if(pieceMapping.color == cell.GetPieceColor() ) {
 						GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
 						go.transform.SetParent(piecesParent.transform);
 						go.transform.localScale = Vector3.one;
 						SetPositionFromBackgroundPiece_SetSize(go, cellView, maxPieceDimension);
-						cells[row,col].piece = go;	
+						cells[row,col].piece = go;
+                        SetPieceViewSpriteFromPieceType(go, cell.GetPieceType());
 //                        HandleEyeAttachment(go);
-						break;
+                        break;
 					}
 				}
 
