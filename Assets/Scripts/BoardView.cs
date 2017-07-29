@@ -255,16 +255,6 @@ public class BoardView : MonoBehaviour {
         {
             callback();
         }
-        /*
-        GameObject piece = cells[row, col].piece;
-        Animator anim = piece.GetComponent<Animator>();
-        string animationName = piece.GetComponent<Shape>().animationStateMap["Destroy"];
-        anim.Play(animationName);
-        yield return new WaitForFixedUpdate();
-        yield return new WaitForEndOfFrame();
-        AnimatorClipInfo[] aci = anim.GetCurrentAnimatorClipInfo(0);
-        Destroy(piece, aci[0].clip.length);
-        */
     }
 
 	public IEnumerator AnimatePieceSwapFailure(int row, int col, int nextRow, int nextCol, float duration = .3f) {
@@ -374,7 +364,10 @@ public class BoardView : MonoBehaviour {
         {
             sp.sprite = pv.bomb;
         }
-
+        if(type == Constants.PieceType.ALL)
+        {
+            sp.sprite = pv.all;
+        }
     }
 
 	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
@@ -393,23 +386,6 @@ public class BoardView : MonoBehaviour {
 
                 // determine piece type
                 SetPieceViewSpriteFromPieceType(piece,type);
-                /*
-                PieceView pv = piece.GetComponent<PieceView>();
-                SpriteRenderer sp = piece.GetComponentInChildren<SpriteRenderer>();
-                if(type == Constants.PieceType.STRIPED_ROW)
-                {
-                    sp.sprite = pv.row;
-                }
-                if (type == Constants.PieceType.STRIPED_COL)
-                {
-                    sp.sprite = pv.column;
-                }
-                if (type == Constants.PieceType.BOMB)
-                {
-                    sp.sprite = pv.bomb;
-                }
-                */
-                // end determine piece type
 
                 //grab background
                 CellView cellView = cells[0, toCol];
@@ -418,16 +394,7 @@ public class BoardView : MonoBehaviour {
                 piece.transform.position = cellView.transform.position;
 				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
 				piece.transform.localScale = new Vector3 (maxPieceSize, maxPieceSize, 1);
-//				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize - (Constants.CELL_PADDING_FULL));
-//				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize - (Constants.CELL_PADDING_FULL));
-               	
-                //PieceView pieceView = piece.AddComponent<PieceView>();
-				//pieceView.row = toRow;
-				//pieceView.col = toCol;
-                //pieceView.AssignEvent();
 
-                // handle random eye attachment
-//                HandleEyeAttachment(piece);
                 return piece;
             }
                 
@@ -456,32 +423,6 @@ public class BoardView : MonoBehaviour {
         return piece;
     }
 
-    /*
-    // handle random eye attachment
-    void HandleEyeAttachment(GameObject piece)
-    {
-        Shape shape = piece.GetComponent<Shape>();
-        Transform eyes = piece.transform.Find("Eyes_Attach_Point");
-        if(shape.ID == "blue")
-        {
-            eyes.GetComponent<Image>().sprite = eyesDown;
-        }
-        else if (shape.ID == "green")
-        {
-            eyes.GetComponent<Image>().sprite = eyesFlat;
-        }
-        else if (shape.ID == "pink")
-        {
-            eyes.GetComponent<Image>().sprite = eyesTilt;
-        } else if(shape.ID == "purple")
-        {
-            eyes.GetComponent<Image>().sprite = eyesUp;
-        } else if(shape.ID == "orange")
-        {
-            eyes.GetComponent<Image>().sprite = eyesFlat;
-        }
-    }
-		*/
     private void LevelLoadListener(object model)
     {
         //EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
@@ -633,26 +574,6 @@ public class BoardView : MonoBehaviour {
 
 			}
 		}
-
-		/*
-		List<PieceModel>[] newPieces = cellResult();
-        for (int column = 0; column < newPieces.Length; column++)
-        {
-			
-            List<PieceModel> listOfNewPieces = newPieces[column];
-            listOfNewPieces.Reverse();
-            for (int pieceCounter = listOfNewPieces.Count - 1; pieceCounter >= 0; pieceCounter--)
-            {
-				Debug.Log("Column: " + column);
-                PieceModel pieceModel = listOfNewPieces[pieceCounter];
-                Constants.PieceColor color = pieceModel.GetColor();
-                GameObject piece = CreatePieceView(pieceCounter, column, color);
-                //yield return new WaitForEndOfFrame();
-				Debug.Log("Spawn Piece " + color);
-                StartCoroutine(AnimateAppear(pieceCounter, column, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
-            }
-        }
-        */
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
     }
 
@@ -672,16 +593,6 @@ public class BoardView : MonoBehaviour {
                     }
                     
                 }
-                
-                /*
-                cellModel.ge
-
-                    PieceModel pieceModel = listOfNewPieces[pieceCounter];
-                    Constants.PieceColor color = pieceModel.GetColor();
-                    GameObject piece = CreatePieceView(pieceCounter, column, color);
-                    //yield return new WaitForEndOfFrame();
-                    StartCoroutine(AnimateAppear(pieceCounter, column, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
-                */
             }
         }
         
@@ -796,10 +707,7 @@ public class BoardView : MonoBehaviour {
         {
             boardModel.PrintGameBoard();
         }
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            StartListeningForAbility1();
-        }
+
     }
 
 	public void UpdateViewFromBoardModel(bool createCells = true) {

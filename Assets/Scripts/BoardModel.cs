@@ -300,7 +300,14 @@ public class BoardModel
     {
         if(cm.GetPieceType() == Constants.PieceType.STRIPED_COL)
         {
-
+            cellResult[cm.GetRow(), cm.GetCol()].SetMatchType(MATCHTYPE.COL);
+            for (int row = 0; row < gameBoard.GetLength(0); row++)
+            { // itr over cols
+                if (row == cm.GetRow()) continue;
+                CellModel cm1 = gameBoard[row, cm.GetCol()];
+                AddPointsFromCellModel(cm1, cellResult, alsoMatched, MATCHTYPE.NORMAL);
+                alsoMatched.Add(cm1);
+            }
         }
         if (cm.GetPieceType() == Constants.PieceType.STRIPED_ROW)
         {
@@ -312,6 +319,55 @@ public class BoardModel
                 alsoMatched.Add(cm1);
             }
         }
+        if (cm.GetPieceType() == Constants.PieceType.BOMB)
+        {
+            int r = cm.GetRow();
+            int c = cm.GetCol();
+
+            if(cellResult[r,c] == null)
+            {
+                cellResult[r, c] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+            }
+            cellResult[r, c].SetMatchType(MATCHTYPE.BOMB);
+
+            //look up one, up right one, right one, downright one, down one, down left one, left one, left up.
+            CellModel up = GetPieceOrNull(r - 1, c);     //up
+            CellModel ur = GetPieceOrNull(r - 1, c + 1); //up and right
+            CellModel ri = GetPieceOrNull(r, c + 1);     //right
+            CellModel rd = GetPieceOrNull(r + 1, c + 1); //right and down
+            CellModel dn = GetPieceOrNull(r + 1, c);     //down
+            CellModel dl = GetPieceOrNull(r + 1, c - 1); //down and left
+            CellModel le = GetPieceOrNull(r, c - 1);     //left
+            CellModel lu = GetPieceOrNull(r - 1, c - 1); //left and up
+
+            List<CellModel> addForBomb = new List<CellModel>();
+            addForBomb.Add(up);
+            addForBomb.Add(ur);
+            addForBomb.Add(ri);
+            addForBomb.Add(rd);
+            addForBomb.Add(dn);
+            addForBomb.Add(dl);
+            addForBomb.Add(le);
+            addForBomb.Add(lu);
+
+            for (int i = 0; i < addForBomb.Count; i++)
+            { // itr over cols
+                if (addForBomb[i] == null || (addForBomb[i].GetCol() == cm.GetCol() && addForBomb[i].GetRow() == cm.GetRow())) continue;
+                AddPointsFromCellModel(addForBomb[i], cellResult, alsoMatched, MATCHTYPE.NORMAL);
+                alsoMatched.Add(addForBomb[i]);
+            }
+        }
+    }
+
+    CellModel GetPieceOrNull(int r, int c)
+    {
+        CellModel cm = null;
+        try
+        {
+            cm = gameBoard[r, c];
+        }
+        catch (IndexOutOfRangeException e) { }
+        return cm;
     }
 
     /**
@@ -321,6 +377,9 @@ public class BoardModel
     public CellResult[,] cellResult;
     private List<SpecialPieceModel> newSpecialPieces = new List<SpecialPieceModel>();
     //public List<Order> orders = new List<Order>();
+    /*
+     *  This is our main lifecycle function
+     */
     public Results GetResults () 
 	{
         //Order order = new Order();
@@ -775,10 +834,17 @@ public class BoardModel
                 Debug.LogError("MATCH ROW");
                 newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.STRIPED_ROW, cell.GetPieceColor()));
             }
-            if (matchModel.GetMatchType() == MATCHTYPE.BOMB) //TODO
+            // go over ever other match and see if that contains our cell and if the min or max of both col and row add up to 9
+            bool vertical = matchModel.IsVertical();
+            for(int i = 0; i < foundMatches.Count; i++)
             {
-                Debug.LogError("MATCH BOMB");
-                newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.BOMB, cell.GetPieceColor()));
+                if (foundMatches[i] == matchModel) continue;
+                if( foundMatches[i] != null && (foundMatches[i].IsVertical() ^ vertical)) // not null and not same
+                {
+                    if(foundMatches[i].IsVertical() && 
+                        (foundMatches[i].GetMinCol() == matchModel.GetMinCol() || foundMatches[i].GetMinCol() == matchModel.GetMaxCol() ))
+                    newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.BOMB, cell.GetPieceColor())); //todo make, all type
+                }
             }
             if (matchModel.GetMaxCol() - matchModel.GetMinCol() == 4
                 || matchModel.GetMaxRow() - matchModel.GetMinRow() == 4) //TODO
