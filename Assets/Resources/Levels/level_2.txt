@@ -1,11 +1,11 @@
 {
 	"grid":
 	[
-	"booppoob",
-	"booppoob",
-	"ippooppi",
-	"booppoob",
-	"booppoob"
+	"boopoiob",
+	"bbiopoob",
+	"ipgogppi",
+	"bigppiob",
+	"booipoob"
 	],
 	"pieces":["p","o","b","i"],
 	"margin": "center",

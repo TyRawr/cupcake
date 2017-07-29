@@ -366,8 +366,9 @@ public class BoardView : MonoBehaviour {
         }
         if(type == Constants.PieceType.ALL)
         {
-            sp.sprite = pv.all;
+            //sp.sprite = pv.all;
         }
+        Debug.LogError("sp.sprite " + sp.sprite.name);
     }
 
 	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
@@ -381,6 +382,7 @@ public class BoardView : MonoBehaviour {
             if(piecePrefabs[i].color == color)
             {
                 GameObject piece;
+                Debug.LogError("inst 1 " + piecePrefabs[i].prefab.name);
                 piece = GameObject.Instantiate(piecePrefabs[i].prefab);
 				cells[toRow, toCol].piece = piece;
 
@@ -559,11 +561,13 @@ public class BoardView : MonoBehaviour {
 				if(cellRes != null) {
 					int fromRow = cellRes.GetFromRow();
 					int fromCol = cellRes.GetFromCol();
-					if(fromRow < 0 || (cellRes.GetPieceType() != Constants.PieceType.NORMAL && cellRes.GetPieceType() != Constants.PieceType.FROSTING)) {
+					if(fromRow < 0 || 
+                        (cellRes.GetPieceType() != Constants.PieceType.NORMAL && cellRes.GetSpawnSpecialPiece()
+                        && cellRes.GetPieceType() != Constants.PieceType.FROSTING)) {
 //						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
 						//TODO lookup spawn position for new pieces, EVEN FOR ONES WITH NEGATIVE INDEX - take into account the cell size.
 						GameObject piece = CreatePieceView(row, col, cellRes);
-						cells[row,col].piece = piece;
+						cells[row,col].piece = piece; 
 					}
 					else {
 						//update the piece
@@ -820,7 +824,8 @@ public class BoardView : MonoBehaviour {
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
 					PieceMapping pieceMapping = piecePrefabs[i]; // could be replaced with something else, just a map
 					if(pieceMapping.color == cell.GetPieceColor() ) {
-						GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+                        Debug.LogError("inst 2 " + pieceMapping.prefab.name);
+                        GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
 						go.transform.SetParent(piecesParent.transform);
 						go.transform.localScale = Vector3.one;
 						SetPositionFromBackgroundPiece_SetSize(go, cellView, maxPieceDimension);

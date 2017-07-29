@@ -827,11 +827,17 @@ public class BoardModel
             if (matchModel.GetMaxCol() - matchModel.GetMinCol() == 3) //remember, this is 0 indexed and inclusive 3 - 0 =3, but there are 4 pieces in match.
             {
                 Debug.LogError("MATCH COL");
+                if (cellResult[cell.GetRow(), cell.GetCol()] == null)
+                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
                 newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.STRIPED_COL, cell.GetPieceColor() ));
             }
             if ( matchModel.GetMaxRow() - matchModel.GetMinRow() == 3)
             {
                 Debug.LogError("MATCH ROW");
+                if (cellResult[cell.GetRow(), cell.GetCol()] == null)
+                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
                 newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.STRIPED_ROW, cell.GetPieceColor()));
             }
             // go over ever other match and see if that contains our cell and if the min or max of both col and row add up to 9
@@ -843,13 +849,22 @@ public class BoardModel
                 {
                     if(foundMatches[i].IsVertical() && 
                         (foundMatches[i].GetMinCol() == matchModel.GetMinCol() || foundMatches[i].GetMinCol() == matchModel.GetMaxCol() ))
-                    newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.BOMB, cell.GetPieceColor())); //todo make, all type
+                    {
+                        newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.BOMB, cell.GetPieceColor())); //todo make, all type
+
+                        if (cellResult[cell.GetRow(), cell.GetCol()] == null)
+                            cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                        cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
+                    }
                 }
             }
             if (matchModel.GetMaxCol() - matchModel.GetMinCol() == 4
                 || matchModel.GetMaxRow() - matchModel.GetMinRow() == 4) //TODO
             {
                 Debug.LogError("MATCH ALL_OF");
+                if (cellResult[cell.GetRow(), cell.GetCol()] == null)
+                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
                 newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.ALL, cell.GetPieceColor())); //todo make, all type
             }
             /*
@@ -1038,7 +1053,7 @@ public class BoardModel
 							}
 							cellResult.Set(reachedCell);
 							cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
-							reachedCell.Consume (false, null,order);
+                            reachedCell.Consume (false, null,order);
 							spawnPiece = false;
 							break;
 						}

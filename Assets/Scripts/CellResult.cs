@@ -95,6 +95,16 @@ public class CellResult {
 		this.pieceType = pieceType;
 	}
 
+    bool spawnSpecialPiece = false;
+    public void SetSpawnSpecialPiece(bool spawn)
+    {
+        spawnSpecialPiece = spawn;
+    }
+    public bool GetSpawnSpecialPiece()
+    {
+        return spawnSpecialPiece;
+    }
+
 	public void Set(CellModel cell) {
 		this.fromCol = cell.GetCol();
 		this.fromRow = cell.GetRow();
