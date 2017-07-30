@@ -830,14 +830,14 @@ public class BoardModel
             if (matchModel.GetMaxCol() - matchModel.GetMinCol() == 3) //remember, this is 0 indexed and inclusive 3 - 0 =3, but there are 4 pieces in match.
             {
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
-                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(0);
                 cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
                 newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.STRIPED_COL, cell.GetPieceColor() ));
             }
             if ( matchModel.GetMaxRow() - matchModel.GetMinRow() == 3)
             {
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
-                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(0);
                 cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
                 newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.STRIPED_ROW, cell.GetPieceColor()));
             }
@@ -846,7 +846,7 @@ public class BoardModel
             for(int i = 0; i < foundMatches.Count; i++)
             {
                 if (foundMatches[i] == matchModel) continue;
-                if( foundMatches[i] != null && (foundMatches[i].IsVertical() ^ vertical)) // not null and not same
+                if( foundMatches[i] != null && (foundMatches[i].IsVertical() ^ vertical)) // not null, and not same
                 {
                     if(foundMatches[i].IsVertical() && 
                         (foundMatches[i].GetMinCol() == matchModel.GetMinCol() || foundMatches[i].GetMinCol() == matchModel.GetMaxCol() ))
@@ -854,7 +854,7 @@ public class BoardModel
                         newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.BOMB, cell.GetPieceColor())); //todo make, all type
 
                         if (cellResult[cell.GetRow(), cell.GetCol()] == null)
-                            cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                            cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(0);
                         cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
                     }
                 }
@@ -864,101 +864,16 @@ public class BoardModel
             {
                 Debug.LogError("MATCH ALL_OF");
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
-                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
+                    cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(0);
                 cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
                 newSpecialPieces.Add(new SpecialPieceModel(new Point(cell.GetRow(), cell.GetCol()), Constants.PieceType.ALL, cell.GetPieceColor())); //todo make, all type
             }
-            /*
-			if(match.Count == 4) {
-                int row = cell.GetRow();
-				int col = cell.GetCol();
-				//figure out what way the direction goes, is this a row explosion or a column explosion?
-				if (foundMatches[index].IsVertical()) {
-                    tempMatchType = MATCHTYPE.ROW;
-                    //mark cell as origin for row
-                    //results[row,col];
-                    //blow up ROW from the location of the 'swapped' cell.
-                    //Debug.Log("Vertical Match Swapped Cell index: " + row + "," + col);
-                    for (int c = 0; c < gameBoard.GetLength(1);c++) {
-                        //Debug.Log("also add index: " + row + "," + c);
-                        CellModel cm = gameBoard[row, c];
-                        if(cm == cell)
-                            AddPointsFromCellModel(gameBoard[row, c], results, matched, MATCHTYPE.ROW);
-                        else
-                            AddPointsFromCellModel(gameBoard[row, c], results, matched, MATCHTYPE.NORMAL);
-                    }
-				} else {
-                    //mark cell as origin for col
-                    tempMatchType = MATCHTYPE.COL;
-                    //Debug.Log("Horizontal Match Swapped Cell index: " + row + "," + col);
-                    for (int r = 0; r < gameBoard.GetLength(0);r++) {
-                        CellModel cm = gameBoard[r, col];
-                        if (cm == cell)
-                            //Debug.Log("also add index: " + r + "," + col);
-                            AddPointsFromCellModel(gameBoard[r, col], results, matched,MATCHTYPE.COL);
-                        else
-                            AddPointsFromCellModel(gameBoard[r, col], results, matched, MATCHTYPE.NORMAL);
-                    }
-				}
-			} else if(match.Count == 5) {
-                tempMatchType = MATCHTYPE.ALL_OF;
-                //find all cells with piece of same color. aka loop
-                Constants.PieceColor colorOfSwappedCell = cell.GetPieceColor();
-				for(int row = 0; row < gameBoard.GetLength(0); row++) {
-					for(int col = 0 ; col < gameBoard.GetLength(1); col++) {
-						if(gameBoard[row,col].GetPieceColor() == colorOfSwappedCell) {
-                            if(gameBoard[row,col] == cell)
-                                AddPointsFromCellModel(gameBoard[row, col], results, matched,MATCHTYPE.ALL_OF);
-                            else
-                                AddPointsFromCellModel(gameBoard[row, col], results, matched);
-                        }
-					}
-				}
-			}
-            */
+
             // Iterate over other cells
             for (int jndex = 1; jndex < match.Count; jndex ++) 
 			{
 				AddPointsFromCellModel(match[jndex],results,matched);
 			}
-
-            /*
-			if(isElbow) {
-                results[cell.GetRow(), cell.GetCol()].SetMatchType(MATCHTYPE.BOMB);
-                matchType = MATCHTYPE.BOMB;
-                Debug.LogError("Elbow found " + cell.GetRow() + " " + cell.GetCol());
-				int row = cell.GetRow();
-				int col = cell.GetCol();
-                AddPointsFromCellModel(cell, results, matched, MATCHTYPE.BOMB);
-                for (int i = -1; i <= 1; i++) {
-					for(int j = -1; j <= 1; j++) {
-						int rowIndex = row + i;
-						int colIndex = col + j;
-						Debug.LogWarning("Index: " + rowIndex + " " + colIndex);
-						if(rowIndex == row && colIndex ==0) {
-							Debug.Log("0 0");
-                            continue;
-						}
-						if(rowIndex < 0 || rowIndex > gameBoard.GetLength(0) - 1) {
-							Debug.Log("row Index " + rowIndex);
-							continue;
-						}
-						if(colIndex < 0 || colIndex > gameBoard.GetLength(1) - 1) {
-							Debug.Log("colIndex Index " + colIndex);
-							continue;
-						}
-						CellModel cm = gameBoard[rowIndex,colIndex];
-						if(matched.Contains(cm)) continue;
-						Debug.Log("Add: " + rowIndex + " " + colIndex);
-                        if(cm == cell)
-						    AddPointsFromCellModel(cm,results,matched,MATCHTYPE.BOMB);
-                        else
-                            AddPointsFromCellModel(cm, results, matched);
-
-                    }
-				}
-			}
-            */
             AddPointsFromCellModel(cell, results, matched,matchType);
 
         }
