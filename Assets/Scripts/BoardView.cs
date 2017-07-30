@@ -123,7 +123,7 @@ public class BoardView : MonoBehaviour {
                 //grab background
                 CellView cellView = cells[row, col];
                 piece.transform.SetParent(pointsParent.transform);
-                piece.transform.localScale = new Vector3(120f, 120f, 120f);
+                piece.transform.localScale = new Vector3(200f, 200f, 200f);
                 piece.transform.Rotate(new Vector3(0f, 0f, 1f), 90);
                 piece.transform.position = cellView.transform.position;
             }
