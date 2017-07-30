@@ -829,7 +829,6 @@ public class BoardModel
             int minRow = matchModel.GetMinRow();
             if (matchModel.GetMaxCol() - matchModel.GetMinCol() == 3) //remember, this is 0 indexed and inclusive 3 - 0 =3, but there are 4 pieces in match.
             {
-                Debug.LogError("MATCH COL");
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
                     cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
                 cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
@@ -837,7 +836,6 @@ public class BoardModel
             }
             if ( matchModel.GetMaxRow() - matchModel.GetMinRow() == 3)
             {
-                Debug.LogError("MATCH ROW");
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
                     cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
                 cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
