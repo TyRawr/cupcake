@@ -123,7 +123,7 @@ public class BoardView : MonoBehaviour {
                 //grab background
                 CellView cellView = cells[row, col];
                 piece.transform.SetParent(pointsParent.transform);
-                piece.transform.localScale = new Vector3(120f, 120f, 120f);
+                piece.transform.localScale = new Vector3(200f, 200f, 200f);
                 piece.transform.Rotate(new Vector3(0f, 0f, 1f), 90);
                 piece.transform.position = cellView.transform.position;
             }
@@ -255,16 +255,6 @@ public class BoardView : MonoBehaviour {
         {
             callback();
         }
-        /*
-        GameObject piece = cells[row, col].piece;
-        Animator anim = piece.GetComponent<Animator>();
-        string animationName = piece.GetComponent<Shape>().animationStateMap["Destroy"];
-        anim.Play(animationName);
-        yield return new WaitForFixedUpdate();
-        yield return new WaitForEndOfFrame();
-        AnimatorClipInfo[] aci = anim.GetCurrentAnimatorClipInfo(0);
-        Destroy(piece, aci[0].clip.length);
-        */
     }
 
 	public IEnumerator AnimatePieceSwapFailure(int row, int col, int nextRow, int nextCol, float duration = .3f) {
@@ -358,6 +348,28 @@ public class BoardView : MonoBehaviour {
 		eventTrigger.triggers.Add(entry);
 	}
 
+    private void SetPieceViewSpriteFromPieceType(GameObject piece,Constants.PieceType type)
+    {
+        PieceView pv = piece.GetComponent<PieceView>();
+        SpriteRenderer sp = piece.GetComponentInChildren<SpriteRenderer>();
+        if (type == Constants.PieceType.STRIPED_ROW)
+        {
+            sp.sprite = pv.row;
+        }
+        if (type == Constants.PieceType.STRIPED_COL)
+        {
+            sp.sprite = pv.column;
+        }
+        if (type == Constants.PieceType.BOMB)
+        {
+            sp.sprite = pv.bomb;
+        }
+        if(type == Constants.PieceType.ALL)
+        {
+            //sp.sprite = pv.all;
+        }
+    }
+
 	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
     {
 		int fromRow = cell.GetFromRow();
@@ -372,23 +384,17 @@ public class BoardView : MonoBehaviour {
                 piece = GameObject.Instantiate(piecePrefabs[i].prefab);
 				cells[toRow, toCol].piece = piece;
 
+                // determine piece type
+                SetPieceViewSpriteFromPieceType(piece,type);
+
                 //grab background
-				CellView cellView = cells[0, toCol];
+                CellView cellView = cells[0, toCol];
                 piece.transform.SetParent(piecesParent.transform);
 //                piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
 				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
 				piece.transform.localScale = new Vector3 (maxPieceSize, maxPieceSize, 1);
-//				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxPieceSize - (Constants.CELL_PADDING_FULL));
-//				piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxPieceSize - (Constants.CELL_PADDING_FULL));
-               	
-                //PieceView pieceView = piece.AddComponent<PieceView>();
-				//pieceView.row = toRow;
-				//pieceView.col = toCol;
-                //pieceView.AssignEvent();
 
-                // handle random eye attachment
-//                HandleEyeAttachment(piece);
                 return piece;
             }
                 
@@ -417,32 +423,6 @@ public class BoardView : MonoBehaviour {
         return piece;
     }
 
-    /*
-    // handle random eye attachment
-    void HandleEyeAttachment(GameObject piece)
-    {
-        Shape shape = piece.GetComponent<Shape>();
-        Transform eyes = piece.transform.Find("Eyes_Attach_Point");
-        if(shape.ID == "blue")
-        {
-            eyes.GetComponent<Image>().sprite = eyesDown;
-        }
-        else if (shape.ID == "green")
-        {
-            eyes.GetComponent<Image>().sprite = eyesFlat;
-        }
-        else if (shape.ID == "pink")
-        {
-            eyes.GetComponent<Image>().sprite = eyesTilt;
-        } else if(shape.ID == "purple")
-        {
-            eyes.GetComponent<Image>().sprite = eyesUp;
-        } else if(shape.ID == "orange")
-        {
-            eyes.GetComponent<Image>().sprite = eyesFlat;
-        }
-    }
-		*/
     private void LevelLoadListener(object model)
     {
         //EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
@@ -459,34 +439,6 @@ public class BoardView : MonoBehaviour {
                 StartCoroutine(AnimateRecommendedMatchPiece(cm.GetRow(), cm.GetCol()));
             }
         }
-    }
-
-    //this should probably be held by the model.
-    private void MovePiecesToBottom(CellResult[,] cellsMatches)
-    {
-        //Logically Move Pieces To Bottom - Can this be put into the model?
-        for (int col = cellsMatches.GetLength(1) - 1; col >= 0; col--)
-        {
-            for (int row = cellsMatches.GetLength(0) - 1; row >= 0; row--)
-            {
-				if (cells[row, col] == null)
-                {
-                    for (int r = row; r >= 0; r--)
-                    {
-						if (cells[r, col] != null)
-                        {
-							cells[row, col] = cells[r, col];
-							cells[r, col] = null;
-							PieceView pieceView = cells[row, col].GetComponent<PieceView>();
-                            //pieceView.row = row;
-                            //pieceView.col = col;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        //End Logically Move Pieces To Bottom
     }
 
     public void PrintPieces()
@@ -520,7 +472,7 @@ public class BoardView : MonoBehaviour {
 
 		foreach (Result result in resultSets.GetCellResults())
         {
-			CellResult[,] cellsMatches = result.GetCellResult();
+            CellResult[,] cellsMatches = result.GetCellResult();
             Order updatedOrder = result.GetOrder();
             //do something with order.
             
@@ -559,7 +511,7 @@ public class BoardView : MonoBehaviour {
 			UpdateViewFromBoardModel();
 		}
         GAMEOVERSTATE gameOverState = resultSets.GetGameOver();
-
+        yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
         if (gameOverState != GAMEOVERSTATE.NULL) {
 			//game over
 			yield return new WaitForSeconds(.5f);
@@ -607,11 +559,13 @@ public class BoardView : MonoBehaviour {
 				if(cellRes != null) {
 					int fromRow = cellRes.GetFromRow();
 					int fromCol = cellRes.GetFromCol();
-					if(fromRow < 0) {
+					if(fromRow < 0 || 
+                        (cellRes.GetPieceType() != Constants.PieceType.NORMAL && cellRes.GetSpawnSpecialPiece()
+                        && cellRes.GetPieceType() != Constants.PieceType.FROSTING)) {
 //						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
 						//TODO lookup spawn position for new pieces, EVEN FOR ONES WITH NEGATIVE INDEX - take into account the cell size.
 						GameObject piece = CreatePieceView(row, col, cellRes);
-						cells[row,col].piece = piece;
+						cells[row,col].piece = piece; 
 					}
 					else {
 						//update the piece
@@ -622,26 +576,6 @@ public class BoardView : MonoBehaviour {
 
 			}
 		}
-
-		/*
-		List<PieceModel>[] newPieces = cellResult();
-        for (int column = 0; column < newPieces.Length; column++)
-        {
-			
-            List<PieceModel> listOfNewPieces = newPieces[column];
-            listOfNewPieces.Reverse();
-            for (int pieceCounter = listOfNewPieces.Count - 1; pieceCounter >= 0; pieceCounter--)
-            {
-				Debug.Log("Column: " + column);
-                PieceModel pieceModel = listOfNewPieces[pieceCounter];
-                Constants.PieceColor color = pieceModel.GetColor();
-                GameObject piece = CreatePieceView(pieceCounter, column, color);
-                //yield return new WaitForEndOfFrame();
-				Debug.Log("Spawn Piece " + color);
-                StartCoroutine(AnimateAppear(pieceCounter, column, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
-            }
-        }
-        */
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
     }
 
@@ -661,16 +595,6 @@ public class BoardView : MonoBehaviour {
                     }
                     
                 }
-                
-                /*
-                cellModel.ge
-
-                    PieceModel pieceModel = listOfNewPieces[pieceCounter];
-                    Constants.PieceColor color = pieceModel.GetColor();
-                    GameObject piece = CreatePieceView(pieceCounter, column, color);
-                    //yield return new WaitForEndOfFrame();
-                    StartCoroutine(AnimateAppear(pieceCounter, column, Constants.DEFAULT_SWAP_ANIMATION_DURATION));
-                */
             }
         }
         
@@ -785,10 +709,7 @@ public class BoardView : MonoBehaviour {
         {
             boardModel.PrintGameBoard();
         }
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            StartListeningForAbility1();
-        }
+
     }
 
 	public void UpdateViewFromBoardModel(bool createCells = true) {
@@ -900,14 +821,15 @@ public class BoardView : MonoBehaviour {
 
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
 					PieceMapping pieceMapping = piecePrefabs[i]; // could be replaced with something else, just a map
-					if(pieceMapping.color == cell.GetPieceColor() && pieceMapping.type == cell.GetPieceType() ) {
-						GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+					if(pieceMapping.color == cell.GetPieceColor() ) {
+                        GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
 						go.transform.SetParent(piecesParent.transform);
 						go.transform.localScale = Vector3.one;
 						SetPositionFromBackgroundPiece_SetSize(go, cellView, maxPieceDimension);
-						cells[row,col].piece = go;	
+						cells[row,col].piece = go;
+                        SetPieceViewSpriteFromPieceType(go, cell.GetPieceType());
 //                        HandleEyeAttachment(go);
-						break;
+                        break;
 					}
 				}
 
