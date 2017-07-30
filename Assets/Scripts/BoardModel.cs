@@ -301,6 +301,7 @@ public class BoardModel
         if(cm.GetPieceType() == Constants.PieceType.STRIPED_COL)
         {
             cellResult[cm.GetRow(), cm.GetCol()].SetMatchType(MATCHTYPE.COL);
+            cellResult[cm.GetRow(), cm.GetCol()].SetSpawnSpecialPiece(true);
             for (int row = 0; row < gameBoard.GetLength(0); row++)
             { // itr over cols
                 if (row == cm.GetRow()) continue;
@@ -312,6 +313,7 @@ public class BoardModel
         if (cm.GetPieceType() == Constants.PieceType.STRIPED_ROW)
         {
             cellResult[cm.GetRow(), cm.GetCol()].SetMatchType(MATCHTYPE.ROW);
+            cellResult[cm.GetRow(), cm.GetCol()].SetSpawnSpecialPiece(true);
             for (int col = 0; col < gameBoard.GetLength(1); col++) { // itr over cols
                 if (col == cm.GetCol()) continue;
                 CellModel cm1 = gameBoard[cm.GetRow(), col];
@@ -329,6 +331,7 @@ public class BoardModel
                 cellResult[r, c] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
             }
             cellResult[r, c].SetMatchType(MATCHTYPE.BOMB);
+            cellResult[r, c].SetSpawnSpecialPiece(true);
 
             //look up one, up right one, right one, downright one, down one, down left one, left one, left up.
             CellModel up = GetPieceOrNull(r - 1, c);     //up
@@ -1051,8 +1054,12 @@ public class BoardModel
 								cellResult = new CellResult(0);
 								cellResults[rows-row-1, col] = cellResult;
 							}
-							cellResult.Set(reachedCell);
-							cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
+                            cellResult.Set(reachedCell);
+                            cellResults[rows - row - 1, col].SetSpawnSpecialPiece(false);
+                            if (cellResults[index, col] != null)
+                                cellResult.SetSpawnSpecialPiece(cellResults[index, col].GetSpawnSpecialPiece());
+                            //cellResult.SetSpawnSpecialPiece()
+                            cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
                             reachedCell.Consume (false, null,order);
 							spawnPiece = false;
 							break;
@@ -1064,13 +1071,13 @@ public class BoardModel
 					{
 						cell.SetPiece (SpawnPiece());
 						CellResult cellResult = cellResults[rows-row-1, col];
-						if (cellResult == null) {
+                        if (cellResult == null) {
 							cellResult = new CellResult(0);
 							cellResults[rows-row-1, col] = cellResult;
 						}
 						cellResult.Set(cell);
 						cellResult.SetFromRow(spawnRow --);
-					}
+                    }
 
 					checkForMatches.Add(cell);
 				}

@@ -368,7 +368,6 @@ public class BoardView : MonoBehaviour {
         {
             //sp.sprite = pv.all;
         }
-        Debug.LogError("sp.sprite " + sp.sprite.name);
     }
 
 	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
@@ -382,7 +381,6 @@ public class BoardView : MonoBehaviour {
             if(piecePrefabs[i].color == color)
             {
                 GameObject piece;
-                Debug.LogError("inst 1 " + piecePrefabs[i].prefab.name);
                 piece = GameObject.Instantiate(piecePrefabs[i].prefab);
 				cells[toRow, toCol].piece = piece;
 
@@ -824,7 +822,6 @@ public class BoardView : MonoBehaviour {
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
 					PieceMapping pieceMapping = piecePrefabs[i]; // could be replaced with something else, just a map
 					if(pieceMapping.color == cell.GetPieceColor() ) {
-                        Debug.LogError("inst 2 " + pieceMapping.prefab.name);
                         GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
 						go.transform.SetParent(piecesParent.transform);
 						go.transform.localScale = Vector3.one;
