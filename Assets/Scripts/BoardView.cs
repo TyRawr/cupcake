@@ -67,7 +67,7 @@ public class BoardView : MonoBehaviour {
 					}));
             }
         }
-		Debug.Log("Max: " + max);
+//		Debug.Log("Max: " + max);
 		yield return new WaitForSeconds(max);
     }
 
@@ -863,7 +863,6 @@ public class BoardView : MonoBehaviour {
         }
         //Loop through all the cell results and count up each piece color; Minus it from the total (accumulating).
         //TODO UPDATE UIMANAGER WITH VALUES;
-        Debug.Log("View Blue Update:: " + order.GetAmountFromColor(Constants.PieceColor.BLUE));
         UIManager.UpdateOrderUI(order.GetAmountFromColor(Constants.PieceColor.BLUE), order.GetTotalNeededFromColor(Constants.PieceColor.BLUE),
                 order.GetAmountFromColor(Constants.PieceColor.GREEN), order.GetTotalNeededFromColor(Constants.PieceColor.GREEN),
                 order.GetAmountFromColor(Constants.PieceColor.PINK), order.GetTotalNeededFromColor(Constants.PieceColor.PINK),
