@@ -152,6 +152,18 @@ public class CellModel
 	}
 
 	/**
+	 * Can a piece pass through this cell?  Normally only after returning IsDroppable false
+	 */
+	public bool IsSkippable() 
+	{
+		if (state == CellState.FROSTING || (state == CellState.NULL && row == 0)) 
+		{
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Is this a cell with a piece we can swap?
 	 */
 	public bool IsSwappable() 

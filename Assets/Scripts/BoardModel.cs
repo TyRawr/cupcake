@@ -288,7 +288,6 @@ public class BoardModel
                 //Debug.Log("SFE " + cm.GetRow() + " " + cm.GetCol());
                 if(cm.GetState() == CellState.FROSTING) //special currently only means is not "droppable" as in it does not move.
                 {
-                    Debug.Log("SetupFrostingEvents " + cm.GetRow() + " " + cm.GetCol());
                     cm.SetupFrostingEvents(gameBoard);
                 }
                 
@@ -454,7 +453,7 @@ public class BoardModel
             //order = (Order)order.Clone();
             Order o = new Order(order);
             orders.Add(o);
-            Debug.Log("new order blue: " + order.GetAmountFromColor(Constants.PieceColor.BLUE));
+//            Debug.Log("new order blue: " + order.GetAmountFromColor(Constants.PieceColor.BLUE));
             results.Add( new Result(cellResult,  o, score,tempMatchType));
 			PrintGameBoard();
 			//PrintGameBoard();
@@ -470,7 +469,7 @@ public class BoardModel
 			recommendedMatch = GetRecommendedMatch ();
 		}
 
-		PrintRecommendedMatch (recommendedMatch);
+//		PrintRecommendedMatch (recommendedMatch);
 
         //determine gameendstate
         GAMEOVERSTATE gameOverState = GAMEOVERSTATE.NULL;
@@ -482,7 +481,6 @@ public class BoardModel
             gameOverState = GAMEOVERSTATE.FAILURE_OUT_OF_MOVES;
         }
 
-        Debug.Log(foundMatches.Count);
         Results res = new Results(results, recommendedMatch, hadToShuffle,moves, gameOverState);
 		return res;
 	}
@@ -1007,13 +1005,11 @@ public class BoardModel
      */
 	private void DestroyPieces(Order updatedOrder) {
         // Destroy Pieces
-        Debug.LogWarning("Drop piece begin");
 		foreach (CellModel cell in matched) 
 		{
 			cell.Consume(true,cellResult, updatedOrder);
             //cellResult[cell.GetRow(), cell.GetCol()].SetDestroy(true);
 		}
-        Debug.Log("Drop pieces end");
 		matched = new HashSet<CellModel>();
 	}
 
@@ -1031,14 +1027,13 @@ public class BoardModel
 			{
 				CellModel cell = gameBoard[rows - row - 1, col];
 
-                // TODO: MAKE SURE ONLY VALID CELL TYPES DO THIS
                 // If empty, find a piece
                 if (cell.IsWanting())
 				{
                     
 					int reach = 1;
 					bool spawnPiece = true;
-
+					bool lookElsewhere = false;
 					// Look at cells above this one for a piece
 					while (reach < rows - row) 
 					{
@@ -1061,6 +1056,11 @@ public class BoardModel
                             reachedCell.Consume (false, null,order);
 							spawnPiece = false;
 							break;
+						} else if (!reachedCell.IsSkippable()) {
+							lookElsewhere = true;
+							spawnPiece = false;
+							Debug.Log ("Cell SKIPPED: " + reachedCell.GetRow() + "," + reachedCell.GetCol() + " " + reachedCell.GetPieceColor());
+							break;
 						}
 					}
 
@@ -1076,6 +1076,62 @@ public class BoardModel
 						cellResult.Set(cell);
 						cellResult.SetFromRow(spawnRow --);
                     }
+
+					if (lookElsewhere) {
+						reach = 1;
+						bool continueLeft = true;
+						bool continueRight = true;
+						bool spawnPieceLeft = true;
+						bool spawnPieceRight = true;
+						while (reach < rows - row) 
+						{
+							if (continueLeft && col > 0) {
+								int index = (rows - row - 1) - reach++;
+								// Look Left
+								CellModel reachedCell = gameBoard[index, col - 1];
+								if (reachedCell.IsDroppable()) 
+								{	
+									CellResult cellResult = cellResults[rows-row-1, col];
+									if (cellResult == null) {
+										cellResult = new CellResult(0);
+										cellResults[rows-row-1, col] = cellResult;
+									}
+									cellResult.Set(reachedCell);
+									cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
+									reachedCell.Consume (false, null,order);
+									spawnPiece = false;
+									break;
+								} else if (!reachedCell.IsSkippable()) {
+									continueLeft = false;
+									spawnPieceLeft = false;
+									break;
+								}
+							}
+							if (continueRight && row < rows) {
+								int index = (rows - row - 1) - reach++;
+								// Look Left
+								CellModel reachedCell = gameBoard[index, col + 1];
+								if (reachedCell.IsDroppable()) 
+								{	
+									CellResult cellResult = cellResults[rows-row-1, col];
+									if (cellResult == null) {
+										cellResult = new CellResult(0);
+										cellResults[rows-row-1, col] = cellResult;
+									}
+									cellResult.Set(reachedCell);
+									cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
+									reachedCell.Consume (false, null,order);
+									spawnPiece = false;
+									break;
+								} else if (!reachedCell.IsSkippable()) {
+									spawnPieceRight = false;
+									continueRight = false;
+									break;
+								}
+							}
+						}
+
+					}
 
 					checkForMatches.Add(cell);
 				}
