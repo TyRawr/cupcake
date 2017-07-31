@@ -3,9 +3,9 @@
 	[
 	"boopoiob",
 	"bbiopoob",
-	"ipgogppi",
-	"bigppiob",
-	"booipoob"
+	"fpgogppi",
+	"fioppiob",
+	"ioiipoob"
 	],
 	"pieces":["p","o","b","i"],
 	"margin": "center",

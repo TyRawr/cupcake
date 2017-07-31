@@ -301,6 +301,7 @@ public class BoardModel
         {
             cellResult[cm.GetRow(), cm.GetCol()].SetMatchType(MATCHTYPE.COL);
             cellResult[cm.GetRow(), cm.GetCol()].SetSpawnSpecialPiece(true);
+            cellResult[cm.GetRow(), cm.GetCol()].SetSpecialPieceSpawnPoint(new Point(cm.GetRow(), cm.GetRow()));
             for (int row = 0; row < gameBoard.GetLength(0); row++)
             { // itr over cols
                 if (row == cm.GetRow()) continue;
@@ -313,6 +314,7 @@ public class BoardModel
         {
             cellResult[cm.GetRow(), cm.GetCol()].SetMatchType(MATCHTYPE.ROW);
             cellResult[cm.GetRow(), cm.GetCol()].SetSpawnSpecialPiece(true);
+            cellResult[cm.GetRow(), cm.GetCol()].SetSpecialPieceSpawnPoint(new Point(cm.GetRow(), cm.GetRow()));
             for (int col = 0; col < gameBoard.GetLength(1); col++) { // itr over cols
                 if (col == cm.GetCol()) continue;
                 CellModel cm1 = gameBoard[cm.GetRow(), col];
@@ -331,6 +333,7 @@ public class BoardModel
             }
             cellResult[r, c].SetMatchType(MATCHTYPE.BOMB);
             cellResult[r, c].SetSpawnSpecialPiece(true);
+            cellResult[r, c].SetSpecialPieceSpawnPoint(new Point(r,c));
 
             //look up one, up right one, right one, downright one, down one, down left one, left one, left up.
             CellModel up = GetPieceOrNull(r - 1, c);     //up
@@ -955,18 +958,19 @@ public class BoardModel
 						int index = (rows - row - 1) - reach++;
 						//Debug.Log(index);
 						CellModel reachedCell = gameBoard[index, col];
-						if (reachedCell.IsDroppable()) 
-						{	
-							CellResult cellResult = cellResults[rows-row-1, col];
-							if (cellResult == null) {
-								cellResult = new CellResult(0);
-								cellResults[rows-row-1, col] = cellResult;
-							}
+                        if (reachedCell.IsDroppable())
+                        {
+                            CellResult cellResult = cellResults[rows - row - 1, col];
+                            if (cellResult == null) {
+                                cellResult = new CellResult(0);
+                                cellResults[rows - row - 1, col] = cellResult;
+                            }
                             cellResult.Set(reachedCell);
                             cellResults[rows - row - 1, col].SetSpawnSpecialPiece(false);
-                            if (cellResults[index, col] != null)
+                            if (cellResults[index, col] != null) { 
                                 cellResult.SetSpawnSpecialPiece(cellResults[index, col].GetSpawnSpecialPiece());
-                            //cellResult.SetSpawnSpecialPiece()
+                                cellResult.SetSpecialPieceSpawnPoint(new Point(index-1,col));
+                            }
                             cell.SetPiece (reachedCell.GetPieceColor (), reachedCell.GetPieceType());
                             reachedCell.Consume (false, null,order);
 							spawnPiece = false;

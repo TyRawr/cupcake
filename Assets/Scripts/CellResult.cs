@@ -100,12 +100,24 @@ public class CellResult {
     {
         spawnSpecialPiece = spawn;
     }
+
     public bool GetSpawnSpecialPiece()
     {
         return spawnSpecialPiece;
     }
 
-	public void Set(CellModel cell) {
+    Point specialPieceSpawnPoint = new Point(-1, -1);
+    public void SetSpecialPieceSpawnPoint(Point p)
+    {
+        specialPieceSpawnPoint = p;
+    }
+    public Point GetSpecialPieceSpawnPoint()
+    {
+        return specialPieceSpawnPoint;
+    }
+
+
+    public void Set(CellModel cell) {
 		this.fromCol = cell.GetCol();
 		this.fromRow = cell.GetRow();
 		this.pieceColor = cell.GetPieceColor();

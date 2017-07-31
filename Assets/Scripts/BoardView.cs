@@ -85,13 +85,13 @@ public class BoardView : MonoBehaviour {
             for (int col = 0; col < cellsMatches.GetLength(1); col++)
             {
                 CellResult cellRes = cellsMatches[row, col];   
-				if (    (cellRes != null && cellRes.GetPoints() > 0) 
-                    || (cellRes != null && cellRes.GetDestroy()))
+				if (cellRes != null && cellRes.GetDestroy())
                 {
+                    StartCoroutine(AnimateDisappear(row, col));
                     StartCoroutine( AnimatePieceSpecialDestroy(cellRes.GetMatchType(), row, col));
 
                     // start the actual animation for the given piece at the location.
-                    StartCoroutine(AnimateDisappear(row, col));
+                    
                 }
             }
         }
@@ -389,6 +389,19 @@ public class BoardView : MonoBehaviour {
 
                 //grab background
                 CellView cellView = cells[0, toCol];
+                if(cell.GetSpawnSpecialPiece() )
+                {
+                    Debug.Log("asdf");
+                    Point p = cell.GetSpecialPieceSpawnPoint();
+                    Debug.Log(p.row + " " + p.col);
+                    if (p.row > -1 && p.col > -1)
+                    {
+                    } else
+                    {
+                        cellView = cells[toRow, toCol];
+                    }
+                    
+                }
                 piece.transform.SetParent(piecesParent.transform);
 //                piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
@@ -425,6 +438,7 @@ public class BoardView : MonoBehaviour {
 
     private void LevelLoadListener(object model)
     {
+        Time.timeScale = 1.2f;
         //EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
         boardModel = (BoardModel)model;
         //boardModel.PrintGameBoard();
@@ -479,10 +493,11 @@ public class BoardView : MonoBehaviour {
             yield return new WaitForEndOfFrame();
             SoundManager.PlaySound(result.GetMatchType());
             yield return StartCoroutine(AnimateDestroyPieces(cellsMatches));
-			yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
             UIManager.UpdateScoreValue(result.GetScore());
             UpdateOrder(updatedOrder); //view
             yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(.4f);
             yield return StartCoroutine(SpawnPointsText(cellsMatches));
 
 			// Delete the points objects
