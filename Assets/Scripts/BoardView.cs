@@ -438,7 +438,7 @@ public class BoardView : MonoBehaviour {
 
     private void LevelLoadListener(object model)
     {
-        Time.timeScale = 1.2f;
+        //Time.timeScale = 1.2f;
         //EventManager.StopListening(Constants.LEVEL_LOAD_END_EVENT,LevelLoadListener);
         boardModel = (BoardModel)model;
         //boardModel.PrintGameBoard();
