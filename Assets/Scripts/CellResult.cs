@@ -5,10 +5,10 @@ public class CellResult {
 	private int points;
 	private int fromRow;
 	private int fromCol;
-	private Constants.PieceColor pieceColor; // this is a new pieceColor?
-	private Constants.PieceType pieceType;
+	private PieceModel piece; // this is a new pieceColor?
     //The color of the piece that was destroyed;
-    private Constants.PieceColor colorOfPieceThatWasDestroyed = Constants.PieceColor.NULL;
+	private PieceColor colorOfPieceThatWasDestroyed = PieceColor.NULL;
+	private CellState stateRemoved;
     private CellState state;
     private bool destroyIndex;
     private MATCHTYPE matchType;
@@ -63,12 +63,18 @@ public class CellResult {
 		this.fromRow = fromRow;
 	}
 		
-	public Constants.PieceColor GetPieceColor() {
-		return this.pieceColor;
+	public PieceColor GetPieceColor() {
+		if (this.piece == null) {
+			return PieceColor.NULL;
+		}
+		return this.piece.GetPieceColor();
 	}
 
-	public Constants.PieceType GetPieceType() {
-		return this.pieceType;
+	public PieceType GetPieceType() {
+		if (this.piece == null) {
+			return PieceType.NULL;
+		}
+		return this.piece.GetPieceType();
 	}
 
     public CellState GetState()
@@ -81,18 +87,23 @@ public class CellResult {
         this.state = newState;
     }
 
-    public void SetColorWasDestroyed(Constants.PieceColor colorThatWasDestroyed)
+    public void SetColorWasDestroyed(PieceColor colorThatWasDestroyed)
     {
         colorOfPieceThatWasDestroyed = colorThatWasDestroyed;
     }
-    public Constants.PieceColor GetColorThatWasDestroyed()
+    public PieceColor GetColorThatWasDestroyed()
     {
         return colorOfPieceThatWasDestroyed;
     }
 
-	public void SetPiece(Constants.PieceColor pieceColor, Constants.PieceType pieceType = Constants.PieceType.NORMAL) {
-		this.pieceColor = pieceColor;
-		this.pieceType = pieceType;
+	public void SetCellStateRemoved (CellState stateRemoved) {
+		this.stateRemoved = stateRemoved;
+	}
+	public CellState GetCellStateRemoved () {
+		return stateRemoved;
+	}
+	public void SetPiece(PieceModel piece) {
+		this.piece = piece;
 	}
 
     bool spawnSpecialPiece = false;
@@ -108,8 +119,7 @@ public class CellResult {
 	public void Set(CellModel cell) {
 		this.fromCol = cell.GetCol();
 		this.fromRow = cell.GetRow();
-		this.pieceColor = cell.GetPieceColor();
-		this.pieceType = cell.GetPieceType();
+		this.piece = cell.GetPiece();
         this.state = cell.GetState();
 	}
 }

@@ -6,14 +6,10 @@ using UnityEngine;
 public class CellModel 
 {
 
-
-	//maybe these?
-	private Constants.PieceColor pieceColor;
-	private Constants.PieceType pieceType;
 	private int row;
 	private int col;
 	private CellState state;
-	private HashSet<string> eventListeners;
+	private PieceModel piece;
     private HashSet<CellModel> notifyCells;
 
 	public CellModel (int row, int col, int numRows, int numCols, CellState state = CellState.NORMAL)
@@ -21,32 +17,7 @@ public class CellModel
 		this.row = row;
 		this.col = col;
 		this.state = state;
-		this.eventListeners = new HashSet<string>();
         this.notifyCells = new HashSet<CellModel>();
-        /*
-		if(state == CellState.SPECIAL || (row ==0 && col == 0)) {
-			string eventName = "CellConsumed" + (row - 1) + "" + col;
-			if (row > 0) {
-				EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-				eventListeners.Add(eventName);
-			}
-			if (col > 0) {
-				eventName = "CellConsumed" + row + "" + (col - 1);
-				EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-				eventListeners.Add(eventName);
-			}
-			if (row < numRows - 1) {
-				eventName = "CellConsumed" + (row + 1) + "" + col;
-				EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-				eventListeners.Add(eventName);
-			}
-			if (col < numCols - 1) {
-				eventName = "CellConsumed" + row + "" + (col + 1);
-				EventManager.StartListening(eventName, HandleCellDestroyedEvent);
-				eventListeners.Add(eventName);
-			}
-		}
-        */
 	}
 
     //add self to list of matched.
@@ -57,9 +28,22 @@ public class CellModel
             //cm.HandleCellConsumeEvent(this);
             matched.Add(cm);
             //results[cm.GetRow(), cm.GetCol()].SetColorWasDestroyed(cm.GetPieceColor());
-            cm.Consume(false,results,order);
+			cm.Consume(false,results,order);
+//            cm.Notify(results,order);
         }
     }
+
+	public void Notify(CellResult[,] results, Order order)
+	{
+		if (state == CellState.FROSTING) {
+			if(results != null && results[row,col] != null)
+			{
+				results[row, col].SetCellStateRemoved(state);
+			}
+			state = CellState.NORMAL;
+		}
+
+	}
 
     public void SetupFrostingEvents(CellModel[,] gameBoard)
     {
@@ -105,21 +89,20 @@ public class CellModel
         }
     }
 
-	public void Consume (Boolean match, CellResult[,] results,Order order) 
+	public void Consume (Boolean match, CellResult[,] results, Order order) 
 	{
         if(order == null)
         {
             Debug.LogError("Order is null");
         }
-        if(results != null && results[row,col] != null)
+        if(piece != null && results != null && results[row,col] != null)
         {
-            results[row, col].SetColorWasDestroyed(pieceColor);
-            order.AddColorToOrder(pieceColor);
+			PieceColor color = piece.GetPieceColor ();
+			results[row, col].SetColorWasDestroyed(color);
+			order.AddColorToOrder(color);
         }
-        
-        this.pieceColor = Constants.PieceColor.NULL;
-		this.pieceType = Constants.PieceType.NULL;
-        this.state = CellState.NORMAL; 
+		piece = null;
+		state = CellState.NORMAL; 
 	}
 
 	public int EvaluateMatch (int multiplier) 
@@ -139,12 +122,15 @@ public class CellModel
     {
         notifyCells.Clear();
     }
+
+	// STATUS FUNCTIONS =================================================
+
 	/**
 	 * Is this a cell with a piece we can drop?
 	 */
 	public bool IsDroppable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.FROSTING)
+		if (piece == null || state == CellState.NULL || state == CellState.FROSTING)
 		{
 			return false;
 		}
@@ -168,7 +154,7 @@ public class CellModel
 	 */
 	public bool IsSwappable() 
 	{
-		if (pieceColor == Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.FROSTING) 
+		if (piece == null || state == CellState.NULL || state == CellState.FROSTING) 
 		{
 			return false;
 		}
@@ -180,7 +166,7 @@ public class CellModel
 	 */
 	public bool IsWanting() 
 	{
-		if (pieceColor != Constants.PieceColor.NULL || state == CellState.NULL || state == CellState.FROSTING) 
+		if (piece != null || state == CellState.NULL || state == CellState.FROSTING) 
 		{
 			return false;
 		}
@@ -204,30 +190,43 @@ public class CellModel
 		return this.state;
 	}
 
-	public void SetPiece(Constants.PieceColor pieceColor, Constants.PieceType pieceType = Constants.PieceType.NORMAL) 
+	/**
+	 *	Returns the PieceModel
+	 */
+	public PieceModel GetPiece() 
 	{
-		this.pieceColor = pieceColor;
-		this.pieceType = pieceType;
+		return piece;
+	}
+
+	public void SetPiece(PieceModel piece) 
+	{
+		this.piece = piece;
 	}
 
 	/*
 	 * Returns Piece Color or NULL
 	 */
-	public Constants.PieceColor GetPieceColor() 
+	public PieceColor GetPieceColor() 
 	{
-		return this.pieceColor;
+		if (piece == null) {
+			return PieceColor.NULL;
+		}
+		return piece.GetPieceColor();
 	}
 
 	/*
 	 * Returns Piece Type or NULL
 	 */
-	public Constants.PieceType GetPieceType() 
+	public PieceType GetPieceType() 
 	{
-		return this.pieceType;
+		if (piece == null) {
+			return PieceType.NULL;
+		}
+		return piece.GetPieceType();	
 	}
 }
 
-// ENUMS =======================================================================
+// ENUMS ==========================================
 
 public enum CellState {
 	NORMAL,

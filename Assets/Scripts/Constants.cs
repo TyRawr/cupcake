@@ -143,8 +143,7 @@ public static class Constants {
 		{ "g", PieceColor.GREEN },
 		{ "o", PieceColor.ORANGE },
 		{ "i", PieceColor.PINK },
-		{ "p", PieceColor.PURPLE },
-        { "f", PieceColor.FROSTING }
+		{ "p", PieceColor.PURPLE }
     };
 
     public static Dictionary<MATCHTYPE, PieceType> MatchTypeToPieceType = new Dictionary<MATCHTYPE, PieceType>() {
@@ -154,30 +153,6 @@ public static class Constants {
         { MATCHTYPE.ALL_OF, PieceType.NULL }, //todo add this
         { MATCHTYPE.NORMAL, PieceType.NORMAL }
     };
-
-    public enum PieceColor 
-	{
-		PINK,
-		ORANGE,
-		GREEN,
-		PURPLE,
-		BLUE,
-        YELLOW,
-        FROSTING,
-		NULL
-	}
-
-	public enum PieceType 
-	{
-		NORMAL,
-		STRIPED_ROW,
-        STRIPED_COL,
-        BOMB,
-        FROSTING,
-        ALL,
-		NULL
-	}	
-    
 }
 
 public class Point
@@ -187,20 +162,5 @@ public class Point
     {
         row = r;
         col = c;
-    }
-}
-
-//a container class to represent the spawning of a special piece
-public class SpecialPieceModel
-{
-    public Point point;
-    public Constants.PieceType type;
-    public Constants.PieceColor color;
-
-    public SpecialPieceModel(Point p, Constants.PieceType t, Constants.PieceColor c)
-    {
-        this.point = p;
-        this.type = t;
-        this.color = c;
     }
 }

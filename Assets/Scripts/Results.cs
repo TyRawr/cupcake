@@ -74,8 +74,8 @@ public class Result
 
 public class Order : System.ICloneable
 {
-    private Dictionary<Constants.PieceColor, int> currentOrder;
-    private Dictionary<Constants.PieceColor, int> neededOrder;
+    private Dictionary<PieceColor, int> currentOrder;
+    private Dictionary<PieceColor, int> neededOrder;
 
     //initially only have 6 colors for the game. Need holiday update pieces as well.
     private int totalBlueForOrder, totalPinkForOrder, totalYellowForOrder, totalGreenForOrder, totalPurpleForOrder, totalOrangeForOrder, totalFrostingForOrder;
@@ -92,35 +92,35 @@ public class Order : System.ICloneable
         this.totalOrangeForOrder    = orderToAddTo.totalOrangeForOrder;
         this.totalFrostingForOrder  = orderToAddTo.totalFrostingForOrder;
 
-        this.matchedBlue      = orderToAddTo.GetAmountFromColor(Constants.PieceColor.BLUE);
-        this.matchedPink      = orderToAddTo.GetAmountFromColor(Constants.PieceColor.PINK);
-        this.matchedYellow    = orderToAddTo.GetAmountFromColor(Constants.PieceColor.YELLOW);
-        this.matchedGreen     = orderToAddTo.GetAmountFromColor(Constants.PieceColor.GREEN);
-        this.matchedPurple    = orderToAddTo.GetAmountFromColor(Constants.PieceColor.PURPLE);
-        this.matchedOrange    = orderToAddTo.GetAmountFromColor(Constants.PieceColor.ORANGE);
-        this.matchedFrosting  = orderToAddTo.GetAmountFromColor(Constants.PieceColor.FROSTING);
+        this.matchedBlue      = orderToAddTo.GetAmountFromColor(PieceColor.BLUE);
+        this.matchedPink      = orderToAddTo.GetAmountFromColor(PieceColor.PINK);
+        this.matchedYellow    = orderToAddTo.GetAmountFromColor(PieceColor.YELLOW);
+        this.matchedGreen     = orderToAddTo.GetAmountFromColor(PieceColor.GREEN);
+        this.matchedPurple    = orderToAddTo.GetAmountFromColor(PieceColor.PURPLE);
+        this.matchedOrange    = orderToAddTo.GetAmountFromColor(PieceColor.ORANGE);
+//        this.matchedFrosting  = orderToAddTo.GetAmountFromColor(Constants.PieceColor.FROSTING);
 
         // setup the needed order with the totals
-        this.neededOrder = new Dictionary<Constants.PieceColor, int>();
-        this.neededOrder.Add(Constants.PieceColor.BLUE, totalBlueForOrder);
-        this.neededOrder.Add(Constants.PieceColor.PINK, totalPinkForOrder);
-        this.neededOrder.Add(Constants.PieceColor.YELLOW, totalYellowForOrder);
-        this.neededOrder.Add(Constants.PieceColor.GREEN, totalGreenForOrder);
-        this.neededOrder.Add(Constants.PieceColor.PURPLE, totalPurpleForOrder);
-        this.neededOrder.Add(Constants.PieceColor.ORANGE, totalOrangeForOrder);
-        this.neededOrder.Add(Constants.PieceColor.FROSTING, totalFrostingForOrder);
-        this.neededOrder.Add(Constants.PieceColor.NULL, 0);
+        this.neededOrder = new Dictionary<PieceColor, int>();
+        this.neededOrder.Add(PieceColor.BLUE, totalBlueForOrder);
+        this.neededOrder.Add(PieceColor.PINK, totalPinkForOrder);
+        this.neededOrder.Add(PieceColor.YELLOW, totalYellowForOrder);
+        this.neededOrder.Add(PieceColor.GREEN, totalGreenForOrder);
+        this.neededOrder.Add(PieceColor.PURPLE, totalPurpleForOrder);
+        this.neededOrder.Add(PieceColor.ORANGE, totalOrangeForOrder);
+//        this.neededOrder.Add(Constants.PieceColor.FROSTING, totalFrostingForOrder);
+//        this.neededOrder.Add(Constants.PieceColor.NULL, 0);
 
         //setup the current order with nothing in em
-        this.currentOrder = new Dictionary<Constants.PieceColor, int>();
-        this.currentOrder.Add(Constants.PieceColor.BLUE, matchedBlue);
-        this.currentOrder.Add(Constants.PieceColor.PINK, matchedPink);
-        this.currentOrder.Add(Constants.PieceColor.YELLOW, matchedYellow);
-        this.currentOrder.Add(Constants.PieceColor.GREEN, matchedGreen);
-        this.currentOrder.Add(Constants.PieceColor.PURPLE, matchedPurple);
-        this.currentOrder.Add(Constants.PieceColor.ORANGE, matchedOrange);
-        this.currentOrder.Add(Constants.PieceColor.FROSTING, matchedFrosting);
-        this.currentOrder.Add(Constants.PieceColor.NULL, 0);
+        this.currentOrder = new Dictionary<PieceColor, int>();
+        this.currentOrder.Add(PieceColor.BLUE, matchedBlue);
+        this.currentOrder.Add(PieceColor.PINK, matchedPink);
+        this.currentOrder.Add(PieceColor.YELLOW, matchedYellow);
+        this.currentOrder.Add(PieceColor.GREEN, matchedGreen);
+        this.currentOrder.Add(PieceColor.PURPLE, matchedPurple);
+        this.currentOrder.Add(PieceColor.ORANGE, matchedOrange);
+//        this.currentOrder.Add(PieceColor.FROSTING, matchedFrosting);
+//        this.currentOrder.Add(PieceColor.NULL, 0);
     }
     //Setup the initial order for the level
     public Order(int totalBlueForOrder, int totalPinkForOrder, int totalYellowForOrder, int totalGreenForOrder, int totalPurpleForOrder, int totalOrangeForOrder,int totalFrostingForOrder) {
@@ -133,29 +133,29 @@ public class Order : System.ICloneable
         this.totalFrostingForOrder = totalFrostingForOrder;
 
         // setup the needed order with the totals
-        this.neededOrder = new Dictionary<Constants.PieceColor, int>();
-        this.neededOrder.Add(Constants.PieceColor.BLUE,totalBlueForOrder);
-        this.neededOrder.Add(Constants.PieceColor.PINK, totalPinkForOrder);
-        this.neededOrder.Add(Constants.PieceColor.YELLOW, totalYellowForOrder);
-        this.neededOrder.Add(Constants.PieceColor.GREEN, totalGreenForOrder);
-        this.neededOrder.Add(Constants.PieceColor.PURPLE, totalPurpleForOrder);
-        this.neededOrder.Add(Constants.PieceColor.ORANGE, totalOrangeForOrder);
-        this.neededOrder.Add(Constants.PieceColor.FROSTING, totalFrostingForOrder);
-        this.neededOrder.Add(Constants.PieceColor.NULL, 0);
+        this.neededOrder = new Dictionary<PieceColor, int>();
+        this.neededOrder.Add(PieceColor.BLUE,totalBlueForOrder);
+        this.neededOrder.Add(PieceColor.PINK, totalPinkForOrder);
+        this.neededOrder.Add(PieceColor.YELLOW, totalYellowForOrder);
+        this.neededOrder.Add(PieceColor.GREEN, totalGreenForOrder);
+        this.neededOrder.Add(PieceColor.PURPLE, totalPurpleForOrder);
+        this.neededOrder.Add(PieceColor.ORANGE, totalOrangeForOrder);
+//        this.neededOrder.Add(PieceColor.FROSTING, totalFrostingForOrder);
+//        this.neededOrder.Add(null, 0);
 
         //setup the current order with nothing in em
-        this.currentOrder = new Dictionary<Constants.PieceColor, int>();
-        this.currentOrder.Add(Constants.PieceColor.BLUE, 0);
-        this.currentOrder.Add(Constants.PieceColor.PINK, 0);
-        this.currentOrder.Add(Constants.PieceColor.YELLOW, 0);
-        this.currentOrder.Add(Constants.PieceColor.GREEN, 0);
-        this.currentOrder.Add(Constants.PieceColor.PURPLE, 0);
-        this.currentOrder.Add(Constants.PieceColor.ORANGE, 0);
-        this.currentOrder.Add(Constants.PieceColor.FROSTING, 0);
-        this.currentOrder.Add(Constants.PieceColor.NULL, 0);
+        this.currentOrder = new Dictionary<PieceColor, int>();
+        this.currentOrder.Add(PieceColor.BLUE, 0);
+        this.currentOrder.Add(PieceColor.PINK, 0);
+        this.currentOrder.Add(PieceColor.YELLOW, 0);
+        this.currentOrder.Add(PieceColor.GREEN, 0);
+        this.currentOrder.Add(PieceColor.PURPLE, 0);
+        this.currentOrder.Add(PieceColor.ORANGE, 0);
+//        this.currentOrder.Add(PieceColor.FROSTING, 0);
+//        this.currentOrder.Add(PieceColor.NULL, 0);
     }
 
-    public void AddColorToOrder(Constants.PieceColor color)
+    public void AddColorToOrder(PieceColor color)
     {
         int i = currentOrder[color];
         currentOrder[color] = ++i;
@@ -166,12 +166,12 @@ public class Order : System.ICloneable
         return this.MemberwiseClone();
     }
 
-    public int GetAmountFromColor(Constants.PieceColor color)
+    public int GetAmountFromColor(PieceColor color)
     {
         return currentOrder[color];
     }
 
-    public int GetTotalNeededFromColor(Constants.PieceColor color)
+    public int GetTotalNeededFromColor(PieceColor color)
     {
         return neededOrder[color];
     }
@@ -179,7 +179,7 @@ public class Order : System.ICloneable
     public bool IsComplete()
     {
         //assume yes it is complete
-        foreach(KeyValuePair<Constants.PieceColor,int> entry in currentOrder)
+        foreach(KeyValuePair<PieceColor,int> entry in currentOrder)
         {
             if(entry.Value < neededOrder[entry.Key] )
             {

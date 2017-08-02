@@ -66,7 +66,7 @@ public class CellView : MonoBehaviour {
     }
     private void HandleAbility1(BaseEventData eventData)
     {
-        PointerEventData ped = eventData as PointerEventData;
+//        PointerEventData ped = eventData as PointerEventData;
         EventTrigger eventTrigger = this.GetComponentInChildren<EventTrigger>();
         eventTrigger.triggers.Clear();
         EventManager.TriggerEvent(Constants.ABILITY1, this);

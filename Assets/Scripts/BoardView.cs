@@ -11,8 +11,8 @@ public class BoardView : MonoBehaviour {
 	[System.Serializable]
 	public struct PieceMapping
 	{
-		public Constants.PieceColor color; // should map to the constants id file
-		public Constants.PieceType type;
+		public PieceColor color; // should map to the constants id file
+		public PieceType type;
 		public GameObject prefab;
 	}; 
 	// Need Prefabs to spawn visuals (views)
@@ -28,11 +28,10 @@ public class BoardView : MonoBehaviour {
     public GameObject orderOrange;
     public GameObject orderPurple;
     
-
+	public GameObject grid;
 
     // View reads from model
     public BoardModel boardModel;
-	private GameObject grid;
 	private CellView[,] cells;
 
 	//parents for pieces and background items
@@ -173,7 +172,6 @@ public class BoardView : MonoBehaviour {
         float startTime = Time.time;
         Vector3 startMarker = piece.transform.position;
         Vector3 toPosition = cellView.transform.position;
-        float journeyLength = Vector3.Distance(startMarker, toPosition);
         for (float t = 0.0f; t < duration; t += Time.deltaTime)
         {
             if (piece != null && piece.transform == null) yield break;
@@ -270,7 +268,6 @@ public class BoardView : MonoBehaviour {
 
 		Vector3 backgroundPosition = cell.transform.position;
 		Vector3 nextBackgroundPosition = nextCell.transform.position;
-		float journeyLength = Vector3.Distance(backgroundPosition, nextBackgroundPosition);
 
 		//animate to
 		for (float t = 0.0f; t < duration; t += Time.deltaTime)
@@ -348,44 +345,41 @@ public class BoardView : MonoBehaviour {
 		eventTrigger.triggers.Add(entry);
 	}
 
-    private void SetPieceViewSpriteFromPieceType(GameObject piece,Constants.PieceType type)
+    private void SetPieceViewSpriteFromPieceType(GameObject piece, PieceType type)
     {
         PieceView pv = piece.GetComponent<PieceView>();
         SpriteRenderer sp = piece.GetComponentInChildren<SpriteRenderer>();
-        if (type == Constants.PieceType.STRIPED_ROW)
-        {
-            sp.sprite = pv.row;
-        }
-        if (type == Constants.PieceType.STRIPED_COL)
-        {
-            sp.sprite = pv.column;
-        }
-        if (type == Constants.PieceType.BOMB)
-        {
-            sp.sprite = pv.bomb;
-        }
-        if(type == Constants.PieceType.ALL)
-        {
-            //sp.sprite = pv.all;
-        }
+		switch (type) {
+		case PieceType.ALL:
+			//sp.sprite = pv.all;
+			break;
+		case PieceType.BOMB:
+			sp.sprite = pv.bomb;
+			break;
+		case PieceType.STRIPED_COL:
+			sp.sprite = pv.column;
+			break;
+		case PieceType.STRIPED_ROW:
+			sp.sprite = pv.row;
+			break;
+		}
     }
 
 	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
     {
 		int fromRow = cell.GetFromRow();
 		int fromCol = cell.GetFromCol();
-		Constants.PieceColor color = cell.GetPieceColor();
-		Constants.PieceType type = cell.GetPieceType();
+		PieceColor color = cell.GetPieceColor();
         for(int i = 0; i < piecePrefabs.Count; i++)
         {
-            if(piecePrefabs[i].color == color)
+			if(piecePrefabs[i].color == color)
             {
                 GameObject piece;
                 piece = GameObject.Instantiate(piecePrefabs[i].prefab);
 				cells[toRow, toCol].piece = piece;
 
                 // determine piece type
-                SetPieceViewSpriteFromPieceType(piece,type);
+				SetPieceViewSpriteFromPieceType(piece,cell.GetPieceType());
 
                 //grab background
                 CellView cellView = cells[0, toCol];
@@ -466,8 +460,6 @@ public class BoardView : MonoBehaviour {
 
 	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle,List<CellModel> recMatch)
     {
-        
-        int moves = resultSets.GetMoves();
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
 		foreach (Result result in resultSets.GetCellResults())
@@ -560,8 +552,8 @@ public class BoardView : MonoBehaviour {
 					int fromRow = cellRes.GetFromRow();
 					int fromCol = cellRes.GetFromCol();
 					if(fromRow < 0 || 
-                        (cellRes.GetPieceType() != Constants.PieceType.NORMAL && cellRes.GetSpawnSpecialPiece()
-                        && cellRes.GetPieceType() != Constants.PieceType.FROSTING)) {
+                        (cellRes.GetPieceType() != PieceType.NORMAL && cellRes.GetSpawnSpecialPiece()
+							&& cellRes.GetState() != CellState.FROSTING)) {
 //						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
 						//TODO lookup spawn position for new pieces, EVEN FOR ONES WITH NEGATIVE INDEX - take into account the cell size.
 						GameObject piece = CreatePieceView(row, col, cellRes);
@@ -592,8 +584,7 @@ public class BoardView : MonoBehaviour {
                     if(points > 0)
                     {
                         GameObject pointsText = CreatePointsText(row, col, points);
-                    }
-                    
+                    }                    
                 }
             }
         }
@@ -745,12 +736,6 @@ public class BoardView : MonoBehaviour {
 		}
 
 		// sets up the dimensions, world view type stuff
-		float rowCount = Constants.MAX_NUMBER_OF_GRID_ITEMS;// LevelManager.LevelAsText[0].Length;
-		float colCount = Constants.MAX_NUMBER_OF_GRID_ITEMS; //LevelManager.LevelAsText.Length;
-		float width = (rowCount) + ((rowCount - 1) * Constants.MIN_SIZE);
-		float height = (colCount ) + ((colCount - 1) * Constants.MIN_SIZE);
-		float halfWidth = width / 2f;
-		float halfHeight = height / 2f;
 //		Debug.Log("BH:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.height);
 //		Debug.Log("BW:: " + GameObject.Find("BackgroundPieces").GetComponent<RectTransform>().rect.width);
 		float gridHeight = backgroundPiecesParent.GetComponent<RectTransform>().rect.height;
@@ -792,7 +777,7 @@ public class BoardView : MonoBehaviour {
 					backgroundImage.transform.SetParent(backgroundImagesParent.transform, false);
 					//backgroundPieces[row, col] = background;
 					SetBackgroundPieceDimensions(backgroundImage, maxPieceDimension);
-					if(cell.GetPieceColor() != Constants.PieceColor.NULL) {
+					if(cell.GetPieceColor() != PieceColor.NULL) {
 						backgroundImage.GetComponent<Image>().color = new Vector4(1f,1f,1f,1f);
 					}
 
@@ -853,21 +838,21 @@ public class BoardView : MonoBehaviour {
         if (order == null)
         {
             //setup initial with everything at max (e.g. 9/9);
-            UIManager.UpdateOrderUI(order.GetAmountFromColor(Constants.PieceColor.BLUE), order.GetTotalNeededFromColor(Constants.PieceColor.BLUE),
-                order.GetAmountFromColor(Constants.PieceColor.GREEN) ,order.GetTotalNeededFromColor(Constants.PieceColor.GREEN),
-                order.GetAmountFromColor(Constants.PieceColor.PINK) ,order.GetTotalNeededFromColor(Constants.PieceColor.PINK),
-                order.GetAmountFromColor(Constants.PieceColor.ORANGE) ,order.GetTotalNeededFromColor(Constants.PieceColor.ORANGE),
-                order.GetAmountFromColor(Constants.PieceColor.PURPLE) ,order.GetTotalNeededFromColor(Constants.PieceColor.PURPLE)
+            UIManager.UpdateOrderUI(order.GetAmountFromColor(PieceColor.BLUE), order.GetTotalNeededFromColor(PieceColor.BLUE),
+                order.GetAmountFromColor(PieceColor.GREEN) ,order.GetTotalNeededFromColor(PieceColor.GREEN),
+                order.GetAmountFromColor(PieceColor.PINK) ,order.GetTotalNeededFromColor(PieceColor.PINK),
+                order.GetAmountFromColor(PieceColor.ORANGE) ,order.GetTotalNeededFromColor(PieceColor.ORANGE),
+                order.GetAmountFromColor(PieceColor.PURPLE) ,order.GetTotalNeededFromColor(PieceColor.PURPLE)
                 );
             return;
         }
         //Loop through all the cell results and count up each piece color; Minus it from the total (accumulating).
         //TODO UPDATE UIMANAGER WITH VALUES;
-        UIManager.UpdateOrderUI(order.GetAmountFromColor(Constants.PieceColor.BLUE), order.GetTotalNeededFromColor(Constants.PieceColor.BLUE),
-                order.GetAmountFromColor(Constants.PieceColor.GREEN), order.GetTotalNeededFromColor(Constants.PieceColor.GREEN),
-                order.GetAmountFromColor(Constants.PieceColor.PINK), order.GetTotalNeededFromColor(Constants.PieceColor.PINK),
-                order.GetAmountFromColor(Constants.PieceColor.ORANGE), order.GetTotalNeededFromColor(Constants.PieceColor.ORANGE),
-                order.GetAmountFromColor(Constants.PieceColor.PURPLE), order.GetTotalNeededFromColor(Constants.PieceColor.PURPLE)
+        UIManager.UpdateOrderUI(order.GetAmountFromColor(PieceColor.BLUE), order.GetTotalNeededFromColor(PieceColor.BLUE),
+                order.GetAmountFromColor(PieceColor.GREEN), order.GetTotalNeededFromColor(PieceColor.GREEN),
+                order.GetAmountFromColor(PieceColor.PINK), order.GetTotalNeededFromColor(PieceColor.PINK),
+                order.GetAmountFromColor(PieceColor.ORANGE), order.GetTotalNeededFromColor(PieceColor.ORANGE),
+                order.GetAmountFromColor(PieceColor.PURPLE), order.GetTotalNeededFromColor(PieceColor.PURPLE)
                 );
 
 
