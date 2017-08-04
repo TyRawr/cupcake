@@ -837,7 +837,8 @@ public class BoardModel
                 if( foundMatches[i] != null && (foundMatches[i].IsVertical() ^ vertical)) // not null and not same
                 {
                     if(foundMatches[i].IsVertical() && 
-                        (foundMatches[i].GetMinCol() == matchModel.GetMinCol() || foundMatches[i].GetMinCol() == matchModel.GetMaxCol() ))
+						(foundMatches[i].GetMinCol() >= matchModel.GetMinCol() || foundMatches[i].GetMinCol() <= matchModel.GetMaxCol() )
+						&&	(matchModel.GetMinRow() >= foundMatches[i].GetMaxRow() || matchModel.GetMinRow() <= foundMatches[i].GetMaxRow() ))
                     {
 						newSpecialPieces.Add(new PieceModel(cell.GetPieceColor(), PieceType.BOMB, new Point(cell.GetRow(), cell.GetCol())));
 
