@@ -15,9 +15,15 @@ public class BoardView : MonoBehaviour {
 		public PieceType type;
 		public GameObject prefab;
 	}; 
+	[System.Serializable]
+	public struct CellMapping
+	{
+		public CellState state; // should map to the constants id file
+		public CellView prefab;
+	}; 
 	// Need Prefabs to spawn visuals (views)
 	public List<PieceMapping> piecePrefabs;
-	public CellView cellPrefab;
+	public List<CellMapping> cellMapping;
     public GameObject pointsPrefab;
     public GameObject explosion;
     public GameObject lightning;
@@ -84,14 +90,19 @@ public class BoardView : MonoBehaviour {
             for (int col = 0; col < cellsMatches.GetLength(1); col++)
             {
                 CellResult cellRes = cellsMatches[row, col];   
-				if (    (cellRes != null && cellRes.GetPoints() > 0) 
-                    || (cellRes != null && cellRes.GetDestroy()))
+				if (cellRes == null)
+					continue;
+				if (cellRes.GetPoints() > 0 || cellRes.GetDestroy())
                 {
                     StartCoroutine( AnimatePieceSpecialDestroy(cellRes.GetMatchType(), row, col));
 
                     // start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));
                 }
+				if (cellRes.GetCellStateChange()) 
+				{
+					CreateCellView (row, col, cellRes.GetState());
+				}
             }
         }
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
@@ -188,6 +199,99 @@ public class BoardView : MonoBehaviour {
             callback();
         }
     }
+
+	public IEnumerator AnimatePieceSpecialDestroy(MATCHTYPE matchType,int row, int col)
+	{
+		GameObject piece = null;
+		if (matchType != MATCHTYPE.NORMAL)
+		{
+			SoundManager.StopSound();
+			if (matchType == MATCHTYPE.BOMB)
+			{
+				SoundManager.PlaySound(Constants.MATCH_BOMB);
+				piece = GameObject.Instantiate(explosion);
+
+				//grab background
+				CellView cellView = cells[row, col];
+				piece.transform.SetParent(pointsParent.transform);
+				piece.transform.localScale = new Vector3(180f, 180f, 180f);
+				piece.transform.position = cellView.transform.position;
+			}
+			else if (matchType == MATCHTYPE.COL)
+			{
+				SoundManager.PlaySound(Constants.MATCH_ROW);
+				piece = GameObject.Instantiate(lightning);
+
+				//grab background
+				CellView cellView = cells[row, col];
+				piece.transform.SetParent(pointsParent.transform);
+				piece.transform.localScale = new Vector3(200f, 200f, 200f);
+				piece.transform.Rotate(new Vector3(0f, 0f, 1f), 90);
+				piece.transform.position = cellView.transform.position;
+			}
+			else if (matchType == MATCHTYPE.ROW)
+			{
+				SoundManager.PlaySound(Constants.MATCH_COL);
+				piece = GameObject.Instantiate(lightning);
+
+
+				//grab background
+				CellView cellView = cells[row, col];
+				piece.transform.SetParent(pointsParent.transform);
+				piece.transform.localScale = new Vector3(120f, 120f, 120f);
+				piece.transform.position = cellView.transform.position;
+			} else if (matchType == MATCHTYPE.ALL_OF)
+			{
+				SoundManager.PlaySound(Constants.MATCH_ALL);
+			}
+
+		}
+		if(piece!= null)
+		{
+			yield return new WaitForSeconds(piece.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).length);
+			Destroy(piece);
+		}
+		yield return null;
+	}
+
+	public IEnumerator AnimatePositionConstantSpeed(int row, int col, UnityAction<float> callback = null) {
+		float moveSpeed = 4f;
+		GameObject piece = cells[row, col].piece;
+		CellView cellView = cells[row, col];
+		Vector3 startMarker = piece.transform.position;
+		Vector3 toPosition = cellView.transform.position;
+		float dist = Vector3.Distance(startMarker, toPosition);
+		callback(dist/moveSpeed);
+		for (float i = 0.0f; i < dist; i += moveSpeed*Time.deltaTime) {
+			piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed*Time.deltaTime);
+			yield return new WaitForEndOfFrame();
+		}
+	}
+
+	public IEnumerator AnimatePosition(int row, int col, float duration, UnityAction callback = null)
+	{
+		GameObject piece = cells[row, col].piece;
+		CellView cellView = cells[row, col];
+		float startTime = Time.time;
+		Vector3 startMarker = piece.transform.position;
+		Vector3 toPosition = cellView.transform.position;
+		for (float t = 0.0f; t < duration; t += Time.deltaTime)
+		{
+			if (piece != null && piece.transform == null) yield break;
+			piece.transform.position = Vector3.Lerp(startMarker, toPosition, t / duration);
+			yield return new WaitForEndOfFrame();
+		}
+		if (piece != null && piece.transform != null)
+		{
+			piece.transform.position = toPosition;
+
+		}
+		if (callback != null)
+		{
+			callback();
+		}
+	}
+
 
     public IEnumerator AnimateRecommendedMatchPiece(int row, int col , float waitFor = 3f)
     {
@@ -370,6 +474,9 @@ public class BoardView : MonoBehaviour {
 		int fromRow = cell.GetFromRow();
 		int fromCol = cell.GetFromCol();
 		PieceColor color = cell.GetPieceColor();
+
+		if (color.Equals(PieceColor.NULL)) { return null; }
+
         for(int i = 0; i < piecePrefabs.Count; i++)
         {
 			if(piecePrefabs[i].color == color)
@@ -770,54 +877,31 @@ public class BoardView : MonoBehaviour {
 				float y = gridHeight - (row * maxPieceDimension) - maxPieceDimension / 2 - topMargin;
 				float z = 0f;
 				CellModel cell = gameBoard[row,col];
+				CellState cellState = cell.GetState ();
 				CellView cellView;
 
 				if (createCells) {
-					CellView backgroundImage = (CellView)GameObject.Instantiate(cellPrefab, new Vector3(x, y, z), Quaternion.identity);
-					backgroundImage.transform.SetParent(backgroundImagesParent.transform, false);
-					//backgroundPieces[row, col] = background;
-					SetBackgroundPieceDimensions(backgroundImage, maxPieceDimension);
-					if(cell.GetPieceColor() != PieceColor.NULL) {
-						backgroundImage.GetComponent<Image>().color = new Vector4(1f,1f,1f,1f);
-					}
-
-					cellView = (CellView)GameObject.Instantiate(cellPrefab, new Vector3(x, y, z), Quaternion.identity);
-					cells[row,col] = cellView;
-					cells[row,col].AssignEvent();
-
-					cellView.row = row;
-					cellView.col = col;
-					cellView.name += col + " " + row + " " + LevelManager.LevelAsText[row][col];
-					cellView.transform.SetParent(backgroundPiecesParent.transform, false);
-					//backgroundPieces[row, col] = background;
-					SetBackgroundPieceDimensions(cellView, maxPieceDimension);
-
-					//backGroundPieces[row,col] = background;
-
-					CellState cellState = cell.GetState ();
-					if (cellState.Equals (CellState.NULL)) 
-					{
-						continue;
-					}
-
+					CreateCellView (row, col, cellState);
 				} else {
 					cellView = cells[row,col];
 				}
 
+				if (cell.GetPieceColor ().Equals (PieceColor.NULL)) {
+					continue;
+				}
 				for(int i = 0 ; i < piecePrefabs.Count; i ++) {
 					PieceMapping pieceMapping = piecePrefabs[i]; // could be replaced with something else, just a map
 					if(pieceMapping.color == cell.GetPieceColor() ) {
-                        GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+						GameObject go = GameObject.Instantiate(pieceMapping.prefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
 						go.transform.SetParent(piecesParent.transform);
 						go.transform.localScale = Vector3.one;
 						SetPositionFromBackgroundPiece_SetSize(go, cellView, maxPieceDimension);
 						cells[row,col].piece = go;
-                        SetPieceViewSpriteFromPieceType(go, cell.GetPieceType());
-//                        HandleEyeAttachment(go);
-                        break;
+						SetPieceViewSpriteFromPieceType(go, cell.GetPieceType());
+						//                        HandleEyeAttachment(go);
+						break;
 					}
 				}
-
 			}
 		}
         if(createCells)
@@ -830,6 +914,50 @@ public class BoardView : MonoBehaviour {
 		EventManager.StartListening(Constants.SWIPE_RIGHT_EVENT,SwipeRightEventListener);
 		EventManager.StartListening(Constants.SWIPE_DOWN_EVENT,SwipeDownEventListener);
 		EventManager.StartListening(Constants.SWIPE_LEFT_EVENT,SwipeLeftEventListener);
+	}
+
+	public void CreateCellView (int row, int col, CellState cellState) {
+		CellView cellPrefab = null;
+		CellView cellView;
+		float gridHeight = backgroundPiecesParent.GetComponent<RectTransform>().rect.height;
+		float gridWidth = backgroundPiecesParent.GetComponent<RectTransform>().rect.width;
+		float maxPieceDimension = Mathf.Min(
+			(gridHeight / Constants.MAX_NUMBER_OF_GRID_ITEMS) , 
+			(gridWidth / Constants.MAX_NUMBER_OF_GRID_ITEMS)
+		);
+
+		for (int index = 0; index < cellMapping.Count; index++) {
+			if (cellMapping [index].state.Equals(cellState)) {
+				cellPrefab = cellMapping [index].prefab;
+				break;
+			}
+		}
+		CellView backgroundImage = (CellView)GameObject.Instantiate(cellPrefab, new Vector3(x, y, z), Quaternion.identity);
+		backgroundImage.transform.SetParent(backgroundImagesParent.transform, false);
+		//backgroundPieces[row, col] = background;
+		SetBackgroundPieceDimensions(backgroundImage, maxPieceDimension);
+		if(cellState != CellState.NULL) {
+			backgroundImage.GetComponent<Image>().color = new Vector4(1f,1f,1f,1f);
+		}
+
+		cellView = (CellView)GameObject.Instantiate(cellPrefab, new Vector3(x, y, z), Quaternion.identity);
+		cells[row,col] = cellView;
+		cells[row,col].AssignEvent();
+
+		cellView.row = row;
+		cellView.col = col;
+		cellView.name += col + " " + row + " " + LevelManager.LevelAsText[row][col];
+		cellView.transform.SetParent(backgroundPiecesParent.transform, false);
+		//backgroundPieces[row, col] = background;
+		SetBackgroundPieceDimensions(cellView, maxPieceDimension);
+
+		//backGroundPieces[row,col] = background;
+
+		if (cellState.Equals (CellState.NULL)) 
+		{
+			continue;
+		}
+
 	}
 
     public void UpdateOrder(Order order)

@@ -25,11 +25,8 @@ public class CellModel
     {
         foreach(CellModel cm in notifyCells)
         {
-            //cm.HandleCellConsumeEvent(this);
             matched.Add(cm);
-            //results[cm.GetRow(), cm.GetCol()].SetColorWasDestroyed(cm.GetPieceColor());
-			cm.Consume(false,results,order);
-//            cm.Notify(results,order);
+            cm.Notify(results,order);
         }
     }
 
@@ -38,7 +35,8 @@ public class CellModel
 		if (state == CellState.FROSTING) {
 			if(results != null && results[row,col] != null)
 			{
-				results[row, col].SetCellStateRemoved(state);
+				results[row, col].SetCellStateChange(true);
+				results [row, col].SetState (CellState.NORMAL);
 			}
 			state = CellState.NORMAL;
 		}
