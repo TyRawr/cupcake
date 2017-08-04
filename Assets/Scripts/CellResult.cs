@@ -7,7 +7,6 @@ public class CellResult {
 	private int fromCol;
 	private PieceModel piece; // this is a new pieceColor?
     //The color of the piece that was destroyed;
-	private PieceColor colorOfPieceThatWasDestroyed = PieceColor.NULL;
     private CellState state;
 	private bool stateChange = false;
     private bool destroyIndex;
@@ -63,6 +62,10 @@ public class CellResult {
 		this.fromRow = fromRow;
 	}
 		
+	public PieceModel GetPiece() {
+		return piece;
+	}
+
 	public PieceColor GetPieceColor() {
 		if (this.piece == null) {
 			return PieceColor.NULL;
@@ -85,15 +88,6 @@ public class CellResult {
     public void SetState(CellState newState)
     {
         this.state = newState;
-    }
-
-    public void SetColorWasDestroyed(PieceColor colorThatWasDestroyed)
-    {
-        colorOfPieceThatWasDestroyed = colorThatWasDestroyed;
-    }
-    public PieceColor GetColorThatWasDestroyed()
-    {
-        return colorOfPieceThatWasDestroyed;
     }
 
 	public void SetCellStateChange (bool stateChange) {

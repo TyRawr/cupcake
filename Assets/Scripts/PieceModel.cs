@@ -25,6 +25,10 @@ public class PieceModel
 		this.path.Add (origin);
 	}
 
+	public void AddToPath(int row, int col) {
+		path.Add(new Point(row, col));
+	}
+
 	// GETTERS/SETTERS =============================
 
 	public PieceColor GetPieceColor() {

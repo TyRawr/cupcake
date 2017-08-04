@@ -1068,7 +1068,7 @@ public class BoardModel
 						cellResult.SetFromRow(spawnRow --);
                     }
 
-					if (lookElsewhere) {
+					if (lookElsewhere = false) {
 						reach = 1;
 						bool continueLeft = true;
 						bool continueRight = true;

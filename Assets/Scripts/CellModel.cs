@@ -96,7 +96,7 @@ public class CellModel
         if(piece != null && results != null && results[row,col] != null)
         {
 			PieceColor color = piece.GetPieceColor ();
-			results[row, col].SetColorWasDestroyed(color);
+			//results[row, col].SetColorWasDestroyed(color);
 			order.AddColorToOrder(color);
         }
 		piece = null;
@@ -199,6 +199,7 @@ public class CellModel
 	public void SetPiece(PieceModel piece) 
 	{
 		this.piece = piece;
+		piece.AddToPath(row,col);
 	}
 
 	/*

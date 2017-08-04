@@ -62,9 +62,9 @@ public class BoardView : MonoBehaviour {
 		float max = 0f;
         for (int row = 0; row < cells.GetLength(0); row++)
         {
-            for (int col = 0; col < cells.GetLength(1); col++)
+            for (int col = 0; col < cells.GetLength(1); col++) 
             {
-                if (cells[row, col].piece != null)
+				if (cells[row, col] != null && cells[row, col].piece != null)
 					StartCoroutine(AnimatePositionConstantSpeed(row, col, (float f)=> {
 						if(f > max) {
 							max = f;
@@ -92,74 +92,20 @@ public class BoardView : MonoBehaviour {
                 CellResult cellRes = cellsMatches[row, col];   
 				if (cellRes == null)
 					continue;
-				if (cellRes.GetPoints() > 0 || cellRes.GetDestroy())
+				if (cellRes.GetPoints() > 0)
                 {
                     StartCoroutine( AnimatePieceSpecialDestroy(cellRes.GetMatchType(), row, col));
 
                     // start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));
                 }
-				if (cellRes.GetCellStateChange()) 
+				if (cellRes.GetDestroy()) 
 				{
 					CreateCellView (row, col, cellRes.GetState());
 				}
             }
         }
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
-    }
-
-    public IEnumerator AnimatePieceSpecialDestroy(MATCHTYPE matchType,int row, int col)
-    {
-        GameObject piece = null;
-        if (matchType != MATCHTYPE.NORMAL)
-        {
-            SoundManager.StopSound();
-            if (matchType == MATCHTYPE.BOMB)
-            {
-                SoundManager.PlaySound(Constants.MATCH_BOMB);
-                piece = GameObject.Instantiate(explosion);
-
-                //grab background
-                CellView cellView = cells[row, col];
-                piece.transform.SetParent(pointsParent.transform);
-                piece.transform.localScale = new Vector3(180f, 180f, 180f);
-                piece.transform.position = cellView.transform.position;
-            }
-            else if (matchType == MATCHTYPE.COL)
-            {
-                SoundManager.PlaySound(Constants.MATCH_ROW);
-                piece = GameObject.Instantiate(lightning);
-
-                //grab background
-                CellView cellView = cells[row, col];
-                piece.transform.SetParent(pointsParent.transform);
-                piece.transform.localScale = new Vector3(200f, 200f, 200f);
-                piece.transform.Rotate(new Vector3(0f, 0f, 1f), 90);
-                piece.transform.position = cellView.transform.position;
-            }
-            else if (matchType == MATCHTYPE.ROW)
-            {
-                SoundManager.PlaySound(Constants.MATCH_COL);
-                piece = GameObject.Instantiate(lightning);
-                
-
-                //grab background
-                CellView cellView = cells[row, col];
-                piece.transform.SetParent(pointsParent.transform);
-                piece.transform.localScale = new Vector3(120f, 120f, 120f);
-                piece.transform.position = cellView.transform.position;
-            } else if (matchType == MATCHTYPE.ALL_OF)
-            {
-                SoundManager.PlaySound(Constants.MATCH_ALL);
-            }
-
-        }
-        if(piece!= null)
-        {
-            yield return new WaitForSeconds(piece.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).length);
-            Destroy(piece);
-        }
-        yield return null;
     }
 
 	public IEnumerator AnimatePositionConstantSpeed(int row, int col, UnityAction<float> callback = null) {
@@ -253,45 +199,6 @@ public class BoardView : MonoBehaviour {
 		}
 		yield return null;
 	}
-
-	public IEnumerator AnimatePositionConstantSpeed(int row, int col, UnityAction<float> callback = null) {
-		float moveSpeed = 4f;
-		GameObject piece = cells[row, col].piece;
-		CellView cellView = cells[row, col];
-		Vector3 startMarker = piece.transform.position;
-		Vector3 toPosition = cellView.transform.position;
-		float dist = Vector3.Distance(startMarker, toPosition);
-		callback(dist/moveSpeed);
-		for (float i = 0.0f; i < dist; i += moveSpeed*Time.deltaTime) {
-			piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed*Time.deltaTime);
-			yield return new WaitForEndOfFrame();
-		}
-	}
-
-	public IEnumerator AnimatePosition(int row, int col, float duration, UnityAction callback = null)
-	{
-		GameObject piece = cells[row, col].piece;
-		CellView cellView = cells[row, col];
-		float startTime = Time.time;
-		Vector3 startMarker = piece.transform.position;
-		Vector3 toPosition = cellView.transform.position;
-		for (float t = 0.0f; t < duration; t += Time.deltaTime)
-		{
-			if (piece != null && piece.transform == null) yield break;
-			piece.transform.position = Vector3.Lerp(startMarker, toPosition, t / duration);
-			yield return new WaitForEndOfFrame();
-		}
-		if (piece != null && piece.transform != null)
-		{
-			piece.transform.position = toPosition;
-
-		}
-		if (callback != null)
-		{
-			callback();
-		}
-	}
-
 
     public IEnumerator AnimateRecommendedMatchPiece(int row, int col , float waitFor = 3f)
     {
@@ -669,6 +576,25 @@ public class BoardView : MonoBehaviour {
 					else {
 						//update the piece
 						GameObject piece = cells[fromRow,fromCol].piece;
+						PieceModel pieceModel = cellResult[row,col].GetPiece();
+						if (pieceModel != null) {
+							List<Point> points = pieceModel.GetPath();
+							for(int i = 0 ; i < points.Count; i++) {
+								Point p = points[i];
+								CellView cellView = cells[p.row,p.col];
+								float moveSpeed = 1f;
+								Vector3 startMarker = piece.transform.position;
+								Vector3 toPosition = cellView.transform.position;
+								float dist = Vector3.Distance(startMarker, toPosition);
+								//callback(dist/moveSpeed);
+								for (float t = 0.0f; t < dist; t += moveSpeed*Time.deltaTime) {
+									piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed*Time.deltaTime);
+									yield return new WaitForEndOfFrame();
+								}
+							}
+							//Vector3 v = cells[]
+
+						}
 						cells[row, col].piece = piece;
 					}
 				}
@@ -852,18 +778,6 @@ public class BoardView : MonoBehaviour {
 			(gridHeight / Constants.MAX_NUMBER_OF_GRID_ITEMS) , 
 			(gridWidth / Constants.MAX_NUMBER_OF_GRID_ITEMS)
 		);
-
-		float leftMargin = 0f;
-		float topMargin = 0f;
-
-		if(maxPieceDimension * LevelManager.LevelAsText.Length < gridHeight)
-		{
-			topMargin = (gridHeight - maxPieceDimension * gameBoard.GetLength(0)) / 2f;
-		}
-		if (maxPieceDimension * LevelManager.LevelAsText[0].Length < gridWidth)
-		{
-			leftMargin = (gridWidth - maxPieceDimension * gameBoard.GetLength(1)) / 2f;
-		}
         maxPieceSize = maxPieceDimension;
 		// meat of stuff
 		for (int row = 0; row < gameBoard.GetLength(0); row++)
@@ -871,17 +785,16 @@ public class BoardView : MonoBehaviour {
 			//Debug.Log(LevelManager.LevelAsText[y]);
 			for(int col = 0; col < gameBoard.GetLength(1); col++)
 			{
-				// make background piece
-				float x = col * maxPieceDimension + maxPieceDimension/2;
-				x +=  leftMargin;
-				float y = gridHeight - (row * maxPieceDimension) - maxPieceDimension / 2 - topMargin;
-				float z = 0f;
 				CellModel cell = gameBoard[row,col];
 				CellState cellState = cell.GetState ();
 				CellView cellView;
 
 				if (createCells) {
-					CreateCellView (row, col, cellState);
+					cellView = CreateCellView (row, col, cellState);
+					if (cellState.Equals (CellState.NULL)) 
+					{
+						continue;
+					}
 				} else {
 					cellView = cells[row,col];
 				}
@@ -916,15 +829,23 @@ public class BoardView : MonoBehaviour {
 		EventManager.StartListening(Constants.SWIPE_LEFT_EVENT,SwipeLeftEventListener);
 	}
 
-	public void CreateCellView (int row, int col, CellState cellState) {
+	public CellView CreateCellView (int row, int col, CellState cellState) {
+
+		if (cellState.Equals(CellState.NULL)) return null;
+
 		CellView cellPrefab = null;
 		CellView cellView;
+		// make background piece
+
 		float gridHeight = backgroundPiecesParent.GetComponent<RectTransform>().rect.height;
 		float gridWidth = backgroundPiecesParent.GetComponent<RectTransform>().rect.width;
 		float maxPieceDimension = Mathf.Min(
 			(gridHeight / Constants.MAX_NUMBER_OF_GRID_ITEMS) , 
 			(gridWidth / Constants.MAX_NUMBER_OF_GRID_ITEMS)
 		);
+		float x = col * maxPieceDimension + maxPieceDimension/2;
+		float y = gridHeight - (row * maxPieceDimension) - maxPieceDimension / 2;
+		float z = 0f;
 
 		for (int index = 0; index < cellMapping.Count; index++) {
 			if (cellMapping [index].state.Equals(cellState)) {
@@ -932,6 +853,7 @@ public class BoardView : MonoBehaviour {
 				break;
 			}
 		}
+
 		CellView backgroundImage = (CellView)GameObject.Instantiate(cellPrefab, new Vector3(x, y, z), Quaternion.identity);
 		backgroundImage.transform.SetParent(backgroundImagesParent.transform, false);
 		//backgroundPieces[row, col] = background;
@@ -952,12 +874,7 @@ public class BoardView : MonoBehaviour {
 		SetBackgroundPieceDimensions(cellView, maxPieceDimension);
 
 		//backGroundPieces[row,col] = background;
-
-		if (cellState.Equals (CellState.NULL)) 
-		{
-			continue;
-		}
-
+		return cellView;
 	}
 
     public void UpdateOrder(Order order)
