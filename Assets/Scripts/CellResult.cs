@@ -8,8 +8,8 @@ public class CellResult {
 	private PieceModel piece; // this is a new pieceColor?
     //The color of the piece that was destroyed;
 	private PieceColor colorOfPieceThatWasDestroyed = PieceColor.NULL;
-	private CellState stateRemoved;
     private CellState state;
+	private bool stateChange = false;
     private bool destroyIndex;
     private MATCHTYPE matchType;
 
@@ -96,11 +96,11 @@ public class CellResult {
         return colorOfPieceThatWasDestroyed;
     }
 
-	public void SetCellStateRemoved (CellState stateRemoved) {
-		this.stateRemoved = stateRemoved;
+	public void SetCellStateChange (bool stateChange) {
+		this.stateChange = stateChange;
 	}
-	public CellState GetCellStateRemoved () {
-		return stateRemoved;
+	public bool GetCellStateChange () {
+		return stateChange;
 	}
 	public void SetPiece(PieceModel piece) {
 		this.piece = piece;
