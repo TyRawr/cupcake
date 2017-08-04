@@ -1007,7 +1007,6 @@ public class BoardModel
 		int cols = gameBoard.GetLength(1);
 		int rows = gameBoard.GetLength(0);
 
-		//List<List<KeyValuePair<int,int>>> mapOriginDestination = new List<KeyValuePair<int, int>>();
 		// Iterate over Columns
 		for (int col = 0; col < cols; col ++) 
 		{
@@ -1047,9 +1046,7 @@ public class BoardModel
 							spawnPiece = false;
 							break;
 						} else if (!reachedCell.IsSkippable()) {
-							lookElsewhere = true;
 							spawnPiece = false;
-//							Debug.Log ("Cell SKIPPED: " + reachedCell.GetRow() + "," + reachedCell.GetCol() + " " + reachedCell.GetPieceColor());
 							break;
 						}
 					}
@@ -1066,68 +1063,58 @@ public class BoardModel
 						cellResult.Set(cell);
 						cellResult.SetFromRow(spawnRow --);
                     }
-
-					if (lookElsewhere) {
-						reach = 1;
-						bool continueLeft = true;
-						bool continueRight = true;
-						bool spawnPieceLeft = true;
-						bool spawnPieceRight = true;
-						while (reach < rows - row) 
-						{
-							if (continueLeft && col > 0) {
-								int index = (rows - row - 1) - reach++;
-								// Look Left
-								CellModel reachedCell = gameBoard[index, col - 1];
-								if (reachedCell.IsDroppable()) 
-								{	
-									CellResult cellResult = cellResults[rows-row-1, col];
-									if (cellResult == null) {
-										cellResult = new CellResult(0);
-										cellResults[rows-row-1, col] = cellResult;
-									}
-									cellResult.Set(reachedCell);
-									cell.SetPiece (reachedCell.GetPiece());
-									reachedCell.Consume (false, null,order);
-									spawnPiece = false;
-									break;
-								} else if (!reachedCell.IsSkippable()) {
-									continueLeft = false;
-									spawnPieceLeft = false;
-									break;
-								}
-							}
-							if (continueRight && col < cols - 1) {
-								int index = (rows - row - 1) - reach++;
-								// Look Left
-								CellModel reachedCell = gameBoard[index, col + 1];
-								if (reachedCell.IsDroppable()) 
-								{	
-									CellResult cellResult = cellResults[rows-row-1, col];
-									if (cellResult == null) {
-										cellResult = new CellResult(0);
-										cellResults[rows-row-1, col] = cellResult;
-									}
-									cellResult.Set(reachedCell);
-									cell.SetPiece (reachedCell.GetPiece());
-									reachedCell.Consume (false, null, order);
-									spawnPiece = false;
-									break;
-								} else if (!reachedCell.IsSkippable()) {
-									spawnPieceRight = false;
-									continueRight = false;
-									break;
-								}
-							}
-						}
-
-					}
-
 					checkForMatches.Add(cell);
 				}
 			}
 		}
+
+		/*for (int col = cols - 1; col >= 0; col --) 
+		{
+			for (int row = rows - 1; row >= 0; row --) 
+			{
+				CellModel cell = gameBoard[row, col];
+				if (cell.IsWanting ()) 
+				{
+					if (row = 0) {
+						cell.SetPiece (SpawnPiece ());
+					} else {
+						cell.SetPiece (FindDroppedPiece (cell, cellResults, true));
+					}
+				}
+			}
+		}*/
 		PrintCellResults(cellResults);
+	}
+
+	private PieceModel FindDroppedPiece(CellModel cell, CellResult[,] cellResults, bool first = false) 
+	{
+		PieceType piece = null;
+
+		if (!first) {
+			piece = cell.GetPiece ();
+			if (piece != null && cell.IsDroppable ()) {
+				return piece;
+			}
+		}
+
+		if (!cell.IsSkippable()) {
+			return null;
+		}
+
+		int row = cell.GetRow ();
+		int col = cell.GetCol ();
+
+
+		if (row == 0) {
+			return SpawnPiece ();
+		}
+
+		piece = FindDroppedPiece(gameBoard[row - 1][col]);
+		if (piece != null) return piece;
+		if (col > 0) piece = FindDroppedPiece(gameBoard[row - 1][col - 1]);
+		if (piece != null) return piece;
+		if (col < gameBoard.GetLength(1) - 1) piece = FindDroppedPiece(gameBoard[row - 1][col + 1]);
+		return piece;
 	}
 
 	private bool MatchIsUnique (MatchModel newMatch) {
