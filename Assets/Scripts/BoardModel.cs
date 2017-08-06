@@ -64,7 +64,7 @@ public class BoardModel
 					break;
 				default:
 					cellModel = new CellModel (row, col, gameBoard.GetLength (0), gameBoard.GetLength (1));
-					cellModel.SetPiece (new PieceModel (Constants.PieceIDMapping [pieceColorID]));
+					cellModel.SetPiece (new PieceModel (Constants.PieceIDMapping [pieceColorID] ));
 					break;
 				}
 				gameBoard[row,col] = cellModel;
@@ -385,6 +385,11 @@ public class BoardModel
         List<Result> results = new List<Result>();
 		//List<CellResult[,]> listOfCellResults = new List<CellResult[,]> ();
 		multiplier = 0;
+
+        foreach(CellModel cell in gameBoard)
+        {
+            cell.GetPiece().ClearPath(cell.GetRow(), cell.GetCol());
+        }
         
 		do {
             tempMatchType = MATCHTYPE.NORMAL;
@@ -1025,6 +1030,7 @@ public class BoardModel
 					int reach = 1;
 					bool spawnPiece = true;
 					bool lookElsewhere = false;
+                    List<Point> points = new List<Point>();
 					// Look at cells above this one for a piece
 					while (reach < rows - row) 
 					{
@@ -1043,7 +1049,14 @@ public class BoardModel
                             if (cellResults[index, col] != null)
                                 cellResult.SetSpawnSpecialPiece(cellResults[index, col].GetSpawnSpecialPiece());
                             //cellResult.SetSpawnSpecialPiece()
-							cell.SetPiece (reachedCell.GetPiece());
+                            //cell.SetPiece (reachedCell.GetPiece(),new Point(cell.GetRow(), cell.GetCol()));
+                            Debug.Log("row - index " + row + " " + index);
+                            points.Reverse();
+                            foreach(var p in points)
+                            {
+                                reachedCell.GetPiece().AddToPath(p.row, p.col);
+                            }
+                            cell.SetPiece(reachedCell.GetPiece());
                             reachedCell.Consume (false, null,order);
 							spawnPiece = false;
 							break;
@@ -1052,7 +1065,10 @@ public class BoardModel
 							spawnPiece = false;
 //							Debug.Log ("Cell SKIPPED: " + reachedCell.GetRow() + "," + reachedCell.GetCol() + " " + reachedCell.GetPieceColor());
 							break;
-						}
+						} else
+                        {
+                            points.Add(new Point(reachedCell.GetRow(), reachedCell.GetCol()));
+                        }
 					}
 
 					// If no piece was found in grid, grab it from spawnPieces

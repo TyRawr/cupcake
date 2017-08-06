@@ -400,7 +400,8 @@ public class BoardView : MonoBehaviour {
                 piece.transform.SetParent(piecesParent.transform);
 //                piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
-				piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
+                if(!cell.GetSpawnSpecialPiece())
+				    piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
 				piece.transform.localScale = new Vector3 (maxPieceSize, maxPieceSize, 1);
 
                 return piece;
@@ -472,24 +473,89 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
+    IEnumerator AnimatePiecesPath(CellResult[,] cellResultGrid)
+    {
+        float max = 0f;
+        for (int row = 0; row < cellResultGrid.GetLength(0); row++)
+        {
+            for (int col = 0; col < cellResultGrid.GetLength(1); col++)
+            {
+                var cr = cellResultGrid[row, col];
+                if (cr == null) continue;
+                int fromRow = cr.GetFromRow();
+                int fromCol = cr.GetFromCol();
+                if (cr.GetSpawnSpecialPiece())
+                {
+                    //Debug.Log("hai");
+                }
+                if (fromRow < 0 || cr.GetSpawnSpecialPiece()) continue; //spawn new piece?
+                
+                StartCoroutine(AnimatePiecePath(cellResultGrid[row, col].GetPiece(), cells[fromRow, fromCol].piece, (float f) => {
+                    if (f > max) max = f;
+                }));
+            }
+        }
+        //Debug.Log("MAX: " + max);
+        yield return new WaitForSeconds(max);
+    }
+
+    IEnumerator AnimatePiecePath(PieceModel pieceModel, GameObject piece, UnityAction<float> callback = null)
+    {
+        if (pieceModel != null)
+        {
+            float moveSpeed = 4f;
+            float running = 0f;
+            List<Point> points = pieceModel.GetPath();
+            for(int i = 0; i < points.Count - 1; i++)
+            {
+                Point p = points[i];
+                Point p1 = points[i + 1];
+                CellView cellView = cells[p.row, p.col];
+                CellView cellViewNext = cells[p1.row, p1.col];
+                Vector3 startMarker = cellView.transform.position;
+                Vector3 toPosition = cellViewNext.transform.position;
+                float dist = Vector3.Distance(startMarker, toPosition);
+                // calculate time for all distances
+                running += (dist / moveSpeed);
+            }
+            callback(running);
+            for (int i = 0; i < points.Count; i++)
+            {
+
+                Point p = points[i];
+                CellView cellView = cells[p.row, p.col];
+                
+                Vector3 startMarker = piece.transform.position;
+                Vector3 toPosition = cellView.transform.position;
+                float dist = Vector3.Distance(startMarker, toPosition);
+                
+                for (float t = 0.0f; t < dist; t += moveSpeed * Time.deltaTime)
+                {
+                    piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed * Time.deltaTime);
+                    yield return new WaitForEndOfFrame();
+                }
+            }
+        }
+    }
+
 	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle,List<CellModel> recMatch)
     {
         yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
 		foreach (Result result in resultSets.GetCellResults())
         {
-            CellResult[,] cellsMatches = result.GetCellResult();
+            CellResult[,] cellResultGrid = result.GetCellResult();
             Order updatedOrder = result.GetOrder();
             //do something with order.
             
             yield return new WaitForEndOfFrame();
             SoundManager.PlaySound(result.GetMatchType());
-            yield return StartCoroutine(AnimateDestroyPieces(cellsMatches));
+            yield return StartCoroutine(AnimateDestroyPieces(cellResultGrid));
 			yield return new WaitForEndOfFrame();
             UIManager.UpdateScoreValue(result.GetScore());
             UpdateOrder(updatedOrder); //view
             yield return new WaitForEndOfFrame();
-            yield return StartCoroutine(SpawnPointsText(cellsMatches));
+            yield return StartCoroutine(SpawnPointsText(cellResultGrid));
 
 			// Delete the points objects
             for(int i = 0; i < pointsParent.transform.childCount; i++)
@@ -497,14 +563,16 @@ public class BoardView : MonoBehaviour {
                 Transform child = pointsParent.transform.GetChild(i);
                 GameObject.Destroy(child.gameObject);
             }
-            
+
             //move the pieces down, logically - have to find out where they belong - probably not the best - can be added to model?
             //MovePiecesToBottom(cellsMatches);
             // move pieces into position
             //yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
             // spawn and animate the new pieces
+            yield return StartCoroutine(AnimatePiecesPath(cellResultGrid));
+            
             yield return new WaitForEndOfFrame();
-            yield return StartCoroutine(SpawnPieces(cellsMatches));
+            yield return StartCoroutine(SpawnPieces(cellResultGrid));
 			yield return new WaitForEndOfFrame();
 			//MovePiecesToBottom(cellsMatches);
             // move pieces into position
@@ -576,25 +644,9 @@ public class BoardView : MonoBehaviour {
 					else {
 						//update the piece
 						GameObject piece = cells[fromRow,fromCol].piece;
-						PieceModel pieceModel = cellResult[row,col].GetPiece();
-						if (pieceModel != null) {
-							List<Point> points = pieceModel.GetPath();
-							for(int i = 0 ; i < points.Count; i++) {
-								Point p = points[i];
-								CellView cellView = cells[p.row,p.col];
-								float moveSpeed = 1f;
-								Vector3 startMarker = piece.transform.position;
-								Vector3 toPosition = cellView.transform.position;
-								float dist = Vector3.Distance(startMarker, toPosition);
-								//callback(dist/moveSpeed);
-								for (float t = 0.0f; t < dist; t += moveSpeed*Time.deltaTime) {
-									piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed*Time.deltaTime);
-									yield return new WaitForEndOfFrame();
-								}
-							}
-							//Vector3 v = cells[]
+                        /*
 
-						}
+                        */
 						cells[row, col].piece = piece;
 					}
 				}

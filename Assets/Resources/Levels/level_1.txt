@@ -1,9 +1,9 @@
 {
 	"grid":
 	[
-		"ffip",
-		"fpbi",
-		"bipi"
+		"goip",
+		"ipio",
+		"pipi"
 	],
 	"margin": "center",
 	"points_to_win": 120,

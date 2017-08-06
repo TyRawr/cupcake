@@ -1,7 +1,7 @@
 {
 	"grid":
 	[
-	"bipb",
+	"bgpb",
 	"piop",
 	"ibio",
 	"bipb"

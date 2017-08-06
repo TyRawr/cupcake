@@ -199,7 +199,8 @@ public class CellModel
 	public void SetPiece(PieceModel piece) 
 	{
 		this.piece = piece;
-		piece.AddToPath(row,col);
+        if(!piece.PathContainsRowCol(row,col))
+		    piece.AddToPath(row,col);
 	}
 
 	/*

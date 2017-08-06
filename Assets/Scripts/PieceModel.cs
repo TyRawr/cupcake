@@ -29,6 +29,21 @@ public class PieceModel
 		path.Add(new Point(row, col));
 	}
 
+    public bool PathContainsRowCol(int row, int col)
+    {
+        foreach(var p in path)
+        {
+            if (p.row == row && p.col == col)
+                return true;
+        }
+        return false;
+    }
+
+    public void ClearPath(int newRow, int newCol)
+    {
+        path.Clear();
+        path.Add(new Point(newRow, newCol));
+    }
 	// GETTERS/SETTERS =============================
 
 	public PieceColor GetPieceColor() {
