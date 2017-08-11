@@ -2,11 +2,11 @@
 	"grid":
 	[
 	"bgpb",
-	"piop",
+	"pbbp",
 	"ibio",
-	"bipb"
+	"bgbo"
 	],
-	"pieces":["i","b","o","p"],
+	"pieces":["i","b"],
 	"margin": "center",
 	"points_to_win": 10,
 	"top_spawn_points":[0],

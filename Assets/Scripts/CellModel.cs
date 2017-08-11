@@ -200,7 +200,9 @@ public class CellModel
 	{
 		this.piece = piece;
         if(!piece.PathContainsRowCol(row,col))
-		    piece.AddToPath(row,col);
+        {
+            piece.AddToPath(row, col);
+        } 
 	}
 
 	/*

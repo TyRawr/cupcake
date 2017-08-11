@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
-public class PieceModel
+public class PieceModel : ICloneable
 {
 	private PieceColor color;
 	private PieceType type;
@@ -27,7 +28,8 @@ public class PieceModel
 
 	public void AddToPath(int row, int col) {
 		path.Add(new Point(row, col));
-	}
+        SortPath();
+    }
 
     public bool PathContainsRowCol(int row, int col)
     {
@@ -37,6 +39,11 @@ public class PieceModel
                 return true;
         }
         return false;
+    }
+
+    public void SortPath()
+    {
+        path = path.OrderBy(p => p.row).ToList();
     }
 
     public void ClearPath(int newRow, int newCol)
@@ -65,6 +72,11 @@ public class PieceModel
 	public void SetPath(List<Point> path) {
 		this.path = path;
 	}
+
+    public object Clone()
+    {
+        return this.MemberwiseClone();
+    }
 }
 
 // ENUMS ==========================================

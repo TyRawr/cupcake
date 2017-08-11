@@ -397,13 +397,15 @@ public class BoardView : MonoBehaviour {
 
                 //grab background
                 CellView cellView = cells[0, toCol];
+                if(cell.GetSpawnSpecialPiece())
+                {
+                    cellView = cells[toRow, toCol];
+                }
                 piece.transform.SetParent(piecesParent.transform);
 //                piece.transform.localScale = Vector3.one;
                 piece.transform.position = cellView.transform.position;
-                if(!cell.GetSpawnSpecialPiece())
-				    piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
-				piece.transform.localScale = new Vector3 (maxPieceSize, maxPieceSize, 1);
-
+                //piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
+                piece.transform.localScale = new Vector3 (maxPieceSize, maxPieceSize, 1);
                 return piece;
             }
                 
@@ -506,6 +508,10 @@ public class BoardView : MonoBehaviour {
             float moveSpeed = 4f;
             float running = 0f;
             List<Point> points = pieceModel.GetPath();
+            if(points.Count > 2)
+            {
+                Debug.Log("asdfasdf");
+            }
             for(int i = 0; i < points.Count - 1; i++)
             {
                 Point p = points[i];
@@ -538,13 +544,39 @@ public class BoardView : MonoBehaviour {
         }
     }
 
-	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle,List<CellModel> recMatch)
+	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle,List<CellModel> recMatch, Point swap1 = null, Point swap2 = null)
     {
-        yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
 
+        // Animate the Swap if there is something to swap
+        if(swap1 != null && swap2 != null)
+        {
+            CellView cv1 = cells[swap1.row, swap1.col];
+            CellView cv2 = cells[swap2.row, swap2.col];
+            GameObject piece1 = cv1.piece;
+            GameObject piece2 = cv2.piece;
+            
+            Vector3 position1 = cv1.transform.position;
+            Vector3 position2 = cv2.transform.position;
+            float dist = Vector3.Distance(position1, position2);
+            //callback(dist / moveSpeed);
+            float moveSpeed = 4f;
+            for (float i = 0.0f; i < dist; i += moveSpeed * Time.deltaTime)
+            {
+                piece1.transform.position = Vector3.MoveTowards(piece1.transform.position, position2, moveSpeed * Time.deltaTime);
+                piece2.transform.position = Vector3.MoveTowards(piece2.transform.position, position1, moveSpeed * Time.deltaTime);
+                yield return new WaitForEndOfFrame();
+            }
+            for (float i = 0.0f; i < dist; i += moveSpeed * Time.deltaTime)
+            {
+                piece1.transform.position = Vector3.MoveTowards(piece1.transform.position, position1, moveSpeed * Time.deltaTime);
+                piece2.transform.position = Vector3.MoveTowards(piece2.transform.position, position2, moveSpeed * Time.deltaTime);
+                yield return new WaitForEndOfFrame();
+            }
+        }
+    
 		foreach (Result result in resultSets.GetCellResults())
         {
-            CellResult[,] cellResultGrid = result.GetCellResult();
+            CellResult[,] cellResultGrid = result.GetCellResult(); 
             Order updatedOrder = result.GetOrder();
             //do something with order.
             
@@ -569,6 +601,7 @@ public class BoardView : MonoBehaviour {
             // move pieces into position
             //yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
             // spawn and animate the new pieces
+            yield return new WaitForEndOfFrame();
             yield return StartCoroutine(AnimatePiecesPath(cellResultGrid));
             
             yield return new WaitForEndOfFrame();
@@ -744,7 +777,7 @@ public class BoardView : MonoBehaviour {
 
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
 			bool hadToShuffle = results.GetHadToShuffle();
-			StartCoroutine(RunResultsAnimation(results, hadToShuffle,recommendedMatch));
+			StartCoroutine(RunResultsAnimation(results, hadToShuffle,recommendedMatch, new Point(row,col), new Point(nextRow, nextCol)));
         }
 		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
         //UIManager.UpdateScoreValue(boardModel.Score);

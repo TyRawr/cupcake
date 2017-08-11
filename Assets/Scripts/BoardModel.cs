@@ -385,13 +385,12 @@ public class BoardModel
         List<Result> results = new List<Result>();
 		//List<CellResult[,]> listOfCellResults = new List<CellResult[,]> ();
 		multiplier = 0;
-
-        foreach(CellModel cell in gameBoard)
-        {
-            cell.GetPiece().ClearPath(cell.GetRow(), cell.GetCol());
-        }
         
-		do {
+        do {
+            foreach (CellModel cell in gameBoard)
+            {
+                cell.GetPiece().ClearPath(cell.GetRow(), cell.GetCol());
+            }
             tempMatchType = MATCHTYPE.NORMAL;
             HashSet<CellModel> originalMatch = new HashSet<CellModel>();
             cellResult = EvaluateMatches(originalMatch);
@@ -1022,7 +1021,9 @@ public class BoardModel
 			for (int row = 0; row < rows; row ++) 
 			{
 				CellModel cell = gameBoard[rows - row - 1, col];
-
+                if (row == 2 && col == 5) {
+                    Debug.Log("asfasd");
+                }
                 // If empty, find a piece
                 if (cell.IsWanting())
 				{
@@ -1031,8 +1032,9 @@ public class BoardModel
 					bool spawnPiece = true;
 					bool lookElsewhere = false;
                     List<Point> points = new List<Point>();
-					// Look at cells above this one for a piece
-					while (reach < rows - row) 
+                    // Look at cells above this one for a piece
+                    bool breakOut = false;
+					while (reach < rows - row && !breakOut) 
 					{
 						int index = (rows - row - 1) - reach++;
 						//Debug.Log(index);
@@ -1051,20 +1053,26 @@ public class BoardModel
                             //cellResult.SetSpawnSpecialPiece()
                             //cell.SetPiece (reachedCell.GetPiece(),new Point(cell.GetRow(), cell.GetCol()));
                             Debug.Log("row - index " + row + " " + index);
-                            points.Reverse();
+                            //points.Reverse();
                             foreach(var p in points)
                             {
                                 reachedCell.GetPiece().AddToPath(p.row, p.col);
                             }
-                            cell.SetPiece(reachedCell.GetPiece());
+                            if (col == 5 && row == 2) {
+                                Debug.Log("asdf");
+                                reach = 10;
+                            }
+                            cell.SetPiece(reachedCell.GetPiece().Clone() as PieceModel);
                             reachedCell.Consume (false, null,order);
 							spawnPiece = false;
-							break;
+                            breakOut = true;
+                            break;
 						} else if (!reachedCell.IsSkippable()) {
 							lookElsewhere = true;
 							spawnPiece = false;
-//							Debug.Log ("Cell SKIPPED: " + reachedCell.GetRow() + "," + reachedCell.GetCol() + " " + reachedCell.GetPieceColor());
-							break;
+                            breakOut = true;
+                            //							Debug.Log ("Cell SKIPPED: " + reachedCell.GetRow() + "," + reachedCell.GetCol() + " " + reachedCell.GetPieceColor());
+                            break;
 						} else
                         {
                             points.Add(new Point(reachedCell.GetRow(), reachedCell.GetCol()));
