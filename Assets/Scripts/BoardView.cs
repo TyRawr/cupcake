@@ -376,6 +376,34 @@ public class BoardView : MonoBehaviour {
 		}
     }
 
+    GameObject CreateSpecialPieceView(int toRow, int toCol, PieceType type, PieceColor color)
+    {
+        for (int i = 0; i < piecePrefabs.Count; i++)
+        {
+            if (piecePrefabs[i].color == color)
+            {
+                GameObject piece;
+                piece = GameObject.Instantiate(piecePrefabs[i].prefab);
+                cells[toRow, toCol].piece = piece;
+
+                // determine piece type
+                SetPieceViewSpriteFromPieceType(piece, type);
+
+                //grab background
+                CellView cellView = cells[0, toCol];
+                cellView = cells[toRow, toCol];
+                piece.transform.SetParent(piecesParent.transform);
+                //                piece.transform.localScale = Vector3.one;
+                piece.transform.position = cellView.transform.position;
+                //piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
+                piece.transform.localScale = new Vector3(maxPieceSize, maxPieceSize, 1);
+                return piece;
+            }
+
+        }
+        return null;
+    }
+
 	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
     {
 		int fromRow = cell.GetFromRow();
@@ -602,6 +630,8 @@ public class BoardView : MonoBehaviour {
             //yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
             // spawn and animate the new pieces
             yield return new WaitForEndOfFrame();
+            yield return StartCoroutine(SpawnSpecialPieces(cellResultGrid));
+            yield return new WaitForEndOfFrame();
             yield return StartCoroutine(AnimatePiecesPath(cellResultGrid));
             
             yield return new WaitForEndOfFrame();
@@ -656,6 +686,47 @@ public class BoardView : MonoBehaviour {
 //		piece.GetComponentInChildren<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size - Constants.CELL_PADDING_FULL);
 	}
 
+    private IEnumerator SpawnSpecialPieces(CellResult[,] cellResult)
+    {
+        yield return null;
+        for(int row = 0; row < cellResult.GetLength(0); row++)
+        {
+            for (int col = 0; col < cellResult.GetLength(1); col++)
+            {
+                CellResult cr = cellResult[row, col];
+                if (cr == null) continue;
+                List<Point> piecePath = cr.GetPiece().GetPath();
+                if (piecePath == null || piecePath[0] == null) continue;
+                int piecePathRow = piecePath[0].row;
+                int piecePathCol = piecePath[0].col;
+                if (cr.GetSpawnSpecialPiece() && piecePathRow == row && piecePathCol == col) // the part about row being row and col being col is lame.
+                {
+                    GameObject piece = CreateSpecialPieceView(piecePathRow, piecePathCol, cr.GetSpawnSpecialPieceType(), cr.GetSpawnSpecialPieceColor());
+                    cells[piecePathRow, piecePathCol].piece = piece;
+                }
+            }
+        }
+        /*
+        foreach(CellResult cr in cellResult)
+        {
+            if(cr != null && cr.GetSpawnSpecialPiece())
+            {
+                Debug.Log("asdf");
+                GameObject piece = CreatePieceView(cr.GetPiece().GetPath()[0].row, cr.GetPiece().GetPath()[0].col, cr);
+                if(cells[cr.GetPiece().GetPath()[0].row, cr.GetPiece().GetPath()[0].col] == null)
+                {
+                    Debug.Log("should be null");
+                    cells[cr.GetPiece().GetPath()[0].row, cr.GetPiece().GetPath()[0].col].piece = piece;
+                }
+                cells[cr.GetPiece().GetPath()[0].row, cr.GetPiece().GetPath()[0].col].piece = piece;
+            }
+        }
+        */
+        yield return new WaitForSeconds(3f);
+        Debug.Log("end SpawnSpecialPieces");
+        yield return new WaitForSeconds(.1f);
+    }
+
 	private IEnumerator SpawnPieces(CellResult[,] cellResult)
     {
         //Adjust Grid With New Pieces
@@ -666,9 +737,7 @@ public class BoardView : MonoBehaviour {
 				if(cellRes != null) {
 					int fromRow = cellRes.GetFromRow();
 					int fromCol = cellRes.GetFromCol();
-					if(fromRow < 0 || 
-                        (cellRes.GetPieceType() != PieceType.NORMAL && cellRes.GetSpawnSpecialPiece()
-							&& cellRes.GetState() != CellState.FROSTING)) {
+					if(fromRow < 0 && cellRes.GetPieceType() == PieceType.NORMAL ) {
 //						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
 						//TODO lookup spawn position for new pieces, EVEN FOR ONES WITH NEGATIVE INDEX - take into account the cell size.
 						GameObject piece = CreatePieceView(row, col, cellRes);

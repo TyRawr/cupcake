@@ -300,7 +300,6 @@ public class BoardModel
 		switch (cm.GetPieceType()) {
 		case PieceType.STRIPED_COL:
 			cellResult [cm.GetRow (), cm.GetCol ()].SetMatchType (MATCHTYPE.COL);
-			cellResult [cm.GetRow (), cm.GetCol ()].SetSpawnSpecialPiece (true);
 			for (int row = 0; row < gameBoard.GetLength (0); row++) { // itr over cols
 				if (row == cm.GetRow ())
 					continue;
@@ -311,7 +310,6 @@ public class BoardModel
 			break;
 		case PieceType.STRIPED_ROW:
 			cellResult [cm.GetRow (), cm.GetCol ()].SetMatchType (MATCHTYPE.ROW);
-			cellResult [cm.GetRow (), cm.GetCol ()].SetSpawnSpecialPiece (true);
 			for (int col = 0; col < gameBoard.GetLength (1); col++) { // itr over cols
 				if (col == cm.GetCol ())
 					continue;
@@ -328,7 +326,6 @@ public class BoardModel
 				cellResult [r, c] = new CellResult (Constants.NORMAL_SHAPE_VALUE);
 			}
 			cellResult [r, c].SetMatchType (MATCHTYPE.BOMB);
-			cellResult [r, c].SetSpawnSpecialPiece (true);
 
             //look up one, up right one, right one, downright one, down one, down left one, left one, left up.
 			CellModel up = GetPieceOrNull (r - 1, c);     //up
@@ -823,15 +820,17 @@ public class BoardModel
             {
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
                     cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
-                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
-				newSpecialPieces.Add(new PieceModel(cell.GetPieceColor(), PieceType.STRIPED_COL, new Point(cell.GetRow(), cell.GetCol())));
+                PieceModel pm = new PieceModel(cell.GetPieceColor(), PieceType.STRIPED_COL, new Point(cell.GetRow(), cell.GetCol()));
+                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(pm);
+				newSpecialPieces.Add(pm);
             }
             if ( matchModel.GetMaxRow() - matchModel.GetMinRow() == 3)
             {
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
                     cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
-                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
-				newSpecialPieces.Add(new PieceModel(cell.GetPieceColor(), PieceType.STRIPED_ROW, new Point(cell.GetRow(), cell.GetCol())));
+                PieceModel pm = new PieceModel(cell.GetPieceColor(), PieceType.STRIPED_ROW, new Point(cell.GetRow(), cell.GetCol()));
+                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(pm);
+				newSpecialPieces.Add(pm);
             }
             // go over ever other match and see if that contains our cell and if the min or max of both col and row add up to 9
             bool vertical = matchModel.IsVertical();
@@ -844,11 +843,13 @@ public class BoardModel
 						(foundMatches[i].GetMinCol() >= matchModel.GetMinCol() || foundMatches[i].GetMinCol() <= matchModel.GetMaxCol() )
 						&&	(matchModel.GetMinRow() >= foundMatches[i].GetMaxRow() || matchModel.GetMinRow() <= foundMatches[i].GetMaxRow() ))
                     {
-						newSpecialPieces.Add(new PieceModel(cell.GetPieceColor(), PieceType.BOMB, new Point(cell.GetRow(), cell.GetCol())));
+                        PieceModel pm = new PieceModel(cell.GetPieceColor(), PieceType.BOMB, new Point(cell.GetRow(), cell.GetCol()));
+
+                        newSpecialPieces.Add(pm);
 
                         if (cellResult[cell.GetRow(), cell.GetCol()] == null)
                             cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
-                        cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
+                        cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(pm);
                     }
                 }
             }
@@ -858,8 +859,9 @@ public class BoardModel
                 Debug.LogError("MATCH ALL_OF");
                 if (cellResult[cell.GetRow(), cell.GetCol()] == null)
                     cellResult[cell.GetRow(), cell.GetCol()] = new CellResult(Constants.NORMAL_SHAPE_VALUE);
-                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(true);
-				newSpecialPieces.Add(new PieceModel(cell.GetPieceColor(), PieceType.ALL, new Point(cell.GetRow(), cell.GetCol())));
+                PieceModel pm = new PieceModel(cell.GetPieceColor(), PieceType.ALL, new Point(cell.GetRow(), cell.GetCol()));
+                cellResult[cell.GetRow(), cell.GetCol()].SetSpawnSpecialPiece(pm);
+				newSpecialPieces.Add(pm);
             }
             /*
 			if(match.Count == 4) {
@@ -1047,9 +1049,6 @@ public class BoardModel
 								cellResults[rows-row-1, col] = cellResult;
 							}
                             cellResult.Set(reachedCell);
-                            cellResults[rows - row - 1, col].SetSpawnSpecialPiece(false);
-                            if (cellResults[index, col] != null)
-                                cellResult.SetSpawnSpecialPiece(cellResults[index, col].GetSpawnSpecialPiece());
                             //cellResult.SetSpawnSpecialPiece()
                             //cell.SetPiece (reachedCell.GetPiece(),new Point(cell.GetRow(), cell.GetCol()));
                             Debug.Log("row - index " + row + " " + index);

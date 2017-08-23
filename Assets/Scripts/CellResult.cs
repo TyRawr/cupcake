@@ -101,13 +101,32 @@ public class CellResult {
 	}
 
     bool spawnSpecialPiece = false;
-    public void SetSpawnSpecialPiece(bool spawn)
+    public void SetSpawnSpecialPiece(PieceModel pm)
     {
-        spawnSpecialPiece = spawn;
+        spawnSpecialPiece = true;
+        SetSpawnSpecialPieceType(pm.GetPieceColor(), pm.GetPieceType());
     }
     public bool GetSpawnSpecialPiece()
     {
         return spawnSpecialPiece;
+    }
+
+    PieceType spawnSpecialPieceType = PieceType.NORMAL;
+    PieceColor spawnSpecialPieceColor = PieceColor.NULL;
+    public void SetSpawnSpecialPieceType(PieceColor color, PieceType type)
+    {
+        spawnSpecialPieceType = type;
+        spawnSpecialPieceColor = color;
+    }
+
+    public PieceType GetSpawnSpecialPieceType()
+    {
+        return spawnSpecialPieceType;
+    }
+
+    public PieceColor GetSpawnSpecialPieceColor()
+    {
+        return spawnSpecialPieceColor;
     }
 
 	public void Set(CellModel cell) {
