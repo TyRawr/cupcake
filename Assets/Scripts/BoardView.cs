@@ -92,17 +92,19 @@ public class BoardView : MonoBehaviour {
                 CellResult cellRes = cellsMatches[row, col];   
 				if (cellRes == null)
 					continue;
-				if (cellRes.GetPoints() > 0)
+				if (cellRes.GetPoints() > 0 || cellRes.GetDestroy())
                 {
                     StartCoroutine( AnimatePieceSpecialDestroy(cellRes.GetMatchType(), row, col));
 
                     // start the actual animation for the given piece at the location.
                     StartCoroutine(AnimateDisappear(row, col));
                 }
+                /*
 				if (cellRes.GetDestroy()) 
 				{
 					CreateCellView (row, col, cellRes.GetState());
 				}
+                */
             }
         }
         yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
@@ -404,10 +406,40 @@ public class BoardView : MonoBehaviour {
         return null;
     }
 
-	GameObject CreatePieceView(int toRow, int toCol, CellResult cell)
+    GameObject CreatePieceView(PieceModel pm)
     {
-		int fromRow = cell.GetFromRow();
-		int fromCol = cell.GetFromCol();
+        for (int i = 0; i < piecePrefabs.Count; i++)
+        {
+            if (piecePrefabs[i].color == pm.GetPieceColor())
+            {
+                GameObject piece;
+                piece = GameObject.Instantiate(piecePrefabs[i].prefab);
+
+                // determine piece type
+                SetPieceViewSpriteFromPieceType(piece, pm.GetPieceType());
+
+                Point startingPoint = pm.GetPath()[0];
+                Point lastPoint = pm.GetPath()[pm.GetPath().Count - 1];
+
+                //grab background
+                CellView cellView = cells[startingPoint.row, startingPoint.col];
+                //cells[lastPoint.row, lastPoint.col].piece = ;
+                piece.transform.SetParent(piecesParent.transform);
+                //                piece.transform.localScale = Vector3.one;
+                piece.transform.position = cellView.transform.position;
+                //piece.transform.position = new Vector3(piece.transform.position.x , piece.transform.position.y - fromRow, piece.transform.position.z);
+                piece.transform.localScale = new Vector3(maxPieceSize, maxPieceSize, 1);
+                return piece;
+            }
+
+        }
+        return null;
+    }
+
+	GameObject CreatePieceView1(int toRow, int toCol, CellResult cell)
+    {
+		//int fromRow = cell.GetFromRow();
+		//int fromCol = cell.GetFromCol();
 		PieceColor color = cell.GetPieceColor();
 
 		if (color.Equals(PieceColor.NULL)) { return null; }
@@ -503,42 +535,37 @@ public class BoardView : MonoBehaviour {
         Debug.Log(s);
     }
 
-    IEnumerator AnimatePiecesPath(CellResult[,] cellResultGrid)
+    IEnumerator AnimatePiecesPath(List<PieceModel> piecesThatMoved)
     {
         float max = 0f;
-        for (int row = 0; row < cellResultGrid.GetLength(0); row++)
-        {
-            for (int col = 0; col < cellResultGrid.GetLength(1); col++)
-            {
-                var cr = cellResultGrid[row, col];
-                if (cr == null) continue;
-                int fromRow = cr.GetFromRow();
-                int fromCol = cr.GetFromCol();
-                if (cr.GetSpawnSpecialPiece())
-                {
-                    //Debug.Log("hai");
-                }
-                if (fromRow < 0 || cr.GetSpawnSpecialPiece()) continue; //spawn new piece?
-                
-                StartCoroutine(AnimatePiecePath(cellResultGrid[row, col].GetPiece(), cells[fromRow, fromCol].piece, (float f) => {
-                    if (f > max) max = f;
-                }));
-            }
+        foreach (PieceModel pm in piecesThatMoved) {
+            if (pm.GetSpawn()) continue;
+            StartCoroutine(AnimatePiecePath(pm, (float f) => {
+                if (f > max) max = f;
+            }));
         }
-        //Debug.Log("MAX: " + max);
+        yield return new WaitForEndOfFrame();
+        max = 0f;
+        foreach (PieceModel pm in piecesThatMoved)
+        {
+            if (!pm.GetSpawn()) continue;
+            StartCoroutine(AnimatePiecePath(pm, (float f) => {
+                if (f > max) max = f;
+            }));
+        }
         yield return new WaitForSeconds(max);
     }
 
-    IEnumerator AnimatePiecePath(PieceModel pieceModel, GameObject piece, UnityAction<float> callback = null)
+    IEnumerator AnimatePiecePath(PieceModel pieceModel, UnityAction<float> callback = null)
     {
         if (pieceModel != null)
         {
             float moveSpeed = 4f;
             float running = 0f;
             List<Point> points = pieceModel.GetPath();
-            if(points.Count > 2)
+            if(points.Count > 1)
             {
-                Debug.Log("asdfasdf");
+                Debug.Log("asdf");
             }
             for(int i = 0; i < points.Count - 1; i++)
             {
@@ -553,41 +580,53 @@ public class BoardView : MonoBehaviour {
                 running += (dist / moveSpeed);
             }
             callback(running);
+            GameObject piece = cells[points[0].row, points[0].col].piece; // piece references have not been updated, always grab the starting location.
+            if(pieceModel.GetSpawn())
+            {
+                //if (piece != null) GameObject.Destroy(piece);
+                //need to create piece
+                piece = CreatePieceView(pieceModel);
+            }
             for (int i = 0; i < points.Count; i++)
             {
 
                 Point p = points[i];
                 CellView cellView = cells[p.row, p.col];
-                
-                Vector3 startMarker = piece.transform.position;
-                Vector3 toPosition = cellView.transform.position;
-                float dist = Vector3.Distance(startMarker, toPosition);
-                
-                for (float t = 0.0f; t < dist; t += moveSpeed * Time.deltaTime)
+                if(cellView != null)
                 {
-                    piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed * Time.deltaTime);
-                    yield return new WaitForEndOfFrame();
+                    Vector3 startMarker = piece.transform.position;
+                    Vector3 toPosition = cellView.transform.position;
+                    float dist = Vector3.Distance(startMarker, toPosition);
+
+                    for (float t = 0.0f; t < dist; t += moveSpeed * Time.deltaTime)
+                    {
+                        piece.transform.position = Vector3.MoveTowards(piece.transform.position, toPosition, moveSpeed * Time.deltaTime);
+                        yield return new WaitForEndOfFrame();
+                    }
+                    Point endPoint = points[points.Count - 1];
+                    cells[endPoint.row, endPoint.col].piece = piece;
                 }
             }
         }
     }
 
-	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle,List<CellModel> recMatch, Point swap1 = null, Point swap2 = null)
+    bool swapTrigger = false;
+    IEnumerator Swap(Point swap1 = null, Point swap2 = null)
     {
-
+        swapTrigger = false;
         // Animate the Swap if there is something to swap
-        if(swap1 != null && swap2 != null)
+        if (swap1 != null && swap2 != null)
         {
             CellView cv1 = cells[swap1.row, swap1.col];
             CellView cv2 = cells[swap2.row, swap2.col];
             GameObject piece1 = cv1.piece;
             GameObject piece2 = cv2.piece;
-            
+
             Vector3 position1 = cv1.transform.position;
             Vector3 position2 = cv2.transform.position;
             float dist = Vector3.Distance(position1, position2);
             //callback(dist / moveSpeed);
-            float moveSpeed = 4f;
+            float moveSpeed = 3f;
             for (float i = 0.0f; i < dist; i += moveSpeed * Time.deltaTime)
             {
                 piece1.transform.position = Vector3.MoveTowards(piece1.transform.position, position2, moveSpeed * Time.deltaTime);
@@ -600,15 +639,28 @@ public class BoardView : MonoBehaviour {
                 piece2.transform.position = Vector3.MoveTowards(piece2.transform.position, position2, moveSpeed * Time.deltaTime);
                 yield return new WaitForEndOfFrame();
             }
+            piece1.transform.position = position1;
+            piece2.transform.position = position2;
         }
-    
-		foreach (Result result in resultSets.GetCellResults())
+        swapTrigger = true;
+    }
+   
+
+	IEnumerator RunResultsAnimation(Results resultSets, bool hadToShuffle,List<CellModel> recMatch )
+    {
+        while(swapTrigger == false)
+        {
+            //Debug.Log("wait");
+            yield return new WaitForEndOfFrame();
+        }
+        
+
+        foreach (Result result in resultSets.GetCellResults())
         {
             CellResult[,] cellResultGrid = result.GetCellResult(); 
             Order updatedOrder = result.GetOrder();
             //do something with order.
             
-            yield return new WaitForEndOfFrame();
             SoundManager.PlaySound(result.GetMatchType());
             yield return StartCoroutine(AnimateDestroyPieces(cellResultGrid));
 			yield return new WaitForEndOfFrame();
@@ -628,19 +680,14 @@ public class BoardView : MonoBehaviour {
             //MovePiecesToBottom(cellsMatches);
             // move pieces into position
             //yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
+            //yield return StartCoroutine(AnimatePiecesPath(result.GetPiecesThatMoved()));
             // spawn and animate the new pieces
+            //yield return new WaitForEndOfFrame();
+            //yield return StartCoroutine(SpawnSpecialPieces(cellResultGrid));
+            //yield return StartCoroutine(SpawnPieces(result.GetPiecesThatSpawned()));
+            yield return StartCoroutine(AnimatePiecesPath(result.GetPiecesThatMoved()));
+            //yield return StartCoroutine(SpawnPieces(result.GetPiecesThatSpawned()));
             yield return new WaitForEndOfFrame();
-            yield return StartCoroutine(SpawnSpecialPieces(cellResultGrid));
-            yield return new WaitForEndOfFrame();
-            yield return StartCoroutine(AnimatePiecesPath(cellResultGrid));
-            
-            yield return new WaitForEndOfFrame();
-            yield return StartCoroutine(SpawnPieces(cellResultGrid));
-			yield return new WaitForEndOfFrame();
-			//MovePiecesToBottom(cellsMatches);
-            // move pieces into position
-            yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
-			yield return new WaitForEndOfFrame();
 
         }
 		if(hadToShuffle) {
@@ -648,7 +695,6 @@ public class BoardView : MonoBehaviour {
 			UpdateViewFromBoardModel();
 		}
         GAMEOVERSTATE gameOverState = resultSets.GetGameOver();
-        yield return StartCoroutine(AnimateAllPiecesIntoBackgroundPosition());
         if (gameOverState != GAMEOVERSTATE.NULL) {
 			//game over
 			yield return new WaitForSeconds(.5f);
@@ -670,6 +716,16 @@ public class BoardView : MonoBehaviour {
         }
         //StartCoroutine(AnimateRecommendedMatchPiece(recMatch[0].GetRow(), recMatch[0].GetCol()));
         yield return null;
+    }
+
+    // All cell views are adjusted to reflect model
+    private void AdjustCellsArray(List<PieceModel> pieces)
+    {
+        foreach(PieceModel pm in pieces)
+        {
+            Point p = pm.GetPath()[pm.GetPath().Count - 1];
+            //cells[p.row,p.col].pi =
+        }
     }
 
 	void SetBackgroundPieceDimensions(CellView cell , float size)
@@ -694,7 +750,7 @@ public class BoardView : MonoBehaviour {
             for (int col = 0; col < cellResult.GetLength(1); col++)
             {
                 CellResult cr = cellResult[row, col];
-                if (cr == null) continue;
+                if (cr == null || cr.GetPiece() == null) continue;
                 List<Point> piecePath = cr.GetPiece().GetPath();
                 if (piecePath == null || piecePath[0] == null) continue;
                 int piecePathRow = piecePath[0].row;
@@ -722,40 +778,23 @@ public class BoardView : MonoBehaviour {
             }
         }
         */
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(.3f);
         Debug.Log("end SpawnSpecialPieces");
         yield return new WaitForSeconds(.1f);
     }
 
-	private IEnumerator SpawnPieces(CellResult[,] cellResult)
+	private IEnumerator SpawnPieces(List<PieceModel> piecesThatSpawn)
     {
-        //Adjust Grid With New Pieces
+        foreach (PieceModel spawnedPiece in piecesThatSpawn)
+        {
+            Point p = spawnedPiece.GetPath()[spawnedPiece.GetPath().Count - 1];
+            if(cells[p.row,p.col] == null) { 
+                GameObject piece = CreatePieceView(spawnedPiece);
+                cells[p.row, p.col].piece = piece;
+            }
+        }
 
-		for(int row = cellResult.GetLength(0) - 1; row >= 0; row--) {
-			for(int col = cellResult.GetLength(1) - 1; col >= 0 ; col--) {
-				CellResult cellRes = cellResult[row,col];
-				if(cellRes != null) {
-					int fromRow = cellRes.GetFromRow();
-					int fromCol = cellRes.GetFromCol();
-					if(fromRow < 0 && cellRes.GetPieceType() == PieceType.NORMAL ) {
-//						Debug.Log("new piece from " + fromRow + " " + fromCol + " to " + row + " " + col + "  color: " + cellRes.GetPieceColor());
-						//TODO lookup spawn position for new pieces, EVEN FOR ONES WITH NEGATIVE INDEX - take into account the cell size.
-						GameObject piece = CreatePieceView(row, col, cellRes);
-						cells[row,col].piece = piece; 
-					}
-					else {
-						//update the piece
-						GameObject piece = cells[fromRow,fromCol].piece;
-                        /*
-
-                        */
-						cells[row, col].piece = piece;
-					}
-				}
-
-			}
-		}
-        yield return new WaitForSeconds(Constants.DEFAULT_SWAP_ANIMATION_DURATION);
+        yield return new WaitForEndOfFrame();
     }
 
     private IEnumerator SpawnPointsText(CellResult[,] cellMatches)
@@ -817,9 +856,10 @@ public class BoardView : MonoBehaviour {
 			nextCol -= 1;
 			break;
 		}
-        StopAllCoroutines();
+        //StopAllCoroutines();
+        Debug.Log("1");
         SwapResult result = boardModel.SwapPiece(row, col, direction);
-
+        Debug.Log("2");
         if (result == SwapResult.FAILURE)
         {
             Debug.Log("SwapResult.FAILURE");
@@ -842,11 +882,17 @@ public class BoardView : MonoBehaviour {
             GameObject temp = cells[row, col].piece;
             cells[row, col].piece = cells[nextRow, nextCol].piece;
             cells[nextRow, nextCol].piece = temp;
-			Results results = boardModel.GetResults();
 
+
+
+            Debug.Log("3");
+            StartCoroutine(Swap(new Point(row, col), new Point(nextRow, nextCol)));
+            
+            Results results = boardModel.GetResults();
+            bool hadToShuffle = results.GetHadToShuffle();
             List<CellModel> recommendedMatch = boardModel.GetRecommendedMatch();
-			bool hadToShuffle = results.GetHadToShuffle();
-			StartCoroutine(RunResultsAnimation(results, hadToShuffle,recommendedMatch, new Point(row,col), new Point(nextRow, nextCol)));
+            Debug.Log("4");
+            StartCoroutine(RunResultsAnimation(results, hadToShuffle,recommendedMatch));
         }
 		UIManager.UpdateMoveValue(boardModel.GetMoves(),boardModel.GetMaxMoves());
         //UIManager.UpdateScoreValue(boardModel.Score);

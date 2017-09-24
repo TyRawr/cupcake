@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 public class CellResult {
 	private int points;
-	private int fromRow;
-	private int fromCol;
 	private PieceModel piece; // this is a new pieceColor?
     //The color of the piece that was destroyed;
     private CellState state;
@@ -44,22 +42,6 @@ public class CellResult {
 
 	public void AddPoints(int pointsToAdd) {
 		this.points += pointsToAdd;
-	}
-
-	public int GetFromCol() {
-		return this.fromCol;
-	}
-
-	public void SetFromCol(int fromCol) {
-		this.fromCol = fromCol;
-	}
-
-	public int GetFromRow() {
-		return this.fromRow;
-	}
-
-	public void SetFromRow(int fromRow) {
-		this.fromRow = fromRow;
 	}
 		
 	public PieceModel GetPiece() {
@@ -130,10 +112,9 @@ public class CellResult {
     }
 
 	public void Set(CellModel cell) {
-		this.fromCol = cell.GetCol();
-		this.fromRow = cell.GetRow();
 		this.piece = cell.GetPiece();
         this.state = cell.GetState();
+       
 	}
 }
 

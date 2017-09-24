@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public static class Constants {
 
@@ -154,7 +155,7 @@ public static class Constants {
         { MATCHTYPE.NORMAL, PieceType.NORMAL }
     };
 }
-
+[Serializable()]
 public class Point
 {
     public int row, col;

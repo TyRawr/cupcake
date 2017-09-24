@@ -2,19 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
+[Serializable()]
 public class PieceModel : ICloneable
 {
 	private PieceColor color;
 	private PieceType type;
 	private List<Point> path;
-
+    private bool spawn = true;
+    /*
 	public PieceModel (PieceColor color, PieceType type = PieceType.NORMAL)
 	{
 		this.color = color;
 		this.type = type;
 		this.path = new List<Point> ();
 	}
-
+    */
 	/**
 	 * Construction method for Special Pieces that spawn w/in board mid life-cycle
 	 */
@@ -25,6 +27,16 @@ public class PieceModel : ICloneable
 		this.path = new List<Point> ();
 		this.path.Add (origin);
 	}
+
+    public bool GetSpawn()
+    {
+        return spawn;
+    }
+
+    public void SetSpawn(bool _spawn)
+    {
+        spawn = _spawn;
+    }
 
 	public void AddToPath(int row, int col) {
 		path.Add(new Point(row, col));

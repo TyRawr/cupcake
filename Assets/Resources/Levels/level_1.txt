@@ -1,9 +1,10 @@
 {
 	"grid":
 	[
-		"goip",
-		"ipio",
-		"pipi"
+		"ibo",
+		"gib",
+		"ipo",
+		"iig"
 	],
 	"margin": "center",
 	"points_to_win": 120,

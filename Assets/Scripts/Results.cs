@@ -39,22 +39,36 @@ public class Results {
 public class Result
 {
     private CellResult[,] cellResult;
+    private List<PieceModel> piecesThatMoved;
+    private List<PieceModel> piecesThatAreSpawned;
     private Order updatedOrder;
     private int score;
     private MATCHTYPE matchType;
     //TODO also represent any updated special move (if they got any items during the frame)
 
-    public Result(CellResult[,] _cellResults,Order _updatedOrder,int score,MATCHTYPE matchT = MATCHTYPE.NORMAL)
+    public Result(CellResult[,] _cellResults,Order _updatedOrder,int score, List<PieceModel> piecesThatMoved, List<PieceModel> piecesThatSpawned, MATCHTYPE matchT = MATCHTYPE.NORMAL)
     {
         this.matchType = matchT;
         this.cellResult = _cellResults;
         this.updatedOrder = _updatedOrder;
         this.score = score;
+        this.piecesThatMoved = piecesThatMoved;
+        this.piecesThatAreSpawned = piecesThatSpawned;
     }
 
     public CellResult[,] GetCellResult()
     {
         return cellResult;
+    }
+
+    public List<PieceModel> GetPiecesThatSpawned()
+    {
+        return piecesThatAreSpawned;
+    }
+
+    public List<PieceModel> GetPiecesThatMoved()
+    {
+        return piecesThatMoved;
     }
 
     public Order GetOrder()

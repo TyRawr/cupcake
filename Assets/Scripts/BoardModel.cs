@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
 
@@ -64,7 +66,7 @@ public class BoardModel
 					break;
 				default:
 					cellModel = new CellModel (row, col, gameBoard.GetLength (0), gameBoard.GetLength (1));
-					cellModel.SetPiece (new PieceModel (Constants.PieceIDMapping [pieceColorID] ));
+					cellModel.SetPiece (new PieceModel (Constants.PieceIDMapping [pieceColorID],PieceType.NORMAL,new Point(row,col) ));
 					break;
 				}
 				gameBoard[row,col] = cellModel;
@@ -365,6 +367,22 @@ public class BoardModel
         return gameBoard[r, c];
     }
 
+
+    public static object DeepClone(object obj)
+    {
+        object objResult = null;
+
+        using (MemoryStream ms = new MemoryStream())
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            bf.Serialize(ms, obj);
+
+            ms.Position = 0;
+            objResult = bf.Deserialize(ms);
+        }
+        return objResult;
+    }
+
     /**
 	 * Evaluate matches Swap and following matches
 	 * 
@@ -380,6 +398,7 @@ public class BoardModel
         //Order order = new Order();
         List<Order> orders = new List<Order>();
         List<Result> results = new List<Result>();
+        List<List<PieceModel>> piecesThatMoveList = new List<List<PieceModel>>();
 		//List<CellResult[,]> listOfCellResults = new List<CellResult[,]> ();
 		multiplier = 0;
         
@@ -387,6 +406,7 @@ public class BoardModel
             foreach (CellModel cell in gameBoard)
             {
                 cell.GetPiece().ClearPath(cell.GetRow(), cell.GetCol());
+                cell.GetPiece().SetSpawn(false);
             }
             tempMatchType = MATCHTYPE.NORMAL;
             HashSet<CellModel> originalMatch = new HashSet<CellModel>();
@@ -437,19 +457,35 @@ public class BoardModel
 				cellResult[origin.row, origin.col].SetPiece(spm);
             }
             newSpecialPieces = new List<PieceModel>();
+            List<PieceModel> piecesThatSpawn = new List<PieceModel>();
             foundMatches = new List<MatchModel>();
-			DropPieces(cellResult);
+			DropPieces(cellResult,piecesThatSpawn);
 			CheckForMatches();
 
+            /*
+            // need to clone because they are added to the list and THEN dropped. If we clone at time of spawn we'll lose the path.
+            List<PieceModel> clonePiecesThatSpawn = new List<PieceModel>();
+            foreach(PieceModel pm in piecesThatSpawn)
+            {
+                clonePiecesThatSpawn.Add(pm.Clone() as PieceModel);
+            }
+            */
 
-            //blow up any special(frosting pieces)
-
-            //order = (Order)order.Clone();
+            List<PieceModel> piecesThatMoved = new List<PieceModel>();
+            foreach(CellModel cm in gameBoard)
+            {
+                if(cm != null && cm.GetPiece() != null && cm.GetPiece().GetPath().Count > 0)
+                {
+                    piecesThatMoved.Add( cm.GetPiece().Clone() as PieceModel);
+                }
+            }
+            piecesThatMoved.Reverse();
+            // this is dumb, can we clone order here?
             Order o = new Order(order);
             orders.Add(o);
 //            Debug.Log("new order blue: " + order.GetAmountFromColor(Constants.PieceColor.BLUE));
-            results.Add( new Result(cellResult,  o, score,tempMatchType));
-			PrintGameBoard();
+            results.Add( new Result(cellResult,  o, score, DeepClone(piecesThatMoved) as List<PieceModel>, null, tempMatchType));
+			//PrintGameBoard();
 			//PrintGameBoard();
 			multiplier ++;
 		} while (foundMatches.Count > 0);
@@ -496,7 +532,7 @@ public class BoardModel
 	public List<CellModel> GetRecommendedMatch () 
 	{
 		List<CellModel> potentialMatch = new List<CellModel> ();
-
+        return potentialMatch;
 		for (int row = 0; row < gameBoard.GetLength (0); row++) 
 		{
 			for (int col = 0; col < gameBoard.GetLength (1); col++) 
@@ -787,7 +823,7 @@ public class BoardModel
 			foundMatches = new List<MatchModel>();
 			// TODO: Replace this with a call to an optimized function
 			CheckForMatches ();
-			PrintGameBoard();
+			//PrintGameBoard();
 		} while (foundMatches.Count > 0);
 
 	}
@@ -1010,7 +1046,58 @@ public class BoardModel
 		matched = new HashSet<CellModel>();
 	}
 
-	private void DropPieces(CellResult[,] cellResults) {
+    // The strategy here is to move pieces down (not to find null);
+    public void DropPieces(CellResult[,] cellResults,List<PieceModel> piecesThatSpawn) {
+        int cols = gameBoard.GetLength(1);
+        int rows = gameBoard.GetLength(0);
+        bool neededToDrop = false;
+
+        do {
+            neededToDrop = false; // assume we do not need to spawn, this eventually kicks us out of this function.
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    CellModel cm = gameBoard[row, col];
+
+                    //handle potential spawn if row is spawn point (row 0 for now).
+                    if(row == 0)
+                    {
+                        if(cm.IsWanting())
+                        {
+                            PieceModel newPiece = SpawnPiece(new Point(row, col));
+                            piecesThatSpawn.Add(newPiece);
+                            cm.SetPiece(newPiece);
+                            checkForMatches.Add(cm);
+                        }
+                    }
+
+                    //Cell directly below
+                    int rowBelow = row + 1; 
+                    if (rowBelow >= rows)
+                    {
+                        continue; // there is no row below me, no piece beneath me.
+                    }
+                    CellModel cmBelow = gameBoard[row + 1, col];
+                    if (cm.IsDroppable() && cmBelow.IsWanting())
+                    {
+                        neededToDrop = true;
+                        // move the piece down.
+                        cmBelow.SetPiece(cm.GetPiece()); 
+                        cm.Consume(false, null, null);
+                        checkForMatches.Add(cmBelow);
+
+                    }
+                    //Debug.Log("asdf");
+                }
+                //Debug.Log("asdfasdf");
+            }
+        } while (neededToDrop);
+        
+       // Debug.Log("asdfasdfasdf " + checkForMatches.Count);
+    }
+
+	private void DropPieces1(CellResult[,] cellResults) {
 		int cols = gameBoard.GetLength(1);
 		int rows = gameBoard.GetLength(0);
 
@@ -1081,14 +1168,14 @@ public class BoardModel
 					// If no piece was found in grid, grab it from spawnPieces
 					if (spawnPiece) 
 					{
-						cell.SetPiece (SpawnPiece());
+						cell.SetPiece (SpawnPiece(new Point(0,col)));
 						CellResult cellResult = cellResults[rows-row-1, col];
                         if (cellResult == null) {
 							cellResult = new CellResult(0);
 							cellResults[rows-row-1, col] = cellResult;
 						}
 						cellResult.Set(cell);
-						cellResult.SetFromRow(spawnRow --);
+						//cellResult.SetFromRow(spawnRow --);
                     }
 
 					if (lookElsewhere = false) {
@@ -1171,12 +1258,12 @@ public class BoardModel
 		}
 	}
 
-	private PieceModel SpawnPiece() {
+	private PieceModel SpawnPiece(Point p) {
 		// grab available pieces to spawn
 		int length = LevelManager.levelDescription.pieces.Length;
 		int randomInt = UnityEngine.Random.Range(0,length);
 		string id = LevelManager.levelDescription.pieces[randomInt];
-		return new PieceModel(Constants.PieceIDMapping[id]);
+		return new PieceModel(Constants.PieceIDMapping[id],PieceType.NORMAL, p);
 	}
 					
 }

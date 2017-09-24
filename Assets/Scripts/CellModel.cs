@@ -91,7 +91,7 @@ public class CellModel
 	{
         if(order == null)
         {
-            Debug.LogError("Order is null");
+            //Debug.LogError("Order is null");
         }
         if(piece != null && results != null && results[row,col] != null)
         {
