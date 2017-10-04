@@ -1075,7 +1075,9 @@ public class BoardModel
 
 			// Spawn Pieces Straight
 			for (int col = cols - 1; col >= 0; col--) {
-				AttemptToSpawnPiece(col, cellResults);
+				if (gameBoard[0, col].IsWanting()){
+					AttemptToSpawnPiece(col, cellResults);
+				}
 			}
 
 			// Erosion Drop
@@ -1111,7 +1113,7 @@ public class BoardModel
 			}
 			// Spawn Pieces Normal
 			for (int col = cols - 1; col >= 0; col--) {
-				if (AttemptToSpawnPiece(col, cellResults, false)){
+				if (gameBoard[0, col].IsWanting() && AttemptToSpawnPiece(col, cellResults, false)){
 					erodedSomething = true;
 				}
 			}
