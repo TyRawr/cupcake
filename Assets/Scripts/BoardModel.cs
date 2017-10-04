@@ -405,8 +405,10 @@ public class BoardModel
         do {
             foreach (CellModel cell in gameBoard)
             {
-                cell.GetPiece().ClearPath(cell.GetRow(), cell.GetCol());
-                cell.GetPiece().SetSpawn(false);
+				PieceModel piece = cell.GetPiece();
+				if (piece == null) continue;
+				piece.ClearPath(cell.GetRow(), cell.GetCol());
+                piece.SetSpawn(false);
             }
             tempMatchType = MATCHTYPE.NORMAL;
             HashSet<CellModel> originalMatch = new HashSet<CellModel>();
@@ -1046,200 +1048,154 @@ public class BoardModel
 		matched = new HashSet<CellModel>();
 	}
 
-    // The strategy here is to move pieces down (not to find null);
-    public void DropPieces(CellResult[,] cellResults,List<PieceModel> piecesThatSpawn) {
-        int cols = gameBoard.GetLength(1);
-        int rows = gameBoard.GetLength(0);
-        bool neededToDrop = false;
-
-        do {
-            neededToDrop = false; // assume we do not need to spawn, this eventually kicks us out of this function.
-            for (int row = 0; row < rows; row++)
-            {
-                for (int col = 0; col < cols; col++)
-                {
-                    CellModel cm = gameBoard[row, col];
-
-                    //handle potential spawn if row is spawn point (row 0 for now).
-                    if(row == 0)
-                    {
-                        if(cm.IsWanting())
-                        {
-                            PieceModel newPiece = SpawnPiece(new Point(row, col));
-                            piecesThatSpawn.Add(newPiece);
-                            cm.SetPiece(newPiece);
-                            checkForMatches.Add(cm);
-                        }
-                    }
-
-                    //Cell directly below
-                    int rowBelow = row + 1; 
-                    if (rowBelow >= rows)
-                    {
-                        continue; // there is no row below me, no piece beneath me.
-                    }
-                    CellModel cmBelow = gameBoard[row + 1, col];
-                    if (cm.IsDroppable() && cmBelow.IsWanting())
-                    {
-                        neededToDrop = true;
-                        // move the piece down.
-                        cmBelow.SetPiece(cm.GetPiece()); 
-                        cm.Consume(false, null, null);
-                        checkForMatches.Add(cmBelow);
-
-                    }
-                    //Debug.Log("asdf");
-                }
-                //Debug.Log("asdfasdf");
-            }
-        } while (neededToDrop);
-        
-       // Debug.Log("asdfasdfasdf " + checkForMatches.Count);
-    }
-
-	private void DropPieces1(CellResult[,] cellResults) {
+	// The strategy here is to move pieces down (not to find null);
+	private void DropPieces(CellResult[,] cellResults,List<PieceModel> piecesThatSpawn) {
 		int cols = gameBoard.GetLength(1);
 		int rows = gameBoard.GetLength(0);
+		bool neededToDrop = false;
 
-		//List<List<KeyValuePair<int,int>>> mapOriginDestination = new List<KeyValuePair<int, int>>();
-		// Iterate over Columns
-		for (int col = 0; col < cols; col ++) 
-		{
-			int spawnRow = -1;
-			// Loop from the bottom up
-			for (int row = 0; row < rows; row ++) 
-			{
-				CellModel cell = gameBoard[rows - row - 1, col];
-                if (row == 2 && col == 5) {
-                    Debug.Log("asfasd");
-                }
-                // If empty, find a piece
-                if (cell.IsWanting())
-				{
-                    
-					int reach = 1;
-					bool spawnPiece = true;
-					bool lookElsewhere = false;
-                    List<Point> points = new List<Point>();
-                    // Look at cells above this one for a piece
-                    bool breakOut = false;
-					while (reach < rows - row && !breakOut) 
-					{
-						int index = (rows - row - 1) - reach++;
-						//Debug.Log(index);
-						CellModel reachedCell = gameBoard[index, col];
-						if (reachedCell.IsDroppable()) 
-						{	
-							CellResult cellResult = cellResults[rows-row-1, col];
-							if (cellResult == null) {
-								cellResult = new CellResult(0);
-								cellResults[rows-row-1, col] = cellResult;
-							}
-                            cellResult.Set(reachedCell);
-                            //cellResult.SetSpawnSpecialPiece()
-                            //cell.SetPiece (reachedCell.GetPiece(),new Point(cell.GetRow(), cell.GetCol()));
-                            Debug.Log("row - index " + row + " " + index);
-                            //points.Reverse();
-                            foreach(var p in points)
-                            {
-                                reachedCell.GetPiece().AddToPath(p.row, p.col);
-                            }
-                            if (col == 5 && row == 2) {
-                                Debug.Log("asdf");
-                                reach = 10;
-                            }
-                            cell.SetPiece(reachedCell.GetPiece().Clone() as PieceModel);
-                            reachedCell.Consume (false, null,order);
-							spawnPiece = false;
-                            breakOut = true;
-                            break;
-						} else if (!reachedCell.IsSkippable()) {
-							lookElsewhere = true;
-							spawnPiece = false;
-                            breakOut = true;
-                            //							Debug.Log ("Cell SKIPPED: " + reachedCell.GetRow() + "," + reachedCell.GetCol() + " " + reachedCell.GetPieceColor());
-                            break;
-						} else
-                        {
-                            points.Add(new Point(reachedCell.GetRow(), reachedCell.GetCol()));
-                        }
-					}
-
-					// If no piece was found in grid, grab it from spawnPieces
-					if (spawnPiece) 
-					{
-						cell.SetPiece (SpawnPiece(new Point(0,col)));
-						CellResult cellResult = cellResults[rows-row-1, col];
-                        if (cellResult == null) {
-							cellResult = new CellResult(0);
-							cellResults[rows-row-1, col] = cellResult;
+		bool erodedSomething;
+		int iteration = 0;
+		do {
+			erodedSomething = false;
+			iteration ++;
+			// Straight Drop
+			for (int col = cols - 1; col >= 0; col--) {
+				for (int row = rows - 2; row >= 0; row--) {
+					// try to drop piece
+					CellModel cell = gameBoard [row, col];
+					if (cell.IsDroppable()) {
+						// Drop Down
+						if (AttemptToMovePiece (gameBoard [row + 1, col], cell.GetPiece (), cellResults, false)) {
+							cell.Consume (false, null, order);
 						}
-						cellResult.Set(cell);
-						//cellResult.SetFromRow(spawnRow --);
-                    }
+					}
+				}
+			}
 
-					if (lookElsewhere = false) {
-						reach = 1;
-						bool continueLeft = true;
-						bool continueRight = true;
-						bool spawnPieceLeft = true;
-						bool spawnPieceRight = true;
-						while (reach < rows - row) 
-						{
-							if (continueLeft && col > 0) {
-								int index = (rows - row - 1) - reach++;
-								// Look Left
-								CellModel reachedCell = gameBoard[index, col - 1];
-								if (reachedCell.IsDroppable()) 
-								{	
-									CellResult cellResult = cellResults[rows-row-1, col];
-									if (cellResult == null) {
-										cellResult = new CellResult(0);
-										cellResults[rows-row-1, col] = cellResult;
-									}
-									cellResult.Set(reachedCell);
-									cell.SetPiece (reachedCell.GetPiece());
-									reachedCell.Consume (false, null,order);
-									spawnPiece = false;
-									break;
-								} else if (!reachedCell.IsSkippable()) {
-									continueLeft = false;
-									spawnPieceLeft = false;
-									break;
-								}
-							}
-							if (continueRight && col < cols - 1) {
-								int index = (rows - row - 1) - reach++;
-								// Look Left
-								CellModel reachedCell = gameBoard[index, col + 1];
-								if (reachedCell.IsDroppable()) 
-								{	
-									CellResult cellResult = cellResults[rows-row-1, col];
-									if (cellResult == null) {
-										cellResult = new CellResult(0);
-										cellResults[rows-row-1, col] = cellResult;
-									}
-									cellResult.Set(reachedCell);
-									cell.SetPiece (reachedCell.GetPiece());
-									reachedCell.Consume (false, null, order);
-									spawnPiece = false;
-									break;
-								} else if (!reachedCell.IsSkippable()) {
-									spawnPieceRight = false;
-									continueRight = false;
-									break;
-								}
+			// Spawn Pieces Straight
+			for (int col = cols - 1; col >= 0; col--) {
+				AttemptToSpawnPiece(col, cellResults);
+			}
+
+			// Erosion Drop
+			for (int row = 0; row < gameBoard.GetLength(0) - iteration; row++) {
+				for (int col = 0; col < gameBoard.GetLength(1); col++) {
+					// try to drop piece
+					CellModel cell = gameBoard [row, col];
+					if (cell.IsDroppable()) {
+						// Drop Down
+						if (AttemptToMovePiece (gameBoard [row + 1, col], cell.GetPiece (), cellResults, false)) {
+							cell.Consume (false, null,order);
+							erodedSomething = true;
+							continue;
+						}
+						// Drop Left
+						if (col > 0) {
+							if (AttemptToMovePiece (gameBoard [row + 1, col - 1], cell.GetPiece (), cellResults, true)) {
+								cell.Consume (false, null,order);
+								erodedSomething = true;
+								continue;
 							}
 						}
-
+						// Drop Right
+						if (col < gameBoard.GetLength (1) - 1) {
+							if (AttemptToMovePiece (gameBoard [row + 1, col + 1], cell.GetPiece (), cellResults, true)) {
+								cell.Consume (false, null,order);
+								erodedSomething = true;
+								continue;
+							}	
+						}
 					}
+				}
+			}
+			// Spawn Pieces Normal
+			for (int col = cols - 1; col >= 0; col--) {
+				if (AttemptToSpawnPiece(col, cellResults, false)){
+					erodedSomething = true;
+				}
+			}
+		} while (erodedSomething);
 
-					checkForMatches.Add(cell);
+
+
+		// Spawn Pieces Erosion
+//		for (int col = cols - 1; col >= 0; col--) {
+//			AttemptToSpawnPiece(col, cellResults, true);
+//		}
+	}
+
+	private bool AttemptToMovePiece(CellModel cell, PieceModel piece, CellResult [,] cellResults, bool erode = false) {
+		int row = cell.GetRow ();
+		int col = cell.GetCol ();
+
+		// If we can drop past this cell, try to
+		if (cell.IsSkippable() && row < gameBoard.GetLength(0) - 1) {
+			// Attempt to move piece DOWN
+			if (AttemptToMovePiece (gameBoard [row + 1, col], piece, cellResults, erode)) {
+				return true;
+			}
+
+			if (erode) {
+				// Attempt to move piece LEFT
+				if (col > 0) {
+					if (AttemptToMovePiece (gameBoard [row + 1, col - 1], piece, cellResults, erode)) {
+						return true;
+					}
+				}
+				// Attempt to move piece RIGHT
+				if (col < gameBoard.GetLength (1) - 1) {
+					if (AttemptToMovePiece (gameBoard [row + 1, col + 1], piece, cellResults, erode)) {
+						return true;
+					}
 				}
 			}
 		}
-		PrintCellResults(cellResults);
+
+		if (cell.IsWanting ()) {
+			cell.SetPiece (piece);
+			CellResult cellResult = cellResults [row, col];
+			if (cellResult == null) {
+				cellResult = new CellResult (0);
+				cellResults [row, col] = cellResult;
+			}
+			cellResult.Set (cell);
+			checkForMatches.Add (cell);
+			return true;
+		} 
+		return false;
 	}
+
+	private bool AttemptToSpawnPiece(int col, CellResult[,] cellResults, bool erode = false) {
+		PieceModel piece;
+		bool spawnedPiece = false;
+		while (true) {
+			piece = SpawnPiece(new Point(0, col));
+
+			// Attempt to move piece DOWN
+			if (AttemptToMovePiece (gameBoard [0, col], piece, cellResults, erode)) {
+				spawnedPiece = true;
+				continue;
+			}
+//			if (erode) {
+//				// Attempt to move piece LEFT
+//				if (col > 0) {
+//					if (AttemptToMovePiece (gameBoard [0, col - 1], piece, cellResults, erode)) {
+//						continue;
+//					}
+//				}
+//				// Attempt to move piece RIGHT
+//				if (col < gameBoard.GetLength (1) - 1) {
+//					if (AttemptToMovePiece (gameBoard [0, col + 1], piece, cellResults, erode)) {
+//						continue;
+//					}
+//				}
+//			}
+			break;
+		}
+		return spawnedPiece;
+	}
+		
 
 	private bool MatchIsUnique (MatchModel newMatch) {
 		foreach (MatchModel match in foundMatches) {

@@ -140,7 +140,7 @@ public class CellModel
 	 */
 	public bool IsSkippable() 
 	{
-		if (state == CellState.FROSTING || (state == CellState.NULL && row == 0)) 
+		if (piece != null || state == CellState.FROSTING) 
 		{
 			return false;
 		}
